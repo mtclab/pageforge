@@ -1,5 +1,6 @@
 import { getTheme } from '../../themes/index.js';
-import type { PhotoShape } from '../../engine/types.js';
+import { darkestPalette } from '../../engine/render.js';
+import type { PhotoShape, SiteData } from '../../engine/types.js';
 import { el } from '../dom.js';
 import { saveMyTheme } from '../mythemes.js';
 import type { StepCtx } from './content.js';
@@ -220,6 +221,127 @@ export function renderCustomizeStep(pane: HTMLElement, ctx: StepCtx): void {
       },
     ),
   );
+
+  // v2b: headings, hero alignment, photo size
+  pane.append(
+    choiceRow<'theme' | 'underline' | 'highlight' | 'caps'>(
+      'Headings',
+      [
+        { value: 'theme', name: "Theme's own" },
+        { value: 'underline', name: 'Underlined' },
+        { value: 'highlight', name: 'Highlighted' },
+        { value: 'caps', name: 'All caps' },
+      ],
+      data.meta.headingStyle ?? 'theme',
+      (v) => {
+        if (v === 'theme') delete data.meta.headingStyle;
+        else data.meta.headingStyle = v;
+        onChange(true);
+      },
+    ),
+    choiceRow<'theme' | 'center' | 'left'>(
+      'Top of the page',
+      [
+        { value: 'theme', name: "Theme's own" },
+        { value: 'center', name: 'Centered' },
+        { value: 'left', name: 'Left' },
+      ],
+      data.meta.heroAlign ?? 'theme',
+      (v) => {
+        if (v === 'theme') delete data.meta.heroAlign;
+        else data.meta.heroAlign = v;
+        onChange(true);
+      },
+    ),
+  );
+  if (data.photo) {
+    pane.append(
+      choiceRow<'s' | 'theme' | 'l'>(
+        'Photo size',
+        [
+          { value: 's', name: 'Small' },
+          { value: 'theme', name: "Theme's own" },
+          { value: 'l', name: 'Large' },
+        ],
+        data.meta.photoSize ?? 'theme',
+        (v) => {
+          if (v === 'theme') delete data.meta.photoSize;
+          else data.meta.photoSize = v;
+          onChange(true);
+        },
+      ),
+    );
+  }
+
+  // v2c: background treatment + auto dark mode
+  pane.append(
+    choiceRow<'theme' | 'dots' | 'grid' | 'lines' | 'wash-top' | 'wash-corner'>(
+      'Background',
+      [
+        { value: 'theme', name: "Theme's own" },
+        { value: 'dots', name: 'Dots' },
+        { value: 'grid', name: 'Grid' },
+        { value: 'lines', name: 'Lines' },
+        { value: 'wash-top', name: 'Glow top' },
+        { value: 'wash-corner', name: 'Glow corner' },
+      ],
+      data.meta.background ?? 'theme',
+      (v) => {
+        if (v === 'theme') delete data.meta.background;
+        else data.meta.background = v;
+        onChange(true);
+      },
+    ),
+  );
+
+  const dark = darkestPalette(theme);
+  const currentPalette = theme.palettes.find((p) => p.id === data.meta.paletteId);
+  if (dark && currentPalette && dark.id !== currentPalette.id) {
+    const wrap = el('div', { class: 'group' });
+    const label = el('label', { class: 'check-row' });
+    const box = el('input', { type: 'checkbox' });
+    box.checked = Boolean(data.meta.autoDark);
+    box.addEventListener('change', () => {
+      if (box.checked) data.meta.autoDark = true;
+      else delete data.meta.autoDark;
+      onChange();
+    });
+    label.append(box, el('span', { text: `Follow dark mode (visitors with dark mode see the ${dark.name} colors)` }));
+    wrap.append(label);
+    pane.append(wrap);
+  }
+
+  // Vibes: one-tap bundles of the above; everything stays adjustable after
+  const vibes = el('div', { class: 'group' }, el('h3', { text: 'Vibes - one-tap combos' }));
+  const vibeRow = el('div', { class: 'chips-row' });
+  const VIBES: { name: string; set: Partial<SiteData['meta']> }[] = [
+    { name: 'Calm', set: { surface: 'flat', density: 'airy', shadow: 'none', corners: 'soft' } },
+    { name: 'Bold', set: { surface: 'card', corners: 'sharp', shadow: 'lifted', headingStyle: 'caps' } },
+    { name: 'Cozy', set: { surface: 'tinted', corners: 'round', shadow: 'soft', density: 'airy', headingStyle: 'highlight', background: 'wash-top' } },
+    { name: 'Precise', set: { surface: 'bordered', corners: 'sharp', shadow: 'none', headingStyle: 'underline', density: 'compact', background: 'grid' } },
+  ];
+  const STYLE_KEYS = ['surface', 'corners', 'shadow', 'density', 'headingStyle', 'heroAlign', 'background'] as const;
+  for (const vibe of VIBES) {
+    const chip = el('button', { type: 'button', class: 'chip', text: vibe.name });
+    chip.addEventListener('click', () => {
+      for (const key of STYLE_KEYS) delete data.meta[key];
+      Object.assign(data.meta, vibe.set);
+      onChange(true);
+    });
+    vibeRow.append(chip);
+  }
+  const clearVibe = el('button', { type: 'button', class: 'chip', text: 'Reset to theme' });
+  clearVibe.addEventListener('click', () => {
+    for (const key of STYLE_KEYS) delete data.meta[key];
+    delete data.meta.textScale;
+    delete data.meta.width;
+    delete data.meta.photoSize;
+    delete data.meta.accent;
+    onChange(true);
+  });
+  vibeRow.append(clearVibe);
+  vibes.append(vibeRow);
+  pane.append(vibes);
 
   // #9 slice 1: freeze the current look as a reusable named theme
   const saveLook = el('button', { type: 'button', class: 'chip', text: 'Save this look as your own theme' });

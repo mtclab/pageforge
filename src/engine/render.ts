@@ -1,4 +1,4 @@
-import { accentContrastFor, fitAccent } from './color.js';
+import { accentContrastFor, fitAccent, luminance } from './color.js';
 import { BASE_CSS, rootVars, type StyleVars } from './css.js';
 import { escAttr, esc } from './escape.js';
 import { renderSection } from './sections/blocks.js';
@@ -34,6 +34,48 @@ export function effectivePalette(data: SiteData, theme: ThemePack): Palette {
     ...palette,
     vars: { ...palette.vars, accent: fitted, 'accent-contrast': accentContrastFor(fitted) },
   };
+}
+
+/**
+ * The theme's darkest palette, if it has a genuinely dark one - used by the
+ * auto dark mode option. Returns null when the theme has no dark palette.
+ */
+export function darkestPalette(theme: ThemePack): Palette | null {
+  let best: Palette | null = null;
+  let bestLum = 0.18;
+  for (const p of theme.palettes) {
+    const l = luminance(p.vars.bg);
+    if (l < bestLum) {
+      bestLum = l;
+      best = p;
+    }
+  }
+  return best;
+}
+
+/** Dark-mode :root override block, or '' when not applicable. */
+function autoDarkCss(data: SiteData, theme: ThemePack, lightPalette: Palette): string {
+  if (!data.meta.autoDark) return '';
+  const dark = darkestPalette(theme);
+  // Only meaningful when the visible palette is light and a distinct dark one exists.
+  if (!dark || dark.id === lightPalette.id || luminance(lightPalette.vars.bg) < 0.4) return '';
+  let accent = dark.vars.accent;
+  let accentContrast = dark.vars['accent-contrast'];
+  if (data.meta.accent) {
+    accent = fitAccent(data.meta.accent, dark.vars.bg);
+    accentContrast = accentContrastFor(accent);
+  }
+  return `@media (prefers-color-scheme: dark) {
+:root {
+  --bg: ${dark.vars.bg};
+  --surface: ${dark.vars.surface};
+  --text: ${dark.vars.text};
+  --muted: ${dark.vars.muted};
+  --accent: ${accent};
+  --accent-contrast: ${accentContrast};
+}
+}
+`;
 }
 
 const WIDTH_SCALE = { narrow: 0.85, normal: 1, wide: 1.25 } as const;
@@ -93,7 +135,7 @@ export function renderSite(data: SiteData, theme: ThemePack, opts: RenderOptions
   const palette = effectivePalette(data, theme);
   const font = resolveFont(theme, data.meta.fontId);
 
-  const css = `${rootVars(palette, font, styleVars(data, theme))}\n${BASE_CSS}\n${theme.css}`;
+  const css = `${rootVars(palette, font, styleVars(data, theme))}\n${BASE_CSS}\n${theme.css}\n${autoDarkCss(data, theme, palette)}`;
 
   const name = data.name.trim();
   const sections = data.sections
@@ -102,8 +144,25 @@ export function renderSite(data: SiteData, theme: ThemePack, opts: RenderOptions
 
   const description = data.tagline?.trim();
   const photoShape = data.meta.photoShape ?? theme.photoShape;
-  const surfaceClass = data.meta.surface ? ` surface-${data.meta.surface}` : '';
-  const bodyClass = `layout-${theme.layout} photo-${photoShape}${surfaceClass}${data.photo ? ' has-photo' : ''}`;
+  const flags: string[] = [`layout-${theme.layout}`, `photo-${photoShape}`];
+  if (data.meta.surface) flags.push(`surface-${data.meta.surface}`);
+  if (data.meta.headingStyle && ['underline', 'highlight', 'caps'].includes(data.meta.headingStyle)) {
+    flags.push(`heading-${data.meta.headingStyle}`);
+  }
+  if (data.meta.heroAlign && ['left', 'center'].includes(data.meta.heroAlign)) {
+    flags.push(`hero-${data.meta.heroAlign}`);
+  }
+  if (data.meta.photoSize && ['s', 'l'].includes(data.meta.photoSize)) {
+    flags.push(`photo-sz-${data.meta.photoSize}`);
+  }
+  if (
+    data.meta.background &&
+    ['dots', 'grid', 'lines', 'wash-top', 'wash-corner'].includes(data.meta.background)
+  ) {
+    flags.push(`bg-${data.meta.background}`);
+  }
+  if (data.photo) flags.push('has-photo');
+  const bodyClass = flags.join(' ');
 
   const ogExtras = opts.baseUrl
     ? `<meta property="og:image" content="${escAttr(opts.baseUrl)}/assets/og.png">
