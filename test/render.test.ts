@@ -61,6 +61,25 @@ describe('renderSite', () => {
     expect(html).not.toContain('<section');
   });
 
+  it('hosted render: og/canonical URLs, nofollow on user links, report link', () => {
+    const { html } = renderSite(FIXTURES.full!, THEMES[0]!, {
+      baseUrl: 'https://pageforge.mtclab.net/s/anna',
+      hosted: true,
+    });
+    expect(html).toContain('<meta property="og:image" content="https://pageforge.mtclab.net/s/anna/assets/og.png">');
+    expect(html).toContain('<link rel="canonical" href="https://pageforge.mtclab.net/s/anna/">');
+    expect(html).toContain('rel="nofollow noopener" href="https://www.instagram.com/annav"');
+    expect(html).toContain('Report this page');
+    // our own footer credit is not nofollowed
+    expect(html).toContain('<a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a>');
+  });
+
+  it('zip render has og:title but no og:image (unknown final URL)', () => {
+    const { html } = renderSite(FIXTURES.full!, THEMES[0]!);
+    expect(html).toContain('<meta property="og:title"');
+    expect(html).not.toContain('og:image');
+  });
+
   it('photo only renders when provided', () => {
     const without = renderSite(FIXTURES.minimal!, THEMES[0]!);
     expect(without.html).not.toContain('assets/photo.jpg');

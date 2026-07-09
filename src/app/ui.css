@@ -306,6 +306,17 @@ code { font-family: var(--mono); font-size: 0.9em; background: var(--desk); padd
   display: block;
 }
 .crop input[type='range'] { width: 220px; display: block; margin: 0.3rem 0 0.7rem; }
+.gallery-thumb { position: relative; display: inline-block; }
+.gallery-thumb img { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); display: block; }
+.gallery-thumb .icon-btn {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  width: 1.4rem;
+  height: 1.4rem;
+  background: var(--panel);
+  font-size: 0.7rem;
+}
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -314,6 +325,41 @@ code { font-family: var(--mono); font-size: 0.9em; background: var(--desk); padd
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* publish box */
+.beta-tag {
+  font-size: 0.7rem;
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: var(--marker);
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+  vertical-align: middle;
+}
+.slug-row { align-items: center; }
+.slug-prefix { font-family: var(--mono); color: var(--muted); }
+.slug-row input { max-width: 16rem; font-family: var(--mono); }
+.publish-result { margin-top: 0.8rem; }
+.publish-ok { font-weight: 600; overflow-wrap: anywhere; }
+
+/* shared-preview mode */
+body.share-mode { height: 100vh; }
+.share-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.7rem 1.2rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  font-weight: 600;
+}
+.share-actions { display: flex; gap: 0.6rem; }
+.share-frame { flex: 1; width: 100%; border: none; background: #fff; }
+
+.starter-row { padding-bottom: 0.4rem; }
 
 .app-footer {
   text-align: center;

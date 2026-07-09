@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Help - pageforge</title>
+<meta name="description" content="How to make your homepage with pageforge and put it online: step-by-step guides for Netlify, GitHub Pages and Cloudflare Pages, plus answers to common questions.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="ui.css">
+<style>
+  .help { max-width: 46rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+  .help h1 { font-size: 1.8rem; margin-bottom: 0.4rem; }
+  .help .lead { color: var(--muted); margin-bottom: 2rem; }
+  .help h2 { font-size: 1.25rem; margin: 2.2rem 0 0.6rem; }
+  .help h3 { font-size: 1.05rem; margin: 1.4rem 0 0.4rem; }
+  .help p, .help li { margin-bottom: 0.5rem; }
+  .help ol, .help ul { padding-left: 1.4rem; }
+  .help .note { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--marker); border-radius: 8px; padding: 0.8rem 1rem; margin: 1rem 0; }
+  .back { display: inline-block; margin-bottom: 1.5rem; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">pageforge</div>
+  <nav class="steps"></nav>
+  <a href="./">Back to the builder</a>
+</header>
+
+<main class="help">
+<h1>Help</h1>
+<p class="lead">Everything you need to go from "I have no website" to "here is my link".</p>
+
+<h2>What pageforge gives you</h2>
+<p>You answer a few questions, pick a look, and download a zip file. Inside the zip is a complete, finished website: a page (<code>index.html</code>), its style (<code>style.css</code>), your photos, and a README file with the same instructions as on this page. The site is yours - there is no account, nothing is stored on our side, and your text and photos never leave your browser while you build.</p>
+
+<h2>What kind of pages can I make?</h2>
+<ul>
+  <li><strong>Personal homepage</strong> - who you are, your links, your things.</li>
+  <li><strong>Link hub</strong> - one tidy page with all your links (like a link-in-bio page).</li>
+  <li><strong>Event page</strong> - a party, wedding, reunion or meetup: what, when, where, how to RSVP.</li>
+  <li><strong>Small business one-pager</strong> - services, hours, contact.</li>
+  <li><strong>Club or group page</strong> - what you do, when you meet, how to join.</li>
+</ul>
+<p>On step 1, press one of the example buttons to start from a ready skeleton and overwrite the text with your own.</p>
+
+<h2>Seeing your page while you build</h2>
+<p>The preview next to the form is your actual page, updating as you type. On a phone, tap the yellow Preview button. Your draft is saved in your browser automatically - you can close the tab and continue later on the same device.</p>
+
+<h2>Putting your site online</h2>
+<p>Your zip works with any web host. These three are free and need no technical skill. In every case: <strong>unzip the file first</strong> (right-click, "Extract All" on Windows; double-click on Mac).</p>
+
+<h3>Option 1: Netlify Drop (about 2 minutes)</h3>
+<ol>
+  <li>Open <a href="https://app.netlify.com/drop" rel="noopener">app.netlify.com/drop</a>.</li>
+  <li>Drag the unzipped FOLDER (not the zip file) onto the page.</li>
+  <li>You get a link like <code>something-random.netlify.app</code>. That is your live website.</li>
+  <li>Create the free account when asked - without it the site is removed after an hour. With it, the site stays up and you can rename the link (Site configuration &gt; Change site name).</li>
+</ol>
+
+<h3>Option 2: GitHub Pages</h3>
+<ol>
+  <li>Make a free account at <a href="https://github.com/signup" rel="noopener">github.com/signup</a>.</li>
+  <li>Click the + in the top right, "New repository". Name it exactly <code>YOURUSERNAME.github.io</code> (your own username in place of YOURUSERNAME). Click the green Create button.</li>
+  <li>On the next page click the small "uploading an existing file" link.</li>
+  <li>Open your unzipped folder, select everything inside it, and drag it onto the page. Click "Commit changes".</li>
+  <li>Wait a minute or two, then visit <code>https://YOURUSERNAME.github.io</code>.</li>
+</ol>
+
+<h3>Option 3: Cloudflare Pages</h3>
+<ol>
+  <li>Make a free account at <a href="https://dash.cloudflare.com/sign-up" rel="noopener">dash.cloudflare.com</a>.</li>
+  <li>Go to Workers &amp; Pages, Create, pick the Pages tab, choose "Upload assets".</li>
+  <li>Name your project (this becomes <code>yourname.pages.dev</code>), drag the folder in, Deploy.</li>
+</ol>
+
+<h2>Changing your site later</h2>
+<ol>
+  <li>Come back to the builder. If you are on the same device, your draft is still here.</li>
+  <li>On another device: use "Load your zip or site.json" on step 1 and pick the zip you downloaded (or the <code>site.json</code> file inside it). All your answers come back.</li>
+  <li>Make your changes, download a fresh zip, and upload it to your host the same way as the first time.</li>
+</ol>
+
+<h2>Sharing a preview</h2>
+<p>On the Download step you can copy a preview link. Your page travels inside the link itself - nothing is uploaded to any server. Photos are not included in preview links, so the link stays small enough to paste anywhere.</p>
+
+<h2>Common questions</h2>
+<h3>Is it really free?</h3>
+<p>Yes. No account, no trial, no locked features. If it made you smile you can <a href="https://ko-fi.com/kolli94431" rel="noopener">buy me a coffee</a>, but you never have to.</p>
+<h3>Where is my data stored?</h3>
+<p>In your browser, on your device, and in the zip you download. We do not have a copy.</p>
+<h3>Can I get an address like www.myname.com?</h3>
+<p>Yes - buy a domain name (a few euros a year from any registrar) and connect it to your host. Netlify, GitHub Pages and Cloudflare all support this; search their help for "custom domain".</p>
+<h3>Can I edit the files myself?</h3>
+<p>Of course - it is plain HTML and CSS. Open <code>index.html</code> in any text editor. If you later re-import your zip here, hand-made edits to the HTML are not picked up (only <code>site.json</code> is read), so pick one way of editing and stick with it.</p>
+<h3>Something does not work</h3>
+<p>Tell us: <a href="https://github.com/mtclab/pageforge/issues" rel="noopener">report a problem</a>.</p>
+</main>
+
+<footer class="app-footer">
+  <p><a href="./">pageforge - make your own homepage</a></p>
+</footer>
+</body>
+</html>

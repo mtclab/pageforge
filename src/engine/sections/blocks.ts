@@ -1,5 +1,5 @@
 import { esc, escAttr, safeUrl, textToHtml } from '../escape.js';
-import type { Section } from '../types.js';
+import { galleryPath, type Section } from '../types.js';
 
 /**
  * All <main> section renderers. Each returns '' when the section has no
@@ -17,6 +17,8 @@ export function renderSection(section: Section, idx: number): string {
       return renderContact(section, idx);
     case 'custom':
       return renderCustom(section, idx);
+    case 'gallery':
+      return renderGallery(section, idx);
   }
 }
 
@@ -68,6 +70,15 @@ function renderContact(s: Extract<Section, { kind: 'contact' }>, idx: number): s
   if (s.note?.trim()) parts.push(textToHtml(s.note));
   if (!parts.length) return '';
   return wrap('contact', idx, 'Get in touch', parts.join('\n'));
+}
+
+function renderGallery(s: Extract<Section, { kind: 'gallery' }>, idx: number): string {
+  const items = s.photos.map(
+    (_, j) =>
+      `<li><img src="${galleryPath(idx, j)}" alt="" loading="lazy"></li>`,
+  );
+  if (!items.length) return '';
+  return wrap('gallery', idx, s.title?.trim() || 'Photos', `<ul class="gallery">\n${items.join('\n')}\n</ul>`);
 }
 
 function renderCustom(s: Extract<Section, { kind: 'custom' }>, idx: number): string {

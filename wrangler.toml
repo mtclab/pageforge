@@ -1,4 +1,5 @@
 name = "pageforge"
+main = "src/worker/index.ts"
 compatibility_date = "2026-07-01"
 workers_dev = true
 routes = [
@@ -7,3 +8,9 @@ routes = [
 
 [assets]
 directory = "dist"
+binding = "ASSETS"
+run_worker_first = ["/api/*", "/s/*"]
+
+[[kv_namespaces]]
+binding = "SITES"
+id = "b00a7b60e9db4f33848a53acb6499420"

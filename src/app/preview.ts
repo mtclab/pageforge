@@ -1,5 +1,5 @@
 import { renderSite } from '../engine/render.js';
-import { PHOTO_PATH, type SiteData } from '../engine/types.js';
+import { collectImages, type SiteData } from '../engine/types.js';
 import { getTheme } from '../themes/index.js';
 
 /**
@@ -15,8 +15,8 @@ export function previewHtml(data: SiteData): string {
     '<link rel="stylesheet" href="style.css">',
     `<style>${css}</style>`,
   );
-  if (data.photo) {
-    doc = doc.replace(`src="${PHOTO_PATH}"`, `src="${data.photo.dataUrl}"`);
+  for (const [path, dataUrl] of collectImages(shown)) {
+    doc = doc.replace(`src="${path}"`, `src="${dataUrl}"`);
   }
   return doc;
 }

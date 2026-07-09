@@ -1,6 +1,7 @@
 import type { Section, SiteData } from '../../engine/types.js';
 import { el, labeled } from '../dom.js';
-import { renderPhotoField } from '../photo.js';
+import { fileToResizedDataUrl, renderPhotoField } from '../photo.js';
+import { STARTERS } from '../starters.js';
 
 export interface StepCtx {
   data: SiteData;
@@ -19,9 +20,12 @@ const SECTION_MENU: { label: string; make: () => Section }[] = [
   { label: '+ About me', make: () => ({ kind: 'about', text: '' }) },
   { label: '+ Things I make', make: () => ({ kind: 'projects', items: [{ name: '' }] }) },
   { label: '+ Things I love', make: () => ({ kind: 'hobbies', items: [] }) },
+  { label: '+ Photo gallery', make: () => ({ kind: 'gallery', photos: [] }) },
   { label: '+ How to reach me', make: () => ({ kind: 'contact' }) },
   { label: '+ Own section', make: () => ({ kind: 'custom', title: '', text: '' }) },
 ];
+
+const GALLERY_MAX = 6;
 
 export function renderContentStep(pane: HTMLElement, ctx: StepCtx): void {
   const { data, onChange } = ctx;
@@ -33,7 +37,7 @@ export function renderContentStep(pane: HTMLElement, ctx: StepCtx): void {
     }),
   );
 
-  pane.append(importField(ctx));
+  pane.append(starterRow(ctx), importField(ctx));
 
   const nameInput = textInput(data.name, 'e.g. Anna Virtanen', (v) => {
     data.name = v;
@@ -102,18 +106,55 @@ export function renderContentStep(pane: HTMLElement, ctx: StepCtx): void {
   pane.append(secBox);
 }
 
-/** "Edited here before? Load the site.json from your old zip." */
+/** One-click example content; doubles as page types (event, business, club...). */
+function starterRow(ctx: StepCtx): HTMLElement {
+  const { data, onChange } = ctx;
+  const wrap = el('div', { class: 'field starter-row' });
+  wrap.append(el('span', { class: 'label', text: 'Not sure where to start? Try an example' }));
+  const chips = el('div', { class: 'chips-row' });
+  for (const starter of STARTERS) {
+    const btn = el('button', { type: 'button', class: 'chip', title: starter.blurb, text: starter.label });
+    btn.addEventListener('click', () => {
+      const hasContent = data.name.trim() || data.sections.length || data.links.length;
+      if (hasContent && !confirm('Replace what you have written with this example?')) return;
+      const copy = structuredClone(starter.data);
+      data.name = copy.name;
+      data.tagline = copy.tagline;
+      delete data.photo;
+      data.links = copy.links;
+      data.sections = copy.sections;
+      data.footerNote = copy.footerNote;
+      data.meta = copy.meta;
+      onChange(true);
+    });
+    chips.append(btn);
+  }
+  wrap.append(chips);
+  return wrap;
+}
+
+/** "Edited here before? Load your old zip (or the site.json inside it)." */
 function importField(ctx: StepCtx): HTMLElement {
   const { data, onChange } = ctx;
-  const input = el('input', { type: 'file', accept: '.json,application/json', class: 'visually-hidden' });
-  const btn = el('button', { type: 'button', class: 'chip', text: 'Made a site here before? Load your site.json' });
+  const input = el('input', { type: 'file', accept: '.json,.zip,application/json,application/zip', class: 'visually-hidden' });
+  const btn = el('button', { type: 'button', class: 'chip', text: 'Made a site here before? Load your zip or site.json' });
   const wrap = el('div', { class: 'field import-field' }, btn, input);
   btn.addEventListener('click', () => input.click());
   input.addEventListener('change', async () => {
     const file = input.files?.[0];
     if (!file) return;
     try {
-      const parsed = JSON.parse(await file.text()) as SiteData;
+      let text: string;
+      if (/\.zip$/i.test(file.name)) {
+        const { unzipSync, strFromU8 } = await import('fflate');
+        const entries = unzipSync(new Uint8Array(await file.arrayBuffer()));
+        const siteJson = entries['site.json'];
+        if (!siteJson) throw new Error('no site.json in zip');
+        text = strFromU8(siteJson);
+      } else {
+        text = await file.text();
+      }
+      const parsed = JSON.parse(text) as SiteData;
       if (parsed.version !== 1 || typeof parsed.name !== 'string' || !Array.isArray(parsed.sections)) {
         throw new Error('shape');
       }
@@ -138,6 +179,7 @@ const SECTION_TITLES: Record<Section['kind'], string> = {
   hobbies: 'Things I love',
   contact: 'How to reach me',
   custom: 'Own section',
+  gallery: 'Photo gallery',
 };
 
 function sectionEditor(section: Section, i: number, ctx: StepCtx): HTMLElement {
@@ -242,6 +284,42 @@ function sectionEditor(section: Section, i: number, ctx: StepCtx): HTMLElement {
         onChange();
       });
       card.append(labeled('A short note (optional)', note));
+      break;
+    }
+    case 'gallery': {
+      const thumbs = el('div', { class: 'row wrap' });
+      section.photos.forEach((photo, j) => {
+        const cell = el('span', { class: 'gallery-thumb' });
+        const img = el('img', { alt: `Gallery photo ${j + 1}` });
+        img.src = photo.dataUrl;
+        const rm = el('button', { type: 'button', class: 'icon-btn', 'aria-label': `Remove photo ${j + 1}`, text: '✕' });
+        rm.addEventListener('click', () => {
+          section.photos.splice(j, 1);
+          onChange(true);
+        });
+        cell.append(img, rm);
+        thumbs.append(cell);
+      });
+      card.append(thumbs);
+      if (section.photos.length < GALLERY_MAX) {
+        const input = el('input', { type: 'file', accept: 'image/*', multiple: 'multiple', class: 'visually-hidden' });
+        const add = el('button', { type: 'button', class: 'chip', text: '+ Add photos' });
+        add.addEventListener('click', () => input.click());
+        input.addEventListener('change', async () => {
+          const files = [...(input.files ?? [])].slice(0, GALLERY_MAX - section.photos.length);
+          for (const file of files) {
+            try {
+              section.photos.push({ dataUrl: await fileToResizedDataUrl(file) });
+            } catch {
+              // unreadable image: skip it
+            }
+          }
+          onChange(true);
+        });
+        card.append(add, input, el('p', { class: 'hint', text: `Up to ${GALLERY_MAX} photos. They are packed into your site.` }));
+      } else {
+        card.append(el('p', { class: 'hint', text: `Gallery is full (${GALLERY_MAX} photos).` }));
+      }
       break;
     }
     case 'custom': {
