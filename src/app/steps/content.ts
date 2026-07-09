@@ -2,6 +2,7 @@ import type { Section, SiteData } from '../../engine/types.js';
 import { el, labeled } from '../dom.js';
 import { fileToResizedDataUrl, renderPhotoField } from '../photo.js';
 import { STARTERS } from '../starters.js';
+import { deletePage, listPages, newPage, switchPage } from '../state.js';
 
 export interface StepCtx {
   data: SiteData;
@@ -37,7 +38,7 @@ export function renderContentStep(pane: HTMLElement, ctx: StepCtx): void {
     }),
   );
 
-  pane.append(starterRow(ctx), importField(ctx));
+  pane.append(pagesRow(), starterRow(ctx), importField(ctx));
 
   const nameInput = textInput(data.name, 'e.g. Anna Virtanen', (v) => {
     data.name = v;
@@ -146,6 +147,49 @@ export function renderContentStep(pane: HTMLElement, ctx: StepCtx): void {
   }
   secBox.append(menu);
   pane.append(secBox);
+}
+
+/** Several pages in one browser: personal + event + club at once. */
+function pagesRow(): HTMLElement {
+  const pages = listPages();
+  const wrap = el('div', { class: 'field pages-row' });
+  if (pages.length === 1 && pages[0]![1] === 'Untitled page') {
+    // single empty page: no switcher noise
+    return wrap;
+  }
+  wrap.append(el('span', { class: 'label', text: 'My pages' }));
+  const chips = el('div', { class: 'chips-row' });
+  for (const [id, name, active] of pages) {
+    const chip = el('button', {
+      type: 'button',
+      class: `chip${active ? ' chip-active' : ''}`,
+      'aria-pressed': String(active),
+      text: name,
+    });
+    chip.addEventListener('click', () => {
+      if (active) return;
+      switchPage(id);
+      location.reload();
+    });
+    chips.append(chip);
+    if (active && pages.length > 1) {
+      const del = el('button', { type: 'button', class: 'icon-btn', 'aria-label': `Delete page ${name}`, text: '✕' });
+      del.addEventListener('click', () => {
+        if (!confirm(`Delete the page "${name}"? This cannot be undone.`)) return;
+        deletePage(id);
+        location.reload();
+      });
+      chips.append(del);
+    }
+  }
+  const add = el('button', { type: 'button', class: 'chip', text: '+ New page' });
+  add.addEventListener('click', () => {
+    newPage();
+    location.reload();
+  });
+  chips.append(add);
+  wrap.append(chips);
+  return wrap;
 }
 
 /** One-click example content; doubles as page types (event, business, club...). */

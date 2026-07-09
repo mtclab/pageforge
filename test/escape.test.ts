@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { esc, escAttr, safeUrl, textToHtml } from '../src/engine/escape.js';
+import { entityEncode, esc, escAttr, safeUrl, textToHtml } from '../src/engine/escape.js';
 import { detectKind } from '../src/engine/links.js';
 
 describe('esc / escAttr', () => {
@@ -35,6 +35,12 @@ describe('safeUrl', () => {
     expect(url).not.toBeNull();
     expect(url).not.toContain('<');
     expect(url).not.toContain('"');
+  });
+});
+
+describe('entityEncode', () => {
+  it('encodes every char as a numeric entity', () => {
+    expect(entityEncode('a@b')).toBe('&#97;&#64;&#98;');
   });
 });
 

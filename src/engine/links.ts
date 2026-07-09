@@ -1,4 +1,4 @@
-import { escAttr, esc, safeUrl } from './escape.js';
+import { entityEncode, escAttr, esc, safeUrl } from './escape.js';
 import type { Link, LinkKind } from './types.js';
 
 /** Guess the platform from a URL so we can show the right icon. */
@@ -53,7 +53,9 @@ export function renderLinks(links: Link[]): string {
       const kind = link.kind ?? detectKind(link.url);
       const label = esc(link.label.trim() || link.url.trim());
       if (!url) return `<span>${label}</span>`;
-      return `<a href="${escAttr(url)}">${iconSvg(kind)}<span>${label}</span></a>`;
+      // mailto targets are entity-encoded against address scrapers
+      const href = url.startsWith('mailto:') ? entityEncode(url) : escAttr(url);
+      return `<a href="${href}">${iconSvg(kind)}<span>${label}</span></a>`;
     });
   if (!items.length) return '';
   return `<nav class="links" aria-label="Links">\n${items.join('\n')}\n</nav>`;
