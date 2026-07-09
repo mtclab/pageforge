@@ -31,6 +31,29 @@ describe('fitAccent', () => {
   });
 });
 
+/**
+ * Themes must not hardcode values the override system owns (issue #4).
+ * .page max-width must be a var or none; photo rules must not set
+ * border-radius; body font-size stays base-owned.
+ */
+describe('theme css lint: no hardcoded override-owned values', () => {
+  for (const theme of THEMES) {
+    it(theme.id, () => {
+      const pageBlocks = [...theme.css.matchAll(/\.page[^{]*\{[^}]*\}/gs)].map((m) => m[0]);
+      for (const block of pageBlocks) {
+        const mw = block.match(/max-width:\s*([^;]+);/);
+        if (mw) expect(mw[1]!.trim(), `${theme.id} .page max-width`).toMatch(/^(none|var\(--page-max\))$/);
+      }
+      const photoBlocks = [...theme.css.matchAll(/\.photo[^{]*\{[^}]*\}/gs)].map((m) => m[0]);
+      for (const block of photoBlocks) {
+        expect(block, `${theme.id} photo block`).not.toContain('border-radius');
+      }
+      expect(theme.css, `${theme.id} body font-size`).not.toMatch(/body\s*\{[^}]*font-size/s);
+      expect(parseFloat(theme.pageMax), `${theme.id} pageMax`).toBeGreaterThan(20);
+    });
+  }
+});
+
 describe('style overrides', () => {
   it('photo shape override lands in the body class', () => {
     const data: SiteData = {
@@ -40,22 +63,40 @@ describe('style overrides', () => {
     };
     expect(renderSite(data, THEMES[0]!).html).toContain('photo-square');
   });
-  it('width + text overrides land in the css after theme css', () => {
-    const data: SiteData = { ...base, meta: { ...base.meta, width: 'wide', textScale: 'l' } };
-    const { css } = renderSite(data, THEMES[0]!);
-    expect(css).toContain('max-width: 54rem');
-    expect(css).toContain('* 1.12');
-    expect(css.indexOf('your style choices')).toBeGreaterThan(css.indexOf('theme: slate'));
+  it('width + text overrides resolve into :root vars for EVERY theme', () => {
+    for (const theme of THEMES) {
+      const data: SiteData = {
+        ...base,
+        meta: { themeId: theme.id, paletteId: theme.defaults.paletteId, fontId: theme.defaults.fontId, width: 'wide', textScale: 'l' },
+      };
+      const { css } = renderSite(data, theme);
+      const expected = `${Number((parseFloat(theme.pageMax) * 1.25).toFixed(2))}rem`;
+      expect(css, theme.id).toContain(`--page-max: ${expected};`);
+      expect(css, theme.id).toContain('--text-factor: 1.12;');
+    }
   });
-  it('custom accent is fitted and re-declared last', () => {
+  it('photo radius override resolves for EVERY theme', () => {
+    for (const theme of THEMES) {
+      const data: SiteData = {
+        ...base,
+        photo: { dataUrl: 'data:image/jpeg;base64,AA==' },
+        meta: { themeId: theme.id, paletteId: theme.defaults.paletteId, fontId: theme.defaults.fontId, photoShape: 'square' },
+      };
+      const { css } = renderSite(data, theme);
+      expect(css, theme.id).toContain('--photo-radius: 0;');
+    }
+  });
+  it('custom accent is fitted into the :root vars', () => {
     const data: SiteData = { ...base, meta: { ...base.meta, accent: '#ffff00' } };
     const { css } = renderSite(data, THEMES[0]!);
-    const m = css.match(/your style choices \*\/\n:root \{ --accent: (#[0-9a-f]{6});/);
+    const m = css.match(/--accent: (#[0-9a-f]{6});/);
     expect(m).not.toBeNull();
     expect(contrast(m![1]!, '#fafaf8')).toBeGreaterThanOrEqual(4.5);
   });
-  it('no overrides -> no override block (snapshots stay stable)', () => {
+  it('defaults resolve to the theme values', () => {
     const { css } = renderSite(base, THEMES[0]!);
-    expect(css).not.toContain('your style choices');
+    expect(css).toContain('--page-max: 42rem;');
+    expect(css).toContain('--text-factor: 1;');
+    expect(css).toContain('--photo-radius: 50%;');
   });
 });

@@ -85,6 +85,12 @@ export interface ThemePack {
   palettes: Palette[];
   /** Theme-specific structural CSS, appended after the base CSS. */
   css: string;
+  /**
+   * The theme's natural content width, e.g. "42rem". Feeds --page-max;
+   * the user's width choice scales it (narrow x0.85, wide x1.25). Themes
+   * must NOT hardcode .page max-width in css (lint-tested).
+   */
+  pageMax: string;
   defaults: { paletteId: string; fontId: string };
 }
 

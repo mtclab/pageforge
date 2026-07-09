@@ -7,7 +7,6 @@ import type { ThemePack } from '../../engine/types.js';
 
 const css = `/* theme: terminal */
 .page {
-  max-width: 44rem;
   margin: 0 auto;
   padding: clamp(1.5rem, 4vw, 3rem) 1.25rem 3rem;
 }
@@ -22,7 +21,6 @@ const css = `/* theme: terminal */
 .hero .photo {
   width: 120px; height: 120px;
   border: 2px solid var(--accent);
-  border-radius: 2px;
   image-rendering: pixelated;
   margin-bottom: 1rem;
 }
@@ -59,6 +57,7 @@ export const terminal: ThemePack = {
   tagline: 'Playful and techy',
   layout: 'card-stack',
   photoShape: 'square',
+  pageMax: '44rem',
   fonts: [
     {
       id: 'mono',

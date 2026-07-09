@@ -7,7 +7,6 @@ import type { ThemePack } from '../../engine/types.js';
 
 const css = `/* theme: slate */
 .page {
-  max-width: 42rem;
   margin: 0 auto;
   padding: clamp(2rem, 5vw, 4rem) 1.25rem 3rem;
 }
@@ -35,6 +34,7 @@ export const slate: ThemePack = {
   tagline: 'Minimal and calm',
   layout: 'centered-column',
   photoShape: 'circle',
+  pageMax: '42rem',
   fonts: [
     {
       id: 'system',

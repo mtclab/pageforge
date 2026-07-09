@@ -15,7 +15,6 @@ body {
   min-height: 100vh;
 }
 .page {
-  max-width: 42rem;
   margin: 0 auto;
   padding: clamp(2rem, 5vw, 4rem) 1.25rem 3rem;
 }
@@ -75,6 +74,7 @@ export const aurora: ThemePack = {
   tagline: 'Dark and atmospheric',
   layout: 'centered-column',
   photoShape: 'circle',
+  pageMax: '42rem',
   fonts: [
     {
       id: 'system',
