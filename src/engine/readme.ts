@@ -18,42 +18,19 @@ Hi ${name}! This folder IS your website. Every file here has a job:
 
 ${files}
 
-Want to see it right now? Double-click \`index.html\` and it opens in your browser. It works even without internet - but only you can see it. To let other people see it, you need to put it online. Pick one of the options below.
+Want to see it right now? Double-click \`index.html\` and it opens in your browser. It works even without internet - but only you can see it. To let other people see it, put the files on any web host.
 
-## Option 1: Netlify Drop - online in about 2 minutes (easiest)
+## Putting it online
 
-1. If this is still a zip file, unzip it first: right-click the zip and choose "Extract All" (Windows) or double-click it (Mac). You should now have a normal folder with \`index.html\` inside.
-2. Open this address in your browser: https://app.netlify.com/drop
-3. Drag the WHOLE FOLDER (not the zip file) from your computer onto the page, where it says to drop your site folder.
-4. Wait a few seconds. You should now see a link that looks like \`something-random-12345.netlify.app\`. That is your website, live on the internet. Click it to check.
-5. Important: create a free account when Netlify asks (it takes a minute). Without an account your site is deleted after an hour. With an account it stays up for free, and you can rename the link to something nicer under Site configuration > Change site name.
+First, if this is still a zip file, unzip it (right-click > "Extract All" on Windows, double-click on Mac). Then pick any host - your site is plain HTML and CSS, so every host on the planet can serve it, nothing to install. Some free ones:
 
-To update your site later: sign in to Netlify, open your site, go to the Deploys tab, and drag the folder in again.
+- **Netlify Drop** - drag the folder onto https://app.netlify.com/drop and you are online. Their guide: https://docs.netlify.com/deploy/create-deploys/#drag-and-drop
+- **Neocities** - made exactly for personal pages like this: https://neocities.org - guide: https://neocities.org/tutorials
+- **GitHub Pages** - free and solid: https://pages.github.com
+- **Cloudflare Pages** - drag-and-drop upload: https://developers.cloudflare.com/pages/get-started/direct-upload/
+- **Your own web host (webhotel)** - if you already pay for hosting: upload the files into the folder your domain serves (usually \`public_html\`, \`www\` or \`htdocs\`) with the host's file manager or any FTP program (for example https://filezilla-project.org). Your host's own help pages cover this.
 
-## Option 2: GitHub Pages (free, a few more steps)
-
-1. Create a free account at https://github.com/signup if you do not have one.
-2. Once signed in, click the + button in the top right corner and choose "New repository".
-3. In the "Repository name" box, type exactly: \`YOURUSERNAME.github.io\` - but replace YOURUSERNAME with the username you picked when signing up. Leave everything else as it is and click the green "Create repository" button.
-4. On the next page, click the small link that says "uploading an existing file".
-5. Drag ALL the files from this folder (not the folder itself - open it and select everything inside) onto the page.
-6. Click the green "Commit changes" button at the bottom.
-7. Wait a minute or two, then visit \`https://YOURUSERNAME.github.io\` in your browser. You should see your website.
-
-To update later: open your repository on GitHub, click "Add file" > "Upload files", and upload the changed files again.
-
-## Option 3: Cloudflare Pages (free)
-
-1. Create a free account at https://dash.cloudflare.com/sign-up
-2. In the left menu, choose "Workers & Pages", then "Create", then pick the "Pages" tab.
-3. Choose "Upload assets" (direct upload).
-4. Give your project a name - this becomes part of your address, like \`yourname.pages.dev\`.
-5. Drag this folder onto the upload area and click "Deploy site".
-6. After a few seconds you get your link. Click it to check.
-
-## Option 4: your own web host (webhotel)
-
-If you already pay for web hosting: open your host's control panel, go to the File Manager, and upload everything from this folder into the folder your domain serves (usually \`public_html\`, \`www\` or \`htdocs\`) - \`index.html\` must end up directly in it. FTP works too (for example FileZilla, with the FTP details from your host's control panel). The site is plain HTML and CSS, so any host can serve it - nothing to install, no database.
+Whichever you pick: \`index.html\` must end up directly in the folder being served, not inside a subfolder.
 
 ## Changing your site later
 
