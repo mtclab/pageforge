@@ -44,7 +44,11 @@ function blend(hex: string, toward: [number, number, number], t: number): string
 export function fitAccent(accent: string, bg: string): string {
   if (!hexToRgb(accent)) return accent;
   if (contrast(accent, bg) >= 4.5) return accent;
-  const toward: [number, number, number] = luminance(bg) > 0.5 ? [0, 0, 0] : [255, 255, 255];
+  // Head toward whichever pole actually reads on this bg (mid-gray bgs
+  // can only be beaten by black, even though they feel "dark").
+  const black: [number, number, number] = [0, 0, 0];
+  const white: [number, number, number] = [255, 255, 255];
+  const toward = contrast('#000000', bg) >= contrast('#ffffff', bg) ? black : white;
   for (let t = 0.05; t <= 1; t += 0.05) {
     const candidate = blend(accent, toward, t);
     if (contrast(candidate, bg) >= 4.5) return candidate;

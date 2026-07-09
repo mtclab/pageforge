@@ -343,6 +343,88 @@ export function renderCustomizeStep(pane: HTMLElement, ctx: StepCtx): void {
   vibes.append(vibeRow);
   pane.append(vibes);
 
+  // #9 slice 2: full color designer (advanced door)
+  const designer = el('details', { class: 'group designer' });
+  designer.append(el('summary', { text: 'Design your own colors (advanced)' }));
+  designer.open = Boolean(data.meta.customPalette);
+  const basePalette = theme.palettes.find((p) => p.id === data.meta.paletteId) ?? theme.palettes[0]!;
+  const current = data.meta.customPalette ?? {
+    bg: basePalette.vars.bg,
+    surface: basePalette.vars.surface,
+    text: basePalette.vars.text,
+    muted: basePalette.vars.muted,
+    accent: basePalette.vars.accent,
+  };
+  designer.append(
+    el('p', {
+      class: 'hint',
+      text: 'Pick any five colors. If a combination would be hard to read, we nudge it just enough to stay readable - always.',
+    }),
+  );
+  const fields: [keyof typeof current, string][] = [
+    ['bg', 'Background'],
+    ['surface', 'Cards'],
+    ['text', 'Text'],
+    ['muted', 'Quiet text'],
+    ['accent', 'Accent'],
+  ];
+  const designRow = el('div', { class: 'chips-row' });
+  for (const [key, label] of fields) {
+    const cell = el('label', { class: 'design-cell' });
+    const input = el('input', { type: 'color', 'aria-label': `${label} color` });
+    input.value = current[key]!;
+    input.addEventListener('input', () => {
+      current[key] = input.value;
+      data.meta.customPalette = { ...current };
+      onChange();
+    });
+    input.addEventListener('change', () => onChange(true));
+    cell.append(input, el('span', { class: 'hint', text: label }));
+    designRow.append(cell);
+  }
+  designer.append(designRow);
+  if (data.meta.customPalette) {
+    const clear = el('button', { type: 'button', class: 'chip', text: 'Back to theme colors' });
+    clear.addEventListener('click', () => {
+      delete data.meta.customPalette;
+      onChange(true);
+    });
+    designer.append(clear);
+  }
+  pane.append(designer);
+
+  // #9 slice 3: share a look as a small file
+  const portRow = el('div', { class: 'chips-row' });
+  const exportBtn = el('button', { type: 'button', class: 'chip', text: 'Export this look (.json)' });
+  exportBtn.addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify({ pageforgeTheme: 1, meta: data.meta }, null, 2)], {
+      type: 'application/json',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = el('a', { href: url, download: 'my-look.pageforge-theme.json' });
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  });
+  const importInput = el('input', { type: 'file', accept: '.json,application/json', class: 'visually-hidden' });
+  const importBtn = el('button', { type: 'button', class: 'chip', text: 'Load a look file' });
+  importBtn.addEventListener('click', () => importInput.click());
+  importInput.addEventListener('change', async () => {
+    const file = importInput.files?.[0];
+    if (!file) return;
+    try {
+      const parsed = JSON.parse(await file.text()) as { pageforgeTheme?: number; meta?: SiteData['meta'] };
+      if (parsed.pageforgeTheme !== 1 || typeof parsed.meta?.themeId !== 'string') throw new Error('shape');
+      data.meta = parsed.meta;
+      onChange(true);
+    } catch {
+      portRow.append(el('span', { class: 'error', text: 'That does not look like a pageforge look file.' }));
+    }
+  });
+  portRow.append(exportBtn, importBtn, importInput);
+  pane.append(portRow);
+
   // #9 slice 1: freeze the current look as a reusable named theme
   const saveLook = el('button', { type: 'button', class: 'chip', text: 'Save this look as your own theme' });
   saveLook.addEventListener('click', () => {

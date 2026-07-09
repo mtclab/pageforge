@@ -1,4 +1,4 @@
-import { accentContrastFor, fitAccent, luminance } from './color.js';
+import { accentContrastFor, contrast, fitAccent, luminance } from './color.js';
 import { BASE_CSS, rootVars, type StyleVars } from './css.js';
 import { escAttr, esc } from './escape.js';
 import { renderSection } from './sections/blocks.js';
@@ -25,9 +25,31 @@ export function resolveFont(theme: ThemePack, fontId: string): Font {
     ?? theme.fonts[0]!;
 }
 
-/** Palette with the user's custom accent (contrast-fitted) applied - for favicon/og rendering. */
+const HEX_RE = /^#[0-9a-f]{6}$/;
+
+/**
+ * The palette actually rendered: theme palette, or the user's fully custom
+ * colors (theme designer), plus the custom accent - every user-supplied
+ * pair contrast-guarded so an unreadable page cannot exist.
+ */
 export function effectivePalette(data: SiteData, theme: ThemePack): Palette {
-  const palette = resolvePalette(theme, data.meta.paletteId);
+  let palette = resolvePalette(theme, data.meta.paletteId);
+
+  const cp = data.meta.customPalette;
+  if (cp && [cp.bg, cp.surface, cp.text, cp.muted, cp.accent].every((c) => HEX_RE.test(c ?? ''))) {
+    const bg = cp.bg;
+    const text = fitAccent(cp.text, bg);
+    // surface must carry body text too; fall back to bg when it cannot
+    const surface = contrast(text, cp.surface) >= 4.5 ? cp.surface : bg;
+    const muted = fitAccent(cp.muted, bg);
+    const accent = fitAccent(cp.accent, bg);
+    palette = {
+      id: 'custom',
+      name: 'Custom',
+      vars: { bg, surface, text, muted, accent, 'accent-contrast': accentContrastFor(accent) },
+    };
+  }
+
   if (!data.meta.accent) return palette;
   const fitted = fitAccent(data.meta.accent, palette.vars.bg);
   return {

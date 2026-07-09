@@ -63,6 +63,11 @@ export interface SiteData {
     background?: 'dots' | 'grid' | 'lines' | 'wash-top' | 'wash-corner';
     /** Follow the visitor's dark mode using the theme's darkest palette. */
     autoDark?: boolean;
+    /**
+     * Fully custom colors (theme designer). Every pair is contrast-guarded
+     * at render time, so an unreadable page cannot be produced.
+     */
+    customPalette?: { bg: string; surface: string; text: string; muted: string; accent: string };
   };
 }
 

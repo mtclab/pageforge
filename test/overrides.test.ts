@@ -150,6 +150,31 @@ describe('style overrides', () => {
     expect(m).not.toBeNull();
     expect(contrast(m![1]!, '#17191c')).toBeGreaterThanOrEqual(4.5);
   });
+  it('custom palette (designer) is contrast-guarded even with hostile picks', () => {
+    const nasty = [
+      { bg: '#ffffff', surface: '#ffffff', text: '#ffffff', muted: '#fefefe', accent: '#ffff00' },
+      { bg: '#000000', surface: '#000000', text: '#010101', muted: '#111111', accent: '#000011' },
+      { bg: '#7f7f7f', surface: '#808080', text: '#7f7f7f', muted: '#808080', accent: '#7f7f7f' },
+    ];
+    for (const cp of nasty) {
+      const data: SiteData = { ...base, meta: { ...base.meta, customPalette: cp } };
+      const { css } = renderSite(data, THEMES[0]!);
+      const get = (v: string) => css.match(new RegExp(`--${v}: (#[0-9a-f]{6})`))![1]!;
+      expect(contrast(get('text'), get('bg'))).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(get('accent'), get('bg'))).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(get('muted'), get('bg'))).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(get('accent-contrast'), get('accent'))).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(get('text'), get('surface'))).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+  it('invalid custom palette is ignored', () => {
+    const data: SiteData = {
+      ...base,
+      meta: { ...base.meta, customPalette: { bg: 'red', surface: 'x', text: '', muted: '1', accent: 'javascript:' } },
+    };
+    const { css } = renderSite(data, THEMES[0]!);
+    expect(css).toContain('--bg: #fafaf8;'); // slate paper stays
+  });
   it('defaults resolve to the theme values', () => {
     const { css } = renderSite(base, THEMES[0]!);
     expect(css).toContain('--page-max: 42rem;');
