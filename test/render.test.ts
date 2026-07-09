@@ -80,6 +80,12 @@ describe('renderSite', () => {
     expect(html).not.toContain('og:image');
   });
 
+  it('html lang follows data.lang, defaults to en, rejects garbage', () => {
+    expect(renderSite(FIXTURES.minimal!, THEMES[0]!).html).toContain('<html lang="en">');
+    expect(renderSite({ ...FIXTURES.minimal!, lang: 'fi' }, THEMES[0]!).html).toContain('<html lang="fi">');
+    expect(renderSite({ ...FIXTURES.minimal!, lang: '"><script>' }, THEMES[0]!).html).toContain('<html lang="en">');
+  });
+
   it('photo only renders when provided', () => {
     const without = renderSite(FIXTURES.minimal!, THEMES[0]!);
     expect(without.html).not.toContain('assets/photo.jpg');

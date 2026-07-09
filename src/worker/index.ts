@@ -96,6 +96,9 @@ function validateSiteData(data: SiteData): string | null {
     if (m[1]!.length > MAX_IMAGE_B64) return 'an image is too large';
   }
   if (typeof data.meta?.themeId !== 'string') return 'missing theme';
+  if (data.lang !== undefined && !/^[a-z]{2,3}(-[a-zA-Z0-9-]{1,10})?$/.test(data.lang)) {
+    return 'bad language code';
+  }
   return null;
 }
 

@@ -57,6 +57,36 @@ export function renderContentStep(pane: HTMLElement, ctx: StepCtx): void {
     ),
   );
 
+  // Page language: sets html lang on the generated site (screen readers,
+  // hyphenation, search). The wizard UI itself stays English.
+  const langSelect = el('select', { 'aria-label': 'Language of your page' });
+  const LANGS: [string, string][] = [
+    ['en', 'English'],
+    ['fi', 'Suomi'],
+    ['sv', 'Svenska'],
+    ['de', 'Deutsch'],
+    ['fr', 'Français'],
+    ['es', 'Español'],
+    ['it', 'Italiano'],
+    ['pt', 'Português'],
+    ['nl', 'Nederlands'],
+    ['da', 'Dansk'],
+    ['no', 'Norsk'],
+    ['et', 'Eesti'],
+    ['pl', 'Polski'],
+    ['uk', 'Українська'],
+    ['ja', '日本語'],
+  ];
+  for (const [code, label] of LANGS) {
+    langSelect.append(el('option', { value: code, text: label }));
+  }
+  langSelect.value = data.lang ?? 'en';
+  langSelect.addEventListener('change', () => {
+    data.lang = langSelect.value;
+    onChange();
+  });
+  pane.append(labeled('Language of your page', langSelect, 'What language you write your content in.'));
+
   pane.append(renderPhotoField(ctx));
 
   // Links
@@ -74,12 +104,24 @@ export function renderContentStep(pane: HTMLElement, ctx: StepCtx): void {
       link.label = v;
       onChange();
     });
+    const up = el('button', { type: 'button', class: 'icon-btn', 'aria-label': `Move link ${i + 1} up`, text: '↑' });
+    const down = el('button', { type: 'button', class: 'icon-btn', 'aria-label': `Move link ${i + 1} down`, text: '↓' });
+    up.disabled = i === 0;
+    down.disabled = i === data.links.length - 1;
+    up.addEventListener('click', () => {
+      data.links.splice(i - 1, 0, ...data.links.splice(i, 1));
+      onChange(true);
+    });
+    down.addEventListener('click', () => {
+      data.links.splice(i + 1, 0, ...data.links.splice(i, 1));
+      onChange(true);
+    });
     const remove = el('button', { type: 'button', class: 'icon-btn', 'aria-label': `Remove link ${i + 1}`, text: '✕' });
     remove.addEventListener('click', () => {
       data.links.splice(i, 1);
       onChange(true);
     });
-    row.append(urlInput, labelInput, remove);
+    row.append(urlInput, labelInput, up, down, remove);
     linksBox.append(row);
   });
   const addLink = el('button', { type: 'button', class: 'chip', text: '+ Add a link' });

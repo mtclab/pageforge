@@ -25,11 +25,23 @@ function initWizard(): void {
   const prevBtn = document.getElementById('prev') as HTMLButtonElement;
   const nextBtn = document.getElementById('next') as HTMLButtonElement;
 
+  // "Draft saved" pulse: autosave is invisible otherwise, and invisible
+  // safety reads as no safety.
+  const savedNote = el('span', { class: 'saved-note', text: 'Draft saved', 'aria-hidden': 'true' });
+  document.querySelector('.topbar')?.insertBefore(savedNote, document.getElementById('preview-toggle'));
+  let savedTimer: ReturnType<typeof setTimeout> | undefined;
+  function pulseSaved(): void {
+    savedNote.classList.add('show');
+    clearTimeout(savedTimer);
+    savedTimer = setTimeout(() => savedNote.classList.remove('show'), 1200);
+  }
+
   const ctx: StepCtx = {
     data: state.data,
     onChange(structural = false) {
       ctx.data = state.data;
       saveState(state);
+      pulseSaved();
       schedulePreview(iframe, state.data);
       if (structural) renderPane();
     },
