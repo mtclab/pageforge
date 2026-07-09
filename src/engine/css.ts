@@ -7,6 +7,12 @@ export interface StyleVars {
   textFactor: number;
   /** "50%" | "16px" | "0" from the effective photo shape. */
   photoRadius: string;
+  /** Spacing multiplier: compact 0.7, normal 1, airy 1.35. */
+  density: number;
+  /** Corner radius for user-picked section surfaces. */
+  sectionRadius: string;
+  /** Box shadow for user-picked section surfaces. */
+  sectionShadow: string;
 }
 
 /** Reset + shared structure every theme builds on. Themes append their own CSS after this. */
@@ -46,7 +52,24 @@ a:hover { text-decoration-thickness: 2px; }
 .links a:hover { text-decoration: underline; }
 .links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
 
-.section { margin-top: 2.5rem; }
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
 .section h2 { margin-bottom: 0.8rem; }
 .section p + p { margin-top: 0.8rem; }
 
@@ -101,6 +124,9 @@ export function rootVars(palette: Palette, font: Font, style: StyleVars): string
   --page-max: ${style.pageMax};
   --text-factor: ${style.textFactor};
   --photo-radius: ${style.photoRadius};
+  --density: ${style.density};
+  --section-radius: ${style.sectionRadius};
+  --section-shadow: ${style.sectionShadow};
 }
 `;
 }

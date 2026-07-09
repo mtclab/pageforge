@@ -39,6 +39,13 @@ export function effectivePalette(data: SiteData, theme: ThemePack): Palette {
 const WIDTH_SCALE = { narrow: 0.85, normal: 1, wide: 1.25 } as const;
 const TEXT_FACTOR = { s: 0.92, m: 1, l: 1.12 } as const;
 const PHOTO_RADIUS = { circle: '50%', rounded: '16px', square: '0' } as const;
+const DENSITY = { compact: 0.7, normal: 1, airy: 1.35 } as const;
+const SECTION_RADIUS = { sharp: '0', soft: '12px', round: '22px' } as const;
+const SECTION_SHADOW = {
+  none: 'none',
+  soft: '0 1px 3px rgba(0, 0, 0, 0.08)',
+  lifted: '0 10px 28px -10px rgba(0, 0, 0, 0.28)',
+} as const;
 
 /**
  * Everything the Style step controls, resolved to CSS custom property
@@ -54,10 +61,16 @@ export function styleVars(data: SiteData, theme: ThemePack): StyleVars {
     : theme.pageMax;
   const scaleKey = data.meta.textScale ?? 'm';
   const shape = data.meta.photoShape ?? theme.photoShape;
+  const densityKey = data.meta.density ?? 'normal';
+  const cornersKey = data.meta.corners ?? 'soft';
+  const shadowKey = data.meta.shadow ?? 'soft';
   return {
     pageMax,
     textFactor: TEXT_FACTOR[scaleKey in TEXT_FACTOR ? scaleKey : 'm'],
     photoRadius: PHOTO_RADIUS[shape in PHOTO_RADIUS ? shape : theme.photoShape],
+    density: DENSITY[densityKey in DENSITY ? densityKey : 'normal'],
+    sectionRadius: SECTION_RADIUS[cornersKey in SECTION_RADIUS ? cornersKey : 'soft'],
+    sectionShadow: SECTION_SHADOW[shadowKey in SECTION_SHADOW ? shadowKey : 'soft'],
   };
 }
 
@@ -89,7 +102,8 @@ export function renderSite(data: SiteData, theme: ThemePack, opts: RenderOptions
 
   const description = data.tagline?.trim();
   const photoShape = data.meta.photoShape ?? theme.photoShape;
-  const bodyClass = `layout-${theme.layout} photo-${photoShape}${data.photo ? ' has-photo' : ''}`;
+  const surfaceClass = data.meta.surface ? ` surface-${data.meta.surface}` : '';
+  const bodyClass = `layout-${theme.layout} photo-${photoShape}${surfaceClass}${data.photo ? ' has-photo' : ''}`;
 
   const ogExtras = opts.baseUrl
     ? `<meta property="og:image" content="${escAttr(opts.baseUrl)}/assets/og.png">

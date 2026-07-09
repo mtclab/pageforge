@@ -154,6 +154,72 @@ export function renderCustomizeStep(pane: HTMLElement, ctx: StepCtx): void {
     ),
   );
 
+  // Feel: section surface + its corners/shadow, spacing density
+  const surfaceRow = choiceRow<'theme' | 'card' | 'flat' | 'bordered' | 'tinted'>(
+    'Sections',
+    [
+      { value: 'theme', name: "Theme's own" },
+      { value: 'card', name: 'Cards' },
+      { value: 'flat', name: 'Flat' },
+      { value: 'bordered', name: 'Bordered' },
+      { value: 'tinted', name: 'Tinted' },
+    ],
+    data.meta.surface ?? 'theme',
+    (v) => {
+      if (v === 'theme') delete data.meta.surface;
+      else data.meta.surface = v;
+      onChange(true);
+    },
+  );
+  pane.append(surfaceRow);
+
+  if (data.meta.surface && data.meta.surface !== 'flat') {
+    pane.append(
+      choiceRow(
+        'Corners',
+        [
+          { value: 'sharp', name: 'Sharp' },
+          { value: 'soft', name: 'Soft' },
+          { value: 'round', name: 'Round' },
+        ],
+        data.meta.corners ?? 'soft',
+        (v) => {
+          data.meta.corners = v;
+          onChange(true);
+        },
+      ),
+      choiceRow(
+        'Shadow',
+        [
+          { value: 'none', name: 'None' },
+          { value: 'soft', name: 'Soft' },
+          { value: 'lifted', name: 'Lifted' },
+        ],
+        data.meta.shadow ?? 'soft',
+        (v) => {
+          data.meta.shadow = v;
+          onChange(true);
+        },
+      ),
+    );
+  }
+
+  pane.append(
+    choiceRow(
+      'Spacing',
+      [
+        { value: 'compact', name: 'Compact' },
+        { value: 'normal', name: 'Normal' },
+        { value: 'airy', name: 'Airy' },
+      ],
+      data.meta.density ?? 'normal',
+      (v) => {
+        data.meta.density = v;
+        onChange(true);
+      },
+    ),
+  );
+
   const surprise = el('button', { type: 'button', class: 'chip', text: 'Surprise me' });
   surprise.addEventListener('click', () => {
     surpriseCounter += 1;
