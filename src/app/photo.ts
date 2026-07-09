@@ -4,6 +4,18 @@ import type { StepCtx } from './steps/content.js';
 const VIEW = 220; // on-screen crop viewport (CSS px)
 const OUT = 512; // exported square JPEG size
 
+/** Gallery photos: keep aspect, cap the long edge, re-encode as JPEG. */
+export async function fileToResizedDataUrl(file: File, maxEdge = 1024): Promise<string> {
+  const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+  const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  canvas.getContext('2d')!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  return canvas.toDataURL('image/jpeg', 0.82);
+}
+
 /**
  * Photo field: pick -> zoom/pan crop -> square JPEG data URL in state.
  * Everything happens locally; the photo never leaves the browser.
@@ -33,7 +45,7 @@ export function renderPhotoField(ctx: StepCtx): HTMLElement {
     const file = input.files?.[0];
     if (!file) return;
     try {
-      const bitmap = await createImageBitmap(file);
+      const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
       cropHost.replaceChildren(cropUi(bitmap, ctx));
       pick.hidden = true;
       note.hidden = true;

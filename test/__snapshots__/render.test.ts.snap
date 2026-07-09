@@ -63,6 +63,15 @@ a:hover { text-decoration-thickness: 2px; }
   padding: 0.2rem 0.8rem;
 }
 
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
 footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
 footer a { color: inherit; }
 
@@ -140,6 +149,9 @@ exports[`renderSite > snapshot: atelier x full > html 1`] = `
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Anna Virtanen</title>
 <meta name="description" content="Gardener, baker, occasional poet">
+<meta property="og:title" content="Anna Virtanen">
+<meta property="og:description" content="Gardener, baker, occasional poet">
+<meta property="og:type" content="website">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -189,6 +201,13 @@ exports[`renderSite > snapshot: atelier x full > html 1`] = `
 <section class="section section-custom" aria-labelledby="sec-5-h">
 <h2 id="sec-5-h">Reading now</h2>
 <p>Braiding Sweetgrass by Robin Wall Kimmerer.</p>
+</section>
+<section class="section section-gallery" aria-labelledby="sec-6-h">
+<h2 id="sec-6-h">From the garden</h2>
+<ul class="gallery">
+<li><img src="assets/gallery-6-1.jpg" alt="" loading="lazy"></li>
+<li><img src="assets/gallery-6-2.jpg" alt="" loading="lazy"></li>
+</ul>
 </section>
 </main>
 <footer>
@@ -262,6 +281,15 @@ a:hover { text-decoration-thickness: 2px; }
   border-radius: 999px;
   padding: 0.2rem 0.8rem;
 }
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
 
 footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
 footer a { color: inherit; }
@@ -340,6 +368,9 @@ exports[`renderSite > snapshot: atelier x hostile > html 1`] = `
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>&lt;script&gt;alert(1)&lt;/script&gt; "O'Brien" &amp; Sons</title>
 <meta name="description" content="&lt;img src=x onerror=alert(1)&gt; שלום 🌱">
+<meta property="og:title" content="&lt;script&gt;alert(1)&lt;/script&gt; &quot;O'Brien&quot; &amp; Sons">
+<meta property="og:description" content="&lt;img src=x onerror=alert(1)&gt; שלום 🌱">
+<meta property="og:type" content="website">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -459,6 +490,15 @@ a:hover { text-decoration-thickness: 2px; }
   padding: 0.2rem 0.8rem;
 }
 
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
 footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
 footer a { color: inherit; }
 
@@ -535,10 +575,625 @@ exports[`renderSite > snapshot: atelier x minimal > html 1`] = `
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Anna Virtanen</title>
+<meta property="og:title" content="Anna Virtanen">
+<meta property="og:type" content="website">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
 </head>
 <body class="layout-split-hero photo-rounded">
+<div class="page">
+<header class="hero">
+<h1>Anna Virtanen</h1>
+</header>
+<main></main>
+<footer>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+"
+`;
+
+exports[`renderSite > snapshot: aurora x full > css 1`] = `
+":root {
+  --bg: #0a0e12;
+  --surface: #141a20;
+  --text: #eef2f0;
+  --muted: #9fb0ab;
+  --accent: #6fe3a1;
+  --accent-contrast: #06210f;
+  --font-body: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-heading: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: clamp(1.9rem, 1.4rem + 2.5vw, 3rem); }
+h2 { font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; }
+.photo-circle .hero .photo { border-radius: 50%; }
+.photo-rounded .hero .photo { border-radius: 16px; }
+
+.tagline { color: var(--muted); }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: 2.5rem; }
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: aurora */
+body {
+  background:
+    radial-gradient(120% 80% at 50% -10%,
+      color-mix(in srgb, var(--accent) 10%, var(--bg)), var(--bg) 60%)
+    fixed;
+  min-height: 100vh;
+}
+.page {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 4rem) 1.25rem 3rem;
+}
+.hero { text-align: center; padding-bottom: 2.5rem; }
+.hero .photo {
+  width: 128px;
+  height: 128px;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 0 24px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.hero h1 {
+  color: var(--accent);
+  background: linear-gradient(90deg, var(--accent),
+    color-mix(in srgb, var(--accent) 45%, #ffffff));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.01em;
+}
+.tagline { margin-top: 0.5rem; }
+.hero .links { justify-content: center; margin-top: 1.75rem; }
+.links a {
+  padding: 0.35rem 0.95rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  border-radius: 999px;
+  color: var(--accent);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.links a:hover {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  text-decoration: none;
+}
+.section h2 {
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.section {
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  box-shadow: 0 1px 12px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.section:last-child { border-bottom: none; box-shadow: none; }
+.chips li { border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+footer { text-align: center; }
+@media (prefers-reduced-motion: reduce) {
+  .links a { transition: none; }
+}
+"
+`;
+
+exports[`renderSite > snapshot: aurora x full > html 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anna Virtanen</title>
+<meta name="description" content="Gardener, baker, occasional poet">
+<meta property="og:title" content="Anna Virtanen">
+<meta property="og:description" content="Gardener, baker, occasional poet">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-centered-column photo-circle has-photo">
+<div class="page">
+<header class="hero">
+<img class="photo" src="assets/photo.jpg" alt="Anna Virtanen" width="512" height="512">
+<h1>Anna Virtanen</h1>
+<p class="tagline">Gardener, baker, occasional poet</p>
+<nav class="links" aria-label="Links">
+<a href="https://www.instagram.com/annav"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 7.5zm0 2A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5zM17.5 5.5a1 1 0 1 1-1 1 1 1 0 0 1 1-1z"/></svg><span>Instagram</span></a>
+<a href="https://github.com/annav"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.2-3.4-1.2-.4-1.1-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.6-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.2-.4-1.2.1-2.6 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.6.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9v2.7c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg><span>GitHub</span></a>
+<a href="mailto:anna@example.com"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 5v14h20V5H2zm18 2v.4l-8 5.3-8-5.3V7h16zM4 17V9.8l8 5.3 8-5.3V17H4z"/></svg><span>Email me</span></a>
+<a href="https://annasgarden.example.com/"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm7.9 9h-3.4a15.6 15.6 0 0 0-1.2-5.7A8 8 0 0 1 19.9 11zM12 4.1c.9 1.1 2 3.3 2.4 6.9H9.6c.3-3.6 1.5-5.8 2.4-6.9zM8.7 5.3A15.6 15.6 0 0 0 7.5 11H4.1a8 8 0 0 1 4.6-5.7zM4.1 13h3.4c.1 2.2.6 4.1 1.2 5.7A8 8 0 0 1 4.1 13zm5.5 0h4.8c-.3 3.6-1.5 5.8-2.4 6.9-.9-1.1-2-3.3-2.4-6.9zm5.7 5.7c.6-1.6 1-3.5 1.2-5.7h3.4a8 8 0 0 1-4.6 5.7z"/></svg><span>My blog</span></a>
+</nav>
+</header>
+<main>
+<section class="section section-about" aria-labelledby="sec-1-h">
+<h2 id="sec-1-h">About</h2>
+<p>I grow things: vegetables, sourdough starters and the occasional poem.</p>
+<p>Based in Tampere, Finland.<br>Usually found in the garden.</p>
+</section>
+<section class="section section-projects" aria-labelledby="sec-2-h">
+<h2 id="sec-2-h">Things I make</h2>
+<ul class="projects">
+<li class="project"><h3><a href="https://annasgarden.example.com/">Community garden blog</a></h3>
+<p class="desc">Weekly notes from plot 14.</p></li>
+<li class="project"><h3>Sourdough starter guide</h3>
+<p class="desc">A beginner-friendly PDF.</p></li>
+<li class="project"><h3>Poetry zine</h3></li>
+</ul>
+</section>
+<section class="section section-hobbies" aria-labelledby="sec-3-h">
+<h2 id="sec-3-h">Things I love</h2>
+<ul class="chips">
+<li>Gardening</li>
+<li>Baking</li>
+<li>Watercolors</li>
+<li>Winter swimming</li>
+</ul>
+</section>
+<section class="section section-contact" aria-labelledby="sec-4-h">
+<h2 id="sec-4-h">Get in touch</h2>
+<p><a href="mailto:anna@example.com">anna@example.com</a></p>
+<p>Happy to chat about gardens or bread.</p>
+</section>
+<section class="section section-custom" aria-labelledby="sec-5-h">
+<h2 id="sec-5-h">Reading now</h2>
+<p>Braiding Sweetgrass by Robin Wall Kimmerer.</p>
+</section>
+<section class="section section-gallery" aria-labelledby="sec-6-h">
+<h2 id="sec-6-h">From the garden</h2>
+<ul class="gallery">
+<li><img src="assets/gallery-6-1.jpg" alt="" loading="lazy"></li>
+<li><img src="assets/gallery-6-2.jpg" alt="" loading="lazy"></li>
+</ul>
+</section>
+</main>
+<footer>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+"
+`;
+
+exports[`renderSite > snapshot: aurora x hostile > css 1`] = `
+":root {
+  --bg: #0a0e12;
+  --surface: #141a20;
+  --text: #eef2f0;
+  --muted: #9fb0ab;
+  --accent: #6fe3a1;
+  --accent-contrast: #06210f;
+  --font-body: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-heading: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: clamp(1.9rem, 1.4rem + 2.5vw, 3rem); }
+h2 { font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; }
+.photo-circle .hero .photo { border-radius: 50%; }
+.photo-rounded .hero .photo { border-radius: 16px; }
+
+.tagline { color: var(--muted); }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: 2.5rem; }
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: aurora */
+body {
+  background:
+    radial-gradient(120% 80% at 50% -10%,
+      color-mix(in srgb, var(--accent) 10%, var(--bg)), var(--bg) 60%)
+    fixed;
+  min-height: 100vh;
+}
+.page {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 4rem) 1.25rem 3rem;
+}
+.hero { text-align: center; padding-bottom: 2.5rem; }
+.hero .photo {
+  width: 128px;
+  height: 128px;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 0 24px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.hero h1 {
+  color: var(--accent);
+  background: linear-gradient(90deg, var(--accent),
+    color-mix(in srgb, var(--accent) 45%, #ffffff));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.01em;
+}
+.tagline { margin-top: 0.5rem; }
+.hero .links { justify-content: center; margin-top: 1.75rem; }
+.links a {
+  padding: 0.35rem 0.95rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  border-radius: 999px;
+  color: var(--accent);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.links a:hover {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  text-decoration: none;
+}
+.section h2 {
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.section {
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  box-shadow: 0 1px 12px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.section:last-child { border-bottom: none; box-shadow: none; }
+.chips li { border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+footer { text-align: center; }
+@media (prefers-reduced-motion: reduce) {
+  .links a { transition: none; }
+}
+"
+`;
+
+exports[`renderSite > snapshot: aurora x hostile > html 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>&lt;script&gt;alert(1)&lt;/script&gt; "O'Brien" &amp; Sons</title>
+<meta name="description" content="&lt;img src=x onerror=alert(1)&gt; שלום 🌱">
+<meta property="og:title" content="&lt;script&gt;alert(1)&lt;/script&gt; &quot;O'Brien&quot; &amp; Sons">
+<meta property="og:description" content="&lt;img src=x onerror=alert(1)&gt; שלום 🌱">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-centered-column photo-circle has-photo">
+<div class="page">
+<header class="hero">
+<img class="photo" src="assets/photo.jpg" alt="&lt;script&gt;alert(1)&lt;/script&gt; &quot;O'Brien&quot; &amp; Sons" width="512" height="512">
+<h1>&lt;script&gt;alert(1)&lt;/script&gt; "O'Brien" &amp; Sons</h1>
+<p class="tagline">&lt;img src=x onerror=alert(1)&gt; שלום 🌱</p>
+<nav class="links" aria-label="Links">
+<span>Click "here"</span>
+<a href="https://example.com/?q=%22%3E%3Cscript%3Ealert(1)%3C/script%3E"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm7.9 9h-3.4a15.6 15.6 0 0 0-1.2-5.7A8 8 0 0 1 19.9 11zM12 4.1c.9 1.1 2 3.3 2.4 6.9H9.6c.3-3.6 1.5-5.8 2.4-6.9zM8.7 5.3A15.6 15.6 0 0 0 7.5 11H4.1a8 8 0 0 1 4.6-5.7zM4.1 13h3.4c.1 2.2.6 4.1 1.2 5.7A8 8 0 0 1 4.1 13zm5.5 0h4.8c-.3 3.6-1.5 5.8-2.4 6.9-.9-1.1-2-3.3-2.4-6.9zm5.7 5.7c.6-1.6 1-3.5 1.2-5.7h3.4a8 8 0 0 1-4.6 5.7z"/></svg><span>&lt;b&gt;bold&lt;/b&gt;</span></a>
+<span>data sneaky</span>
+<span>vbscript:evil</span>
+<span>spaces only</span>
+</nav>
+</header>
+<main>
+<section class="section section-about" aria-labelledby="sec-1-h">
+<h2 id="sec-1-h">About</h2>
+<p>Line with &lt;tags&gt; &amp; "quotes"</p>
+<p>&lt;script&gt;alert('about')&lt;/script&gt;</p>
+</section>
+<section class="section section-projects" aria-labelledby="sec-2-h">
+<h2 id="sec-2-h">&lt;script&gt;t&lt;/script&gt;</h2>
+<ul class="projects">
+<li class="project"><h3>proj "x"</h3>
+<p class="desc">&lt;svg onload=alert(1)&gt;</p></li>
+</ul>
+</section>
+<section class="section section-hobbies" aria-labelledby="sec-3-h">
+<h2 id="sec-3-h">Things I love</h2>
+<ul class="chips">
+<li>&lt;li&gt;escape me</li>
+<li>normal</li>
+</ul>
+</section>
+<section class="section section-contact" aria-labelledby="sec-4-h">
+<h2 id="sec-4-h">Get in touch</h2>
+<p><a href="mailto:evil&quot;@ex.com&lt;script&gt;">evil"@ex.com&lt;script&gt;</a></p>
+<p>note &amp; &lt;note&gt;</p>
+</section>
+<section class="section section-custom" aria-labelledby="sec-5-h">
+<h2 id="sec-5-h">T &amp; &lt;T&gt;</h2>
+<p>body &lt;script&gt;alert(3)&lt;/script&gt;</p>
+</section>
+</main>
+<footer>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+"
+`;
+
+exports[`renderSite > snapshot: aurora x minimal > css 1`] = `
+":root {
+  --bg: #0a0e12;
+  --surface: #141a20;
+  --text: #eef2f0;
+  --muted: #9fb0ab;
+  --accent: #6fe3a1;
+  --accent-contrast: #06210f;
+  --font-body: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-heading: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: clamp(1.9rem, 1.4rem + 2.5vw, 3rem); }
+h2 { font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; }
+.photo-circle .hero .photo { border-radius: 50%; }
+.photo-rounded .hero .photo { border-radius: 16px; }
+
+.tagline { color: var(--muted); }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: 2.5rem; }
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: aurora */
+body {
+  background:
+    radial-gradient(120% 80% at 50% -10%,
+      color-mix(in srgb, var(--accent) 10%, var(--bg)), var(--bg) 60%)
+    fixed;
+  min-height: 100vh;
+}
+.page {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 4rem) 1.25rem 3rem;
+}
+.hero { text-align: center; padding-bottom: 2.5rem; }
+.hero .photo {
+  width: 128px;
+  height: 128px;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 0 24px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.hero h1 {
+  color: var(--accent);
+  background: linear-gradient(90deg, var(--accent),
+    color-mix(in srgb, var(--accent) 45%, #ffffff));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.01em;
+}
+.tagline { margin-top: 0.5rem; }
+.hero .links { justify-content: center; margin-top: 1.75rem; }
+.links a {
+  padding: 0.35rem 0.95rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  border-radius: 999px;
+  color: var(--accent);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.links a:hover {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  text-decoration: none;
+}
+.section h2 {
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.section {
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  box-shadow: 0 1px 12px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.section:last-child { border-bottom: none; box-shadow: none; }
+.chips li { border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+footer { text-align: center; }
+@media (prefers-reduced-motion: reduce) {
+  .links a { transition: none; }
+}
+"
+`;
+
+exports[`renderSite > snapshot: aurora x minimal > html 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anna Virtanen</title>
+<meta property="og:title" content="Anna Virtanen">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-centered-column photo-circle">
 <div class="page">
 <header class="hero">
 <h1>Anna Virtanen</h1>
@@ -615,6 +1270,15 @@ a:hover { text-decoration-thickness: 2px; }
   border-radius: 999px;
   padding: 0.2rem 0.8rem;
 }
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
 
 footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
 footer a { color: inherit; }
@@ -695,6 +1359,9 @@ exports[`renderSite > snapshot: ink x full > html 1`] = `
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Anna Virtanen</title>
 <meta name="description" content="Gardener, baker, occasional poet">
+<meta property="og:title" content="Anna Virtanen">
+<meta property="og:description" content="Gardener, baker, occasional poet">
+<meta property="og:type" content="website">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -744,6 +1411,13 @@ exports[`renderSite > snapshot: ink x full > html 1`] = `
 <section class="section section-custom" aria-labelledby="sec-5-h">
 <h2 id="sec-5-h">Reading now</h2>
 <p>Braiding Sweetgrass by Robin Wall Kimmerer.</p>
+</section>
+<section class="section section-gallery" aria-labelledby="sec-6-h">
+<h2 id="sec-6-h">From the garden</h2>
+<ul class="gallery">
+<li><img src="assets/gallery-6-1.jpg" alt="" loading="lazy"></li>
+<li><img src="assets/gallery-6-2.jpg" alt="" loading="lazy"></li>
+</ul>
 </section>
 </main>
 <footer>
@@ -817,6 +1491,15 @@ a:hover { text-decoration-thickness: 2px; }
   border-radius: 999px;
   padding: 0.2rem 0.8rem;
 }
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
 
 footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
 footer a { color: inherit; }
@@ -897,6 +1580,9 @@ exports[`renderSite > snapshot: ink x hostile > html 1`] = `
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>&lt;script&gt;alert(1)&lt;/script&gt; "O'Brien" &amp; Sons</title>
 <meta name="description" content="&lt;img src=x onerror=alert(1)&gt; שלום 🌱">
+<meta property="og:title" content="&lt;script&gt;alert(1)&lt;/script&gt; &quot;O'Brien&quot; &amp; Sons">
+<meta property="og:description" content="&lt;img src=x onerror=alert(1)&gt; שלום 🌱">
+<meta property="og:type" content="website">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -1016,6 +1702,15 @@ a:hover { text-decoration-thickness: 2px; }
   padding: 0.2rem 0.8rem;
 }
 
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
 footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
 footer a { color: inherit; }
 
@@ -1094,6 +1789,8 @@ exports[`renderSite > snapshot: ink x minimal > html 1`] = `
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Anna Virtanen</title>
+<meta property="og:title" content="Anna Virtanen">
+<meta property="og:type" content="website">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -1175,6 +1872,15 @@ a:hover { text-decoration-thickness: 2px; }
   padding: 0.2rem 0.8rem;
 }
 
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
 footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
 footer a { color: inherit; }
 
@@ -1228,6 +1934,9 @@ exports[`renderSite > snapshot: linen x full > html 1`] = `
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Anna Virtanen</title>
 <meta name="description" content="Gardener, baker, occasional poet">
+<meta property="og:title" content="Anna Virtanen">
+<meta property="og:description" content="Gardener, baker, occasional poet">
+<meta property="og:type" content="website">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -1277,6 +1986,13 @@ exports[`renderSite > snapshot: linen x full > html 1`] = `
 <section class="section section-custom" aria-labelledby="sec-5-h">
 <h2 id="sec-5-h">Reading now</h2>
 <p>Braiding Sweetgrass by Robin Wall Kimmerer.</p>
+</section>
+<section class="section section-gallery" aria-labelledby="sec-6-h">
+<h2 id="sec-6-h">From the garden</h2>
+<ul class="gallery">
+<li><img src="assets/gallery-6-1.jpg" alt="" loading="lazy"></li>
+<li><img src="assets/gallery-6-2.jpg" alt="" loading="lazy"></li>
+</ul>
 </section>
 </main>
 <footer>
@@ -1351,6 +2067,15 @@ a:hover { text-decoration-thickness: 2px; }
   padding: 0.2rem 0.8rem;
 }
 
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
 footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
 footer a { color: inherit; }
 
@@ -1404,6 +2129,9 @@ exports[`renderSite > snapshot: linen x hostile > html 1`] = `
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>&lt;script&gt;alert(1)&lt;/script&gt; "O'Brien" &amp; Sons</title>
 <meta name="description" content="&lt;img src=x onerror=alert(1)&gt; שלום 🌱">
+<meta property="og:title" content="&lt;script&gt;alert(1)&lt;/script&gt; &quot;O'Brien&quot; &amp; Sons">
+<meta property="og:description" content="&lt;img src=x onerror=alert(1)&gt; שלום 🌱">
+<meta property="og:type" content="website">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -1523,6 +2251,15 @@ a:hover { text-decoration-thickness: 2px; }
   padding: 0.2rem 0.8rem;
 }
 
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
 footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
 footer a { color: inherit; }
 
@@ -1575,6 +2312,576 @@ exports[`renderSite > snapshot: linen x minimal > html 1`] = `
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Anna Virtanen</title>
+<meta property="og:title" content="Anna Virtanen">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-centered-column photo-circle">
+<div class="page">
+<header class="hero">
+<h1>Anna Virtanen</h1>
+</header>
+<main></main>
+<footer>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+"
+`;
+
+exports[`renderSite > snapshot: meadow x full > css 1`] = `
+":root {
+  --bg: #eef6e8;
+  --surface: #ffffff;
+  --text: #22301c;
+  --muted: #4c5a44;
+  --accent: #2f6b2a;
+  --accent-contrast: #ffffff;
+  --font-body: 'Trebuchet MS', 'Segoe UI', system-ui, sans-serif;
+  --font-heading: 'Trebuchet MS', 'Segoe UI', system-ui, sans-serif;
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: clamp(1.9rem, 1.4rem + 2.5vw, 3rem); }
+h2 { font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; }
+.photo-circle .hero .photo { border-radius: 50%; }
+.photo-rounded .hero .photo { border-radius: 16px; }
+
+.tagline { color: var(--muted); }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: 2.5rem; }
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: meadow */
+.page {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 3.5rem) 1.25rem 3.5rem;
+}
+.hero { text-align: center; padding-bottom: 2.25rem; }
+.hero .photo {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 1.4rem;
+  border: 6px solid var(--surface);
+  box-shadow: 0 6px 22px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.hero h1 { letter-spacing: -0.01em; }
+.tagline { margin-top: 0.5rem; }
+.hero .links { justify-content: center; margin-top: 1.6rem; }
+.section {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 1.9rem 1.9rem 2rem;
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.section h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--accent);
+}
+.section h2::before {
+  content: "";
+  width: 0.7em;
+  height: 0.7em;
+  flex: none;
+  border-radius: 50% 50% 50% 0;
+  background: var(--accent);
+}
+.projects { gap: 1.2rem; }
+.project h3 { font-size: 1.12rem; color: var(--accent); }
+.chips li {
+  border: none;
+  background: color-mix(in srgb, var(--accent) 15%, var(--surface));
+  color: var(--text);
+  padding: 0.3rem 0.95rem;
+}
+footer { text-align: center; }
+"
+`;
+
+exports[`renderSite > snapshot: meadow x full > html 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anna Virtanen</title>
+<meta name="description" content="Gardener, baker, occasional poet">
+<meta property="og:title" content="Anna Virtanen">
+<meta property="og:description" content="Gardener, baker, occasional poet">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-centered-column photo-circle has-photo">
+<div class="page">
+<header class="hero">
+<img class="photo" src="assets/photo.jpg" alt="Anna Virtanen" width="512" height="512">
+<h1>Anna Virtanen</h1>
+<p class="tagline">Gardener, baker, occasional poet</p>
+<nav class="links" aria-label="Links">
+<a href="https://www.instagram.com/annav"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 7.5zm0 2A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5zM17.5 5.5a1 1 0 1 1-1 1 1 1 0 0 1 1-1z"/></svg><span>Instagram</span></a>
+<a href="https://github.com/annav"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.2-3.4-1.2-.4-1.1-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.6-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.2-.4-1.2.1-2.6 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.6.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9v2.7c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg><span>GitHub</span></a>
+<a href="mailto:anna@example.com"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 5v14h20V5H2zm18 2v.4l-8 5.3-8-5.3V7h16zM4 17V9.8l8 5.3 8-5.3V17H4z"/></svg><span>Email me</span></a>
+<a href="https://annasgarden.example.com/"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm7.9 9h-3.4a15.6 15.6 0 0 0-1.2-5.7A8 8 0 0 1 19.9 11zM12 4.1c.9 1.1 2 3.3 2.4 6.9H9.6c.3-3.6 1.5-5.8 2.4-6.9zM8.7 5.3A15.6 15.6 0 0 0 7.5 11H4.1a8 8 0 0 1 4.6-5.7zM4.1 13h3.4c.1 2.2.6 4.1 1.2 5.7A8 8 0 0 1 4.1 13zm5.5 0h4.8c-.3 3.6-1.5 5.8-2.4 6.9-.9-1.1-2-3.3-2.4-6.9zm5.7 5.7c.6-1.6 1-3.5 1.2-5.7h3.4a8 8 0 0 1-4.6 5.7z"/></svg><span>My blog</span></a>
+</nav>
+</header>
+<main>
+<section class="section section-about" aria-labelledby="sec-1-h">
+<h2 id="sec-1-h">About</h2>
+<p>I grow things: vegetables, sourdough starters and the occasional poem.</p>
+<p>Based in Tampere, Finland.<br>Usually found in the garden.</p>
+</section>
+<section class="section section-projects" aria-labelledby="sec-2-h">
+<h2 id="sec-2-h">Things I make</h2>
+<ul class="projects">
+<li class="project"><h3><a href="https://annasgarden.example.com/">Community garden blog</a></h3>
+<p class="desc">Weekly notes from plot 14.</p></li>
+<li class="project"><h3>Sourdough starter guide</h3>
+<p class="desc">A beginner-friendly PDF.</p></li>
+<li class="project"><h3>Poetry zine</h3></li>
+</ul>
+</section>
+<section class="section section-hobbies" aria-labelledby="sec-3-h">
+<h2 id="sec-3-h">Things I love</h2>
+<ul class="chips">
+<li>Gardening</li>
+<li>Baking</li>
+<li>Watercolors</li>
+<li>Winter swimming</li>
+</ul>
+</section>
+<section class="section section-contact" aria-labelledby="sec-4-h">
+<h2 id="sec-4-h">Get in touch</h2>
+<p><a href="mailto:anna@example.com">anna@example.com</a></p>
+<p>Happy to chat about gardens or bread.</p>
+</section>
+<section class="section section-custom" aria-labelledby="sec-5-h">
+<h2 id="sec-5-h">Reading now</h2>
+<p>Braiding Sweetgrass by Robin Wall Kimmerer.</p>
+</section>
+<section class="section section-gallery" aria-labelledby="sec-6-h">
+<h2 id="sec-6-h">From the garden</h2>
+<ul class="gallery">
+<li><img src="assets/gallery-6-1.jpg" alt="" loading="lazy"></li>
+<li><img src="assets/gallery-6-2.jpg" alt="" loading="lazy"></li>
+</ul>
+</section>
+</main>
+<footer>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+"
+`;
+
+exports[`renderSite > snapshot: meadow x hostile > css 1`] = `
+":root {
+  --bg: #eef6e8;
+  --surface: #ffffff;
+  --text: #22301c;
+  --muted: #4c5a44;
+  --accent: #2f6b2a;
+  --accent-contrast: #ffffff;
+  --font-body: system-ui, sans-serif;
+  --font-heading: system-ui, sans-serif;
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: clamp(1.9rem, 1.4rem + 2.5vw, 3rem); }
+h2 { font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; }
+.photo-circle .hero .photo { border-radius: 50%; }
+.photo-rounded .hero .photo { border-radius: 16px; }
+
+.tagline { color: var(--muted); }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: 2.5rem; }
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: meadow */
+.page {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 3.5rem) 1.25rem 3.5rem;
+}
+.hero { text-align: center; padding-bottom: 2.25rem; }
+.hero .photo {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 1.4rem;
+  border: 6px solid var(--surface);
+  box-shadow: 0 6px 22px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.hero h1 { letter-spacing: -0.01em; }
+.tagline { margin-top: 0.5rem; }
+.hero .links { justify-content: center; margin-top: 1.6rem; }
+.section {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 1.9rem 1.9rem 2rem;
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.section h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--accent);
+}
+.section h2::before {
+  content: "";
+  width: 0.7em;
+  height: 0.7em;
+  flex: none;
+  border-radius: 50% 50% 50% 0;
+  background: var(--accent);
+}
+.projects { gap: 1.2rem; }
+.project h3 { font-size: 1.12rem; color: var(--accent); }
+.chips li {
+  border: none;
+  background: color-mix(in srgb, var(--accent) 15%, var(--surface));
+  color: var(--text);
+  padding: 0.3rem 0.95rem;
+}
+footer { text-align: center; }
+"
+`;
+
+exports[`renderSite > snapshot: meadow x hostile > html 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>&lt;script&gt;alert(1)&lt;/script&gt; "O'Brien" &amp; Sons</title>
+<meta name="description" content="&lt;img src=x onerror=alert(1)&gt; שלום 🌱">
+<meta property="og:title" content="&lt;script&gt;alert(1)&lt;/script&gt; &quot;O'Brien&quot; &amp; Sons">
+<meta property="og:description" content="&lt;img src=x onerror=alert(1)&gt; שלום 🌱">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-centered-column photo-circle has-photo">
+<div class="page">
+<header class="hero">
+<img class="photo" src="assets/photo.jpg" alt="&lt;script&gt;alert(1)&lt;/script&gt; &quot;O'Brien&quot; &amp; Sons" width="512" height="512">
+<h1>&lt;script&gt;alert(1)&lt;/script&gt; "O'Brien" &amp; Sons</h1>
+<p class="tagline">&lt;img src=x onerror=alert(1)&gt; שלום 🌱</p>
+<nav class="links" aria-label="Links">
+<span>Click "here"</span>
+<a href="https://example.com/?q=%22%3E%3Cscript%3Ealert(1)%3C/script%3E"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm7.9 9h-3.4a15.6 15.6 0 0 0-1.2-5.7A8 8 0 0 1 19.9 11zM12 4.1c.9 1.1 2 3.3 2.4 6.9H9.6c.3-3.6 1.5-5.8 2.4-6.9zM8.7 5.3A15.6 15.6 0 0 0 7.5 11H4.1a8 8 0 0 1 4.6-5.7zM4.1 13h3.4c.1 2.2.6 4.1 1.2 5.7A8 8 0 0 1 4.1 13zm5.5 0h4.8c-.3 3.6-1.5 5.8-2.4 6.9-.9-1.1-2-3.3-2.4-6.9zm5.7 5.7c.6-1.6 1-3.5 1.2-5.7h3.4a8 8 0 0 1-4.6 5.7z"/></svg><span>&lt;b&gt;bold&lt;/b&gt;</span></a>
+<span>data sneaky</span>
+<span>vbscript:evil</span>
+<span>spaces only</span>
+</nav>
+</header>
+<main>
+<section class="section section-about" aria-labelledby="sec-1-h">
+<h2 id="sec-1-h">About</h2>
+<p>Line with &lt;tags&gt; &amp; "quotes"</p>
+<p>&lt;script&gt;alert('about')&lt;/script&gt;</p>
+</section>
+<section class="section section-projects" aria-labelledby="sec-2-h">
+<h2 id="sec-2-h">&lt;script&gt;t&lt;/script&gt;</h2>
+<ul class="projects">
+<li class="project"><h3>proj "x"</h3>
+<p class="desc">&lt;svg onload=alert(1)&gt;</p></li>
+</ul>
+</section>
+<section class="section section-hobbies" aria-labelledby="sec-3-h">
+<h2 id="sec-3-h">Things I love</h2>
+<ul class="chips">
+<li>&lt;li&gt;escape me</li>
+<li>normal</li>
+</ul>
+</section>
+<section class="section section-contact" aria-labelledby="sec-4-h">
+<h2 id="sec-4-h">Get in touch</h2>
+<p><a href="mailto:evil&quot;@ex.com&lt;script&gt;">evil"@ex.com&lt;script&gt;</a></p>
+<p>note &amp; &lt;note&gt;</p>
+</section>
+<section class="section section-custom" aria-labelledby="sec-5-h">
+<h2 id="sec-5-h">T &amp; &lt;T&gt;</h2>
+<p>body &lt;script&gt;alert(3)&lt;/script&gt;</p>
+</section>
+</main>
+<footer>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+"
+`;
+
+exports[`renderSite > snapshot: meadow x minimal > css 1`] = `
+":root {
+  --bg: #eef6e8;
+  --surface: #ffffff;
+  --text: #22301c;
+  --muted: #4c5a44;
+  --accent: #2f6b2a;
+  --accent-contrast: #ffffff;
+  --font-body: system-ui, sans-serif;
+  --font-heading: system-ui, sans-serif;
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: clamp(1.9rem, 1.4rem + 2.5vw, 3rem); }
+h2 { font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; }
+.photo-circle .hero .photo { border-radius: 50%; }
+.photo-rounded .hero .photo { border-radius: 16px; }
+
+.tagline { color: var(--muted); }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: 2.5rem; }
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: meadow */
+.page {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 3.5rem) 1.25rem 3.5rem;
+}
+.hero { text-align: center; padding-bottom: 2.25rem; }
+.hero .photo {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 1.4rem;
+  border: 6px solid var(--surface);
+  box-shadow: 0 6px 22px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.hero h1 { letter-spacing: -0.01em; }
+.tagline { margin-top: 0.5rem; }
+.hero .links { justify-content: center; margin-top: 1.6rem; }
+.section {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 1.9rem 1.9rem 2rem;
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.section h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--accent);
+}
+.section h2::before {
+  content: "";
+  width: 0.7em;
+  height: 0.7em;
+  flex: none;
+  border-radius: 50% 50% 50% 0;
+  background: var(--accent);
+}
+.projects { gap: 1.2rem; }
+.project h3 { font-size: 1.12rem; color: var(--accent); }
+.chips li {
+  border: none;
+  background: color-mix(in srgb, var(--accent) 15%, var(--surface));
+  color: var(--text);
+  padding: 0.3rem 0.95rem;
+}
+footer { text-align: center; }
+"
+`;
+
+exports[`renderSite > snapshot: meadow x minimal > html 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anna Virtanen</title>
+<meta property="og:title" content="Anna Virtanen">
+<meta property="og:type" content="website">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -1656,6 +2963,15 @@ a:hover { text-decoration-thickness: 2px; }
   padding: 0.2rem 0.8rem;
 }
 
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
 footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
 footer a { color: inherit; }
 
@@ -1700,6 +3016,9 @@ exports[`renderSite > snapshot: slate x full > html 1`] = `
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Anna Virtanen</title>
 <meta name="description" content="Gardener, baker, occasional poet">
+<meta property="og:title" content="Anna Virtanen">
+<meta property="og:description" content="Gardener, baker, occasional poet">
+<meta property="og:type" content="website">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -1749,6 +3068,13 @@ exports[`renderSite > snapshot: slate x full > html 1`] = `
 <section class="section section-custom" aria-labelledby="sec-5-h">
 <h2 id="sec-5-h">Reading now</h2>
 <p>Braiding Sweetgrass by Robin Wall Kimmerer.</p>
+</section>
+<section class="section section-gallery" aria-labelledby="sec-6-h">
+<h2 id="sec-6-h">From the garden</h2>
+<ul class="gallery">
+<li><img src="assets/gallery-6-1.jpg" alt="" loading="lazy"></li>
+<li><img src="assets/gallery-6-2.jpg" alt="" loading="lazy"></li>
+</ul>
 </section>
 </main>
 <footer>
@@ -1823,6 +3149,15 @@ a:hover { text-decoration-thickness: 2px; }
   padding: 0.2rem 0.8rem;
 }
 
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
 footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
 footer a { color: inherit; }
 
@@ -1867,6 +3202,9 @@ exports[`renderSite > snapshot: slate x hostile > html 1`] = `
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>&lt;script&gt;alert(1)&lt;/script&gt; "O'Brien" &amp; Sons</title>
 <meta name="description" content="&lt;img src=x onerror=alert(1)&gt; שלום 🌱">
+<meta property="og:title" content="&lt;script&gt;alert(1)&lt;/script&gt; &quot;O'Brien&quot; &amp; Sons">
+<meta property="og:description" content="&lt;img src=x onerror=alert(1)&gt; שלום 🌱">
+<meta property="og:type" content="website">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -1986,6 +3324,15 @@ a:hover { text-decoration-thickness: 2px; }
   padding: 0.2rem 0.8rem;
 }
 
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
 footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
 footer a { color: inherit; }
 
@@ -2029,6 +3376,8 @@ exports[`renderSite > snapshot: slate x minimal > html 1`] = `
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Anna Virtanen</title>
+<meta property="og:title" content="Anna Virtanen">
+<meta property="og:type" content="website">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -2110,6 +3459,15 @@ a:hover { text-decoration-thickness: 2px; }
   padding: 0.2rem 0.8rem;
 }
 
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
 footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
 footer a { color: inherit; }
 
@@ -2178,6 +3536,9 @@ exports[`renderSite > snapshot: terminal x full > html 1`] = `
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Anna Virtanen</title>
 <meta name="description" content="Gardener, baker, occasional poet">
+<meta property="og:title" content="Anna Virtanen">
+<meta property="og:description" content="Gardener, baker, occasional poet">
+<meta property="og:type" content="website">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -2227,6 +3588,13 @@ exports[`renderSite > snapshot: terminal x full > html 1`] = `
 <section class="section section-custom" aria-labelledby="sec-5-h">
 <h2 id="sec-5-h">Reading now</h2>
 <p>Braiding Sweetgrass by Robin Wall Kimmerer.</p>
+</section>
+<section class="section section-gallery" aria-labelledby="sec-6-h">
+<h2 id="sec-6-h">From the garden</h2>
+<ul class="gallery">
+<li><img src="assets/gallery-6-1.jpg" alt="" loading="lazy"></li>
+<li><img src="assets/gallery-6-2.jpg" alt="" loading="lazy"></li>
+</ul>
 </section>
 </main>
 <footer>
@@ -2301,6 +3669,15 @@ a:hover { text-decoration-thickness: 2px; }
   padding: 0.2rem 0.8rem;
 }
 
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
 footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
 footer a { color: inherit; }
 
@@ -2369,6 +3746,9 @@ exports[`renderSite > snapshot: terminal x hostile > html 1`] = `
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>&lt;script&gt;alert(1)&lt;/script&gt; "O'Brien" &amp; Sons</title>
 <meta name="description" content="&lt;img src=x onerror=alert(1)&gt; שלום 🌱">
+<meta property="og:title" content="&lt;script&gt;alert(1)&lt;/script&gt; &quot;O'Brien&quot; &amp; Sons">
+<meta property="og:description" content="&lt;img src=x onerror=alert(1)&gt; שלום 🌱">
+<meta property="og:type" content="website">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -2488,6 +3868,15 @@ a:hover { text-decoration-thickness: 2px; }
   padding: 0.2rem 0.8rem;
 }
 
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
 footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
 footer a { color: inherit; }
 
@@ -2555,6 +3944,8 @@ exports[`renderSite > snapshot: terminal x minimal > html 1`] = `
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Anna Virtanen</title>
+<meta property="og:title" content="Anna Virtanen">
+<meta property="og:type" content="website">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
 </head>

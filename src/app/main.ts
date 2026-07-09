@@ -1,5 +1,7 @@
 import { el } from './dom.js';
 import { renderGallery } from './gallery.js';
+import { decodeShare } from './share.js';
+import { renderSharedView } from './shared-view.js';
 import { schedulePreview } from './preview.js';
 import { loadState, saveState, type AppState } from './state.js';
 import { renderContentStep, type StepCtx } from './steps/content.js';
@@ -104,8 +106,11 @@ function initWizard(): void {
   schedulePreview(iframe, state.data);
 }
 
+const sharedData = decodeShare(location.hash);
 if (location.hash === '#gallery') {
   renderGallery();
+} else if (sharedData) {
+  renderSharedView(sharedData);
 } else {
   initWizard();
 }

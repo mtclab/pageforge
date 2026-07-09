@@ -14,6 +14,8 @@ describe('buildSiteFiles / buildZip', () => {
     expect(Object.keys(files).sort()).toEqual([
       'README.md',
       'assets/favicon.svg',
+      'assets/gallery-6-1.jpg',
+      'assets/gallery-6-2.jpg',
       'assets/photo.jpg',
       'index.html',
       'site.json',

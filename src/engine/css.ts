@@ -52,6 +52,15 @@ a:hover { text-decoration-thickness: 2px; }
   padding: 0.2rem 0.8rem;
 }
 
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
 footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
 footer a { color: inherit; }
 

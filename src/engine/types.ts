@@ -24,7 +24,8 @@ export type Section =
     }
   | { kind: 'hobbies'; title?: string; items: string[] }
   | { kind: 'contact'; email?: string; note?: string }
-  | { kind: 'custom'; title: string; text: string };
+  | { kind: 'custom'; title: string; text: string }
+  | { kind: 'gallery'; title?: string; photos: { dataUrl: string }[] };
 
 export interface SiteData {
   version: 1;
@@ -85,3 +86,21 @@ export interface RenderedSite {
 /** Path the generated HTML uses for the photo; the zip and the preview both key off this. */
 export const PHOTO_PATH = 'assets/photo.jpg';
 export const FAVICON_PATH = 'assets/favicon.svg';
+
+/** Stable asset path for gallery photo j of section i (1-based section index). */
+export function galleryPath(sectionIdx: number, photoIdx: number): string {
+  return `assets/gallery-${sectionIdx}-${photoIdx + 1}.jpg`;
+}
+
+/** Every embedded image the site references: [zip path, data URL]. */
+export function collectImages(data: SiteData): [string, string][] {
+  const images: [string, string][] = [];
+  if (data.photo) images.push([PHOTO_PATH, data.photo.dataUrl]);
+  data.sections.forEach((section, i) => {
+    if (section.kind !== 'gallery') return;
+    section.photos.forEach((photo, j) => {
+      images.push([galleryPath(i + 1, j), photo.dataUrl]);
+    });
+  });
+  return images;
+}

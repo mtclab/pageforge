@@ -36,6 +36,14 @@
       "kind": "custom",
       "title": "Reading now",
       "text": "Braiding Sweetgrass by Robin Wall Kimmerer."
+    },
+    {
+      "kind": "gallery",
+      "title": "From the garden",
+      "photos": [
+        { "dataUrl": "data:image/jpeg;base64,/9j/gallery1" },
+        { "dataUrl": "data:image/jpeg;base64,/9j/gallery2" }
+      ]
     }
   ],
   "footerNote": "Made in Tampere",

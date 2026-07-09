@@ -24,11 +24,22 @@ export function resolveFont(theme: ThemePack, fontId: string): Font {
     ?? theme.fonts[0]!;
 }
 
+export interface RenderOptions {
+  /**
+   * Absolute URL the site will live at (no trailing slash). When known
+   * (hosted publish), enables og:image + canonical. Zip downloads omit it -
+   * we cannot know where the user will host.
+   */
+  baseUrl?: string;
+  /** Hosted pages get nofollow on user links + a host footer line. */
+  hosted?: boolean;
+}
+
 /**
  * Pure composition: SiteData + ThemePack -> complete static site.
  * No DOM, no clock, no randomness - same inputs give byte-identical output.
  */
-export function renderSite(data: SiteData, theme: ThemePack): RenderedSite {
+export function renderSite(data: SiteData, theme: ThemePack, opts: RenderOptions = {}): RenderedSite {
   const palette = resolvePalette(theme, data.meta.paletteId);
   const font = resolveFont(theme, data.meta.fontId);
 
@@ -42,20 +53,39 @@ export function renderSite(data: SiteData, theme: ThemePack): RenderedSite {
   const description = data.tagline?.trim();
   const bodyClass = `layout-${theme.layout} photo-${theme.photoShape}${data.photo ? ' has-photo' : ''}`;
 
+  const ogExtras = opts.baseUrl
+    ? `<meta property="og:image" content="${escAttr(opts.baseUrl)}/assets/og.png">
+<meta property="og:url" content="${escAttr(opts.baseUrl)}/">
+<link rel="canonical" href="${escAttr(opts.baseUrl)}/">
+`
+    : '';
+
+  let body = `${renderHero(data)}
+${sections.length ? `<main>\n${sections.join('\n')}\n</main>` : '<main></main>'}
+${renderFooter(data, opts.hosted)}`;
+
+  if (opts.hosted) {
+    // Hosted pages: outbound user links get nofollow (SEO-spam deterrent).
+    const footerAt = body.lastIndexOf('<footer>');
+    body =
+      body.slice(0, footerAt).replaceAll('<a href="http', '<a rel="nofollow noopener" href="http') +
+      body.slice(footerAt);
+  }
+
   const html = `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(name)}</title>
-${description ? `<meta name="description" content="${escAttr(description)}">\n` : ''}<link rel="icon" href="${FAVICON_PATH}" type="image/svg+xml">
+${description ? `<meta name="description" content="${escAttr(description)}">\n` : ''}<meta property="og:title" content="${escAttr(name)}">
+${description ? `<meta property="og:description" content="${escAttr(description)}">\n` : ''}<meta property="og:type" content="website">
+${ogExtras}<link rel="icon" href="${FAVICON_PATH}" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
 </head>
 <body class="${bodyClass}">
 <div class="page">
-${renderHero(data)}
-${sections.length ? `<main>\n${sections.join('\n')}\n</main>` : '<main></main>'}
-${renderFooter(data)}
+${body}
 </div>
 </body>
 </html>
