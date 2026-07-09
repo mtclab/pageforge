@@ -1,5 +1,5 @@
 import { renderFavicon } from '../engine/favicon.js';
-import { renderSite, resolveFont, resolvePalette } from '../engine/render.js';
+import { effectivePalette, renderSite, resolveFont } from '../engine/render.js';
 import { collectImages, type SiteData } from '../engine/types.js';
 import { getTheme } from '../themes/index.js';
 
@@ -195,7 +195,7 @@ function serveSite(request: Request, stored: StoredSite, slug: string, rest: str
     return new Response(css, { headers: { 'content-type': 'text/css; charset=utf-8', ...cache } });
   }
   if (rest === '/assets/favicon.svg') {
-    const palette = resolvePalette(theme, data.meta.paletteId);
+    const palette = effectivePalette(data, theme);
     const font = resolveFont(theme, data.meta.fontId);
     return new Response(renderFavicon(data.name, palette, font), {
       headers: { 'content-type': 'image/svg+xml', ...cache },

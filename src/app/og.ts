@@ -1,4 +1,4 @@
-import { resolveFont, resolvePalette } from '../engine/render.js';
+import { effectivePalette, resolveFont } from '../engine/render.js';
 import type { SiteData, ThemePack } from '../engine/types.js';
 
 /**
@@ -7,7 +7,7 @@ import type { SiteData, ThemePack } from '../engine/types.js';
  * the final URL is known so og:image can point at it).
  */
 export function renderOgCard(data: SiteData, theme: ThemePack): string {
-  const palette = resolvePalette(theme, data.meta.paletteId);
+  const palette = effectivePalette(data, theme);
   const font = resolveFont(theme, data.meta.fontId);
   const canvas = document.createElement('canvas');
   canvas.width = 1200;

@@ -36,7 +36,17 @@ export interface SiteData {
   links: Link[];
   sections: Section[];
   footerNote?: string;
-  meta: { themeId: string; paletteId: string; fontId: string };
+  meta: {
+    themeId: string;
+    paletteId: string;
+    fontId: string;
+    /** Style overrides on top of the theme; all optional and theme-safe. */
+    photoShape?: PhotoShape;
+    textScale?: 's' | 'm' | 'l';
+    width?: 'narrow' | 'normal' | 'wide';
+    /** Custom accent (#rrggbb); auto-adjusted to keep WCAG AA on the palette bg. */
+    accent?: string;
+  };
 }
 
 export type Layout = 'centered-column' | 'split-hero' | 'banner' | 'card-stack';
