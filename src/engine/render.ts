@@ -124,8 +124,9 @@ ${renderFooter(data, opts.hosted)}`;
       body.slice(footerAt);
   }
 
+  const lang = /^[a-z]{2,3}(-[a-zA-Z0-9-]{1,10})?$/.test(data.lang ?? '') ? data.lang! : 'en';
   const html = `<!doctype html>
-<html lang="en">
+<html lang="${escAttr(lang)}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

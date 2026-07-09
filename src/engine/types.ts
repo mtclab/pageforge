@@ -30,6 +30,8 @@ export type Section =
 export interface SiteData {
   version: 1;
   name: string;
+  /** BCP47 language of the page content (html lang). Defaults to "en". */
+  lang?: string;
   tagline?: string;
   /** Cropped square JPEG data URL, max 512x512. Produced by the wizard. */
   photo?: { dataUrl: string };

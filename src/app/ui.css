@@ -135,6 +135,13 @@ body {
 }
 #preview-frame.narrow { width: 390px; }
 .preview-toggle { display: none; }
+.saved-note {
+  font-size: 0.78rem;
+  color: var(--muted);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.saved-note.show { opacity: 1; }
 .preview-tools-right { display: inline-flex; align-items: center; gap: 0.6rem; }
 
 /* full-screen preview: iframe at the user's real window size */
