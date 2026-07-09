@@ -1,3 +1,4 @@
+import { publishEnabled } from '../config.js';
 import { el } from '../dom.js';
 import { renderPublishBox } from '../publish.js';
 import { encodeShare } from '../share.js';
@@ -49,7 +50,18 @@ export function renderDownloadStep(pane: HTMLElement, ctx: StepCtx): void {
   what.append(steps);
   pane.append(what);
 
-  if (data.name.trim()) pane.append(renderPublishBox(data));
+  if (publishEnabled()) {
+    if (data.name.trim()) pane.append(renderPublishBox(data));
+  } else {
+    pane.append(
+      el(
+        'p',
+        { class: 'hint coming-soon' },
+        el('span', { class: 'beta-tag', text: 'coming later' }),
+        ' We can host it for you - one click, no account. Not open yet; for now the zip + a free host above gets you online in minutes.',
+      ),
+    );
+  }
 
   // Share a preview without hosting anything
   const share = el('div', { class: 'group' }, el('h3', { text: 'Show it to someone first?' }));

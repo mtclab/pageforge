@@ -73,6 +73,20 @@
   <li>Name your project (this becomes <code>yourname.pages.dev</code>), drag the folder in, Deploy.</li>
 </ol>
 
+<h3>Option 4: your own web host (webhotel)</h3>
+<p>Already paying for web hosting (a "webhotel"), or want to own the whole stack? Your zip works there too:</p>
+<ol>
+  <li>Sign in to your host's control panel (often cPanel, Plesk or the host's own).</li>
+  <li>Open the File Manager and go to the folder your domain serves - usually called <code>public_html</code>, <code>www</code> or <code>htdocs</code>.</li>
+  <li>Upload everything from your unzipped folder there (most file managers accept the zip and can extract it on the server - make sure <code>index.html</code> ends up directly in that folder, not in a subfolder).</li>
+  <li>Visit your domain. Your site is up.</li>
+</ol>
+<p>Comfortable with FTP? Any FTP program (for example the free <a href="https://filezilla-project.org" rel="noopener">FileZilla</a>) does the same: connect with the FTP address, username and password from your host's control panel, and copy the files into the same folder. Since the site is plain HTML and CSS, every host on the planet can serve it - there is nothing to install, no database, no updates to maintain.</p>
+
+<div class="note">
+<p><strong>Coming later:</strong> hosting directly here at pageforge - one click, no account. It is not open yet; the options above are the way online for now.</p>
+</div>
+
 <h2>Changing your site later</h2>
 <ol>
   <li>Come back to the builder. If you are on the same device, your draft is still here.</li>

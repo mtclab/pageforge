@@ -31,6 +31,8 @@ interface AssetsFetcher {
 interface Env {
   SITES: KVNamespace;
   ASSETS: AssetsFetcher;
+  /** "true" opens hosted publish; anything else keeps the API closed. */
+  PUBLISH_ENABLED?: string;
 }
 
 interface StoredSite {
@@ -220,6 +222,10 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const { pathname } = url;
+
+    if (pathname.startsWith('/api/') && env.PUBLISH_ENABLED !== 'true') {
+      return json(503, { error: 'Hosting here is not open yet. Download the zip - the README gets you online in minutes.' });
+    }
 
     if (pathname === '/api/check' && request.method === 'GET') {
       const slug = (url.searchParams.get('slug') ?? '').toLowerCase().trim();

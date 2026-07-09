@@ -51,6 +51,10 @@ To update later: open your repository on GitHub, click "Add file" > "Upload file
 5. Drag this folder onto the upload area and click "Deploy site".
 6. After a few seconds you get your link. Click it to check.
 
+## Option 4: your own web host (webhotel)
+
+If you already pay for web hosting: open your host's control panel, go to the File Manager, and upload everything from this folder into the folder your domain serves (usually \`public_html\`, \`www\` or \`htdocs\`) - \`index.html\` must end up directly in it. FTP works too (for example FileZilla, with the FTP details from your host's control panel). The site is plain HTML and CSS, so any host can serve it - nothing to install, no database.
+
 ## Changing your site later
 
 Two ways:
