@@ -41,8 +41,10 @@ describe('buildSiteFiles / buildZip', () => {
     const files = buildSiteFiles(full as SiteData, theme);
     const readme = strFromU8(files['README.md']!);
     expect(readme).toContain('https://app.netlify.com/drop');
-    expect(readme).toContain('github.io');
-    expect(readme).toContain('dash.cloudflare.com');
+    expect(readme).toContain('pages.github.com');
+    expect(readme).toContain('neocities.org');
+    expect(readme).toContain('developers.cloudflare.com/pages');
+    expect(readme).toContain('public_html');
     expect(readme).toContain('site.json');
   });
 
