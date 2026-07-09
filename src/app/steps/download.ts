@@ -1,5 +1,7 @@
+import { getTheme } from '../../themes/index.js';
 import { publishEnabled } from '../config.js';
 import { el } from '../dom.js';
+import { renderOgCard } from '../og.js';
 import { renderPublishBox } from '../publish.js';
 import { encodeShare } from '../share.js';
 import { downloadZip } from '../zip.js';
@@ -17,6 +19,34 @@ export function renderDownloadStep(pane: HTMLElement, ctx: StepCtx): void {
       text: 'You get a zip file with your whole website inside - it is yours to keep and host anywhere.',
     }),
   );
+
+  // Pre-download checklist: friendly nudges, never blocking
+  const checks: { ok: boolean; text: string }[] = [
+    { ok: Boolean(data.name.trim()), text: 'Your name is set' },
+    { ok: Boolean(data.tagline?.trim()), text: 'A short line about you (shows in search results and shared links)' },
+    { ok: data.sections.some((s) => 'text' in s && s.text.trim()) || data.sections.length > 0, text: 'At least one section with content' },
+    { ok: data.links.length > 0 || data.sections.some((s) => s.kind === 'contact' && (s.email ?? '').trim() !== ''), text: 'A way to reach you (link or contact section)' },
+  ];
+  const list = el('ul', { class: 'checklist' });
+  for (const c of checks) {
+    list.append(el('li', { class: c.ok ? 'ok' : 'todo', text: `${c.ok ? '✓' : '○'} ${c.text}` }));
+  }
+  const checklist = el('div', { class: 'group' }, el('h3', { text: 'Quick check' }), list);
+  pane.append(checklist);
+
+  // Social share card preview (what messengers/social show for your page)
+  if (data.name.trim()) {
+    try {
+      const ogImg = el('img', { class: 'og-preview', alt: 'Preview of the card shown when your page is shared' });
+      ogImg.src = renderOgCard(data, getTheme(data.meta.themeId));
+      checklist.append(
+        el('p', { class: 'hint', text: 'When someone shares your page, it can look like this:' }),
+        ogImg,
+      );
+    } catch {
+      // canvas unavailable: skip the preview
+    }
+  }
 
   const btn = el('button', { type: 'button', class: 'primary big', text: 'Download your site (.zip)' });
   btn.addEventListener('click', () => downloadZip(data));

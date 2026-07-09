@@ -38,7 +38,8 @@ describe('renderSite', () => {
       expect(html.toLowerCase()).not.toContain('<img src=x');
       expect(html.toLowerCase()).not.toContain('<svg onload');
       // Every emitted href uses an allowed scheme (hostile schemes render as plain text).
-      const hrefs = [...html.matchAll(/href="([^"]*)"/g)].map((m) => m[1]!);
+      const decodeEntities = (s: string) => s.replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)));
+      const hrefs = [...html.matchAll(/href="([^"]*)"/g)].map((m) => decodeEntities(m[1]!));
       expect(hrefs.length).toBeGreaterThan(0);
       for (const href of hrefs) {
         expect(href).toMatch(/^(https?:|mailto:|style\.css$|assets\/)/);
@@ -84,6 +85,12 @@ describe('renderSite', () => {
     expect(renderSite(FIXTURES.minimal!, THEMES[0]!).html).toContain('<html lang="en">');
     expect(renderSite({ ...FIXTURES.minimal!, lang: 'fi' }, THEMES[0]!).html).toContain('<html lang="fi">');
     expect(renderSite({ ...FIXTURES.minimal!, lang: '"><script>' }, THEMES[0]!).html).toContain('<html lang="en">');
+  });
+
+  it('emails never appear as plain text in the output (scraper guard)', () => {
+    const { html } = renderSite(FIXTURES.full!, THEMES[0]!);
+    expect(html).not.toContain('anna@example.com');
+    expect(html).toContain('&#97;&#110;&#110;&#97;'); // "anna" encoded
   });
 
   it('photo only renders when provided', () => {

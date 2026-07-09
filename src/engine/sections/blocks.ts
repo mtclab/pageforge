@@ -1,4 +1,4 @@
-import { esc, escAttr, safeUrl, textToHtml } from '../escape.js';
+import { entityEncode, esc, escAttr, safeUrl, textToHtml } from '../escape.js';
 import { galleryPath, type Section } from '../types.js';
 
 /**
@@ -61,10 +61,11 @@ function renderContact(s: Extract<Section, { kind: 'contact' }>, idx: number): s
   if (s.email?.trim()) {
     const email = s.email.trim();
     const url = safeUrl(`mailto:${email}`);
+    // entity-encoded so plain-text scrapers do not harvest the address
     parts.push(
       url
-        ? `<p><a href="${escAttr(url)}">${esc(email)}</a></p>`
-        : `<p>${esc(email)}</p>`,
+        ? `<p><a href="${entityEncode(url)}">${entityEncode(email)}</a></p>`
+        : `<p>${entityEncode(email)}</p>`,
     );
   }
   if (s.note?.trim()) parts.push(textToHtml(s.note));

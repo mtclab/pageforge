@@ -35,6 +35,14 @@ export function safeUrl(raw: string): string | null {
 }
 
 /**
+ * Every character as a numeric HTML entity. Renders identically but keeps
+ * plain-text email harvesters from scraping addresses off generated pages.
+ */
+export function entityEncode(s: string): string {
+  return [...s].map((ch) => `&#${ch.codePointAt(0)};`).join('');
+}
+
+/**
  * Free text -> paragraphs. Escapes first, then blank lines split <p> blocks
  * and single newlines become <br>. No markdown in v1.
  */
