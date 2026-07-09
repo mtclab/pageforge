@@ -46,6 +46,11 @@ export interface SiteData {
     width?: 'narrow' | 'normal' | 'wide';
     /** Custom accent (#rrggbb); auto-adjusted to keep WCAG AA on the palette bg. */
     accent?: string;
+    /** Section presentation; absent = the theme's own styling. */
+    surface?: 'card' | 'flat' | 'bordered' | 'tinted';
+    corners?: 'sharp' | 'soft' | 'round';
+    shadow?: 'none' | 'soft' | 'lifted';
+    density?: 'compact' | 'normal' | 'airy';
   };
 }
 

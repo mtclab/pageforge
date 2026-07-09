@@ -93,6 +93,21 @@ describe('style overrides', () => {
     expect(m).not.toBeNull();
     expect(contrast(m![1]!, '#fafaf8')).toBeGreaterThanOrEqual(4.5);
   });
+  it('surface/corners/shadow/density land as body class + vars (v2a)', () => {
+    const data: SiteData = {
+      ...base,
+      meta: { ...base.meta, surface: 'card', corners: 'round', shadow: 'lifted', density: 'airy' },
+    };
+    const { html, css } = renderSite(data, THEMES[0]!);
+    expect(html).toContain('surface-card');
+    expect(css).toContain('--section-radius: 22px;');
+    expect(css).toContain('--section-shadow: 0 10px 28px -10px');
+    expect(css).toContain('--density: 1.35;');
+  });
+  it('no surface override -> no surface class (theme keeps its own look)', () => {
+    const { html } = renderSite(base, THEMES[0]!);
+    expect(html).not.toContain('surface-');
+  });
   it('defaults resolve to the theme values', () => {
     const { css } = renderSite(base, THEMES[0]!);
     expect(css).toContain('--page-max: 42rem;');

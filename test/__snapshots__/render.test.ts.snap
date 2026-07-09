@@ -13,6 +13,9 @@ exports[`renderSite > snapshot: atelier x full > css 1`] = `
   --page-max: 66rem;
   --text-factor: 1;
   --photo-radius: 16px;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* base */
@@ -51,7 +54,24 @@ a:hover { text-decoration-thickness: 2px; }
 .links a:hover { text-decoration: underline; }
 .links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
 
-.section { margin-top: 2.5rem; }
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
 .section h2 { margin-bottom: 0.8rem; }
 .section p + p { margin-top: 0.8rem; }
 
@@ -234,6 +254,9 @@ exports[`renderSite > snapshot: atelier x hostile > css 1`] = `
   --page-max: 66rem;
   --text-factor: 1;
   --photo-radius: 16px;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* base */
@@ -272,7 +295,24 @@ a:hover { text-decoration-thickness: 2px; }
 .links a:hover { text-decoration: underline; }
 .links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
 
-.section { margin-top: 2.5rem; }
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
 .section h2 { margin-bottom: 0.8rem; }
 .section p + p { margin-top: 0.8rem; }
 
@@ -444,6 +484,9 @@ exports[`renderSite > snapshot: atelier x minimal > css 1`] = `
   --page-max: 66rem;
   --text-factor: 1;
   --photo-radius: 16px;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* base */
@@ -482,7 +525,24 @@ a:hover { text-decoration-thickness: 2px; }
 .links a:hover { text-decoration: underline; }
 .links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
 
-.section { margin-top: 2.5rem; }
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
 .section h2 { margin-bottom: 0.8rem; }
 .section p + p { margin-top: 0.8rem; }
 
@@ -614,6 +674,9 @@ exports[`renderSite > snapshot: aurora x full > css 1`] = `
   --page-max: 42rem;
   --text-factor: 1;
   --photo-radius: 50%;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* base */
@@ -652,7 +715,24 @@ a:hover { text-decoration-thickness: 2px; }
 .links a:hover { text-decoration: underline; }
 .links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
 
-.section { margin-top: 2.5rem; }
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
 .section h2 { margin-bottom: 0.8rem; }
 .section p + p { margin-top: 0.8rem; }
 
@@ -841,6 +921,9 @@ exports[`renderSite > snapshot: aurora x hostile > css 1`] = `
   --page-max: 42rem;
   --text-factor: 1;
   --photo-radius: 50%;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* base */
@@ -879,7 +962,24 @@ a:hover { text-decoration-thickness: 2px; }
 .links a:hover { text-decoration: underline; }
 .links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
 
-.section { margin-top: 2.5rem; }
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
 .section h2 { margin-bottom: 0.8rem; }
 .section p + p { margin-top: 0.8rem; }
 
@@ -1057,6 +1157,9 @@ exports[`renderSite > snapshot: aurora x minimal > css 1`] = `
   --page-max: 42rem;
   --text-factor: 1;
   --photo-radius: 50%;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* base */
@@ -1095,7 +1198,24 @@ a:hover { text-decoration-thickness: 2px; }
 .links a:hover { text-decoration: underline; }
 .links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
 
-.section { margin-top: 2.5rem; }
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
 .section h2 { margin-bottom: 0.8rem; }
 .section p + p { margin-top: 0.8rem; }
 
@@ -1233,6 +1353,9 @@ exports[`renderSite > snapshot: ink x full > css 1`] = `
   --page-max: 44rem;
   --text-factor: 1;
   --photo-radius: 0;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* base */
@@ -1271,7 +1394,24 @@ a:hover { text-decoration-thickness: 2px; }
 .links a:hover { text-decoration: underline; }
 .links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
 
-.section { margin-top: 2.5rem; }
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
 .section h2 { margin-bottom: 0.8rem; }
 .section p + p { margin-top: 0.8rem; }
 
@@ -1457,6 +1597,9 @@ exports[`renderSite > snapshot: ink x hostile > css 1`] = `
   --page-max: 44rem;
   --text-factor: 1;
   --photo-radius: 0;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* base */
@@ -1495,7 +1638,24 @@ a:hover { text-decoration-thickness: 2px; }
 .links a:hover { text-decoration: underline; }
 .links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
 
-.section { margin-top: 2.5rem; }
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
 .section h2 { margin-bottom: 0.8rem; }
 .section p + p { margin-top: 0.8rem; }
 
@@ -1670,6 +1830,9 @@ exports[`renderSite > snapshot: ink x minimal > css 1`] = `
   --page-max: 44rem;
   --text-factor: 1;
   --photo-radius: 0;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* base */
@@ -1708,7 +1871,24 @@ a:hover { text-decoration-thickness: 2px; }
 .links a:hover { text-decoration: underline; }
 .links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
 
-.section { margin-top: 2.5rem; }
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
 .section h2 { margin-bottom: 0.8rem; }
 .section p + p { margin-top: 0.8rem; }
 
@@ -1843,6 +2023,9 @@ exports[`renderSite > snapshot: linen x full > css 1`] = `
   --page-max: 40rem;
   --text-factor: 1;
   --photo-radius: 50%;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* base */
@@ -1881,7 +2064,24 @@ a:hover { text-decoration-thickness: 2px; }
 .links a:hover { text-decoration: underline; }
 .links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
 
-.section { margin-top: 2.5rem; }
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
 .section h2 { margin-bottom: 0.8rem; }
 .section p + p { margin-top: 0.8rem; }
 
@@ -2040,6 +2240,9 @@ exports[`renderSite > snapshot: linen x hostile > css 1`] = `
   --page-max: 40rem;
   --text-factor: 1;
   --photo-radius: 50%;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* base */
@@ -2078,7 +2281,24 @@ a:hover { text-decoration-thickness: 2px; }
 .links a:hover { text-decoration: underline; }
 .links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
 
-.section { margin-top: 2.5rem; }
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
 .section h2 { margin-bottom: 0.8rem; }
 .section p + p { margin-top: 0.8rem; }
 
@@ -2226,6 +2446,9 @@ exports[`renderSite > snapshot: linen x minimal > css 1`] = `
   --page-max: 40rem;
   --text-factor: 1;
   --photo-radius: 50%;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* base */
@@ -2264,7 +2487,24 @@ a:hover { text-decoration-thickness: 2px; }
 .links a:hover { text-decoration: underline; }
 .links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
 
-.section { margin-top: 2.5rem; }
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
 .section h2 { margin-bottom: 0.8rem; }
 .section p + p { margin-top: 0.8rem; }
 
@@ -2372,6 +2612,9 @@ exports[`renderSite > snapshot: meadow x full > css 1`] = `
   --page-max: 40rem;
   --text-factor: 1;
   --photo-radius: 50%;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* base */
@@ -2410,7 +2653,24 @@ a:hover { text-decoration-thickness: 2px; }
 .links a:hover { text-decoration: underline; }
 .links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
 
-.section { margin-top: 2.5rem; }
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
 .section h2 { margin-bottom: 0.8rem; }
 .section p + p { margin-top: 0.8rem; }
 
@@ -2584,6 +2844,9 @@ exports[`renderSite > snapshot: meadow x hostile > css 1`] = `
   --page-max: 40rem;
   --text-factor: 1;
   --photo-radius: 50%;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* base */
@@ -2622,7 +2885,24 @@ a:hover { text-decoration-thickness: 2px; }
 .links a:hover { text-decoration: underline; }
 .links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
 
-.section { margin-top: 2.5rem; }
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
 .section h2 { margin-bottom: 0.8rem; }
 .section p + p { margin-top: 0.8rem; }
 
@@ -2785,6 +3065,9 @@ exports[`renderSite > snapshot: meadow x minimal > css 1`] = `
   --page-max: 40rem;
   --text-factor: 1;
   --photo-radius: 50%;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* base */
@@ -2823,7 +3106,24 @@ a:hover { text-decoration-thickness: 2px; }
 .links a:hover { text-decoration: underline; }
 .links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
 
-.section { margin-top: 2.5rem; }
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
 .section h2 { margin-bottom: 0.8rem; }
 .section p + p { margin-top: 0.8rem; }
 
@@ -2946,6 +3246,9 @@ exports[`renderSite > snapshot: slate x full > css 1`] = `
   --page-max: 42rem;
   --text-factor: 1;
   --photo-radius: 50%;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* base */
@@ -2984,7 +3287,24 @@ a:hover { text-decoration-thickness: 2px; }
 .links a:hover { text-decoration: underline; }
 .links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
 
-.section { margin-top: 2.5rem; }
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
 .section h2 { margin-bottom: 0.8rem; }
 .section p + p { margin-top: 0.8rem; }
 
@@ -3134,6 +3454,9 @@ exports[`renderSite > snapshot: slate x hostile > css 1`] = `
   --page-max: 42rem;
   --text-factor: 1;
   --photo-radius: 50%;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* base */
@@ -3172,7 +3495,24 @@ a:hover { text-decoration-thickness: 2px; }
 .links a:hover { text-decoration: underline; }
 .links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
 
-.section { margin-top: 2.5rem; }
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
 .section h2 { margin-bottom: 0.8rem; }
 .section p + p { margin-top: 0.8rem; }
 
@@ -3311,6 +3651,9 @@ exports[`renderSite > snapshot: slate x minimal > css 1`] = `
   --page-max: 42rem;
   --text-factor: 1;
   --photo-radius: 50%;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* base */
@@ -3349,7 +3692,24 @@ a:hover { text-decoration-thickness: 2px; }
 .links a:hover { text-decoration: underline; }
 .links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
 
-.section { margin-top: 2.5rem; }
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
 .section h2 { margin-bottom: 0.8rem; }
 .section p + p { margin-top: 0.8rem; }
 
@@ -3448,6 +3808,9 @@ exports[`renderSite > snapshot: terminal x full > css 1`] = `
   --page-max: 44rem;
   --text-factor: 1;
   --photo-radius: 0;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* base */
@@ -3486,7 +3849,24 @@ a:hover { text-decoration-thickness: 2px; }
 .links a:hover { text-decoration: underline; }
 .links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
 
-.section { margin-top: 2.5rem; }
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
 .section h2 { margin-bottom: 0.8rem; }
 .section p + p { margin-top: 0.8rem; }
 
@@ -3659,6 +4039,9 @@ exports[`renderSite > snapshot: terminal x hostile > css 1`] = `
   --page-max: 44rem;
   --text-factor: 1;
   --photo-radius: 0;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* base */
@@ -3697,7 +4080,24 @@ a:hover { text-decoration-thickness: 2px; }
 .links a:hover { text-decoration: underline; }
 .links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
 
-.section { margin-top: 2.5rem; }
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
 .section h2 { margin-bottom: 0.8rem; }
 .section p + p { margin-top: 0.8rem; }
 
@@ -3859,6 +4259,9 @@ exports[`renderSite > snapshot: terminal x minimal > css 1`] = `
   --page-max: 44rem;
   --text-factor: 1;
   --photo-radius: 0;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* base */
@@ -3897,7 +4300,24 @@ a:hover { text-decoration-thickness: 2px; }
 .links a:hover { text-decoration: underline; }
 .links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
 
-.section { margin-top: 2.5rem; }
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
 .section h2 { margin-bottom: 0.8rem; }
 .section p + p { margin-top: 0.8rem; }
 
