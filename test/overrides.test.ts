@@ -108,6 +108,48 @@ describe('style overrides', () => {
     const { html } = renderSite(base, THEMES[0]!);
     expect(html).not.toContain('surface-');
   });
+  it('v2b/v2c flags land as body classes', () => {
+    const data: SiteData = {
+      ...base,
+      photo: { dataUrl: 'data:image/jpeg;base64,AA==' },
+      meta: {
+        ...base.meta,
+        headingStyle: 'highlight',
+        heroAlign: 'center',
+        photoSize: 'l',
+        background: 'dots',
+      },
+    };
+    const { html } = renderSite(data, THEMES[0]!);
+    expect(html).toContain('heading-highlight');
+    expect(html).toContain('hero-center');
+    expect(html).toContain('photo-sz-l');
+    expect(html).toContain('bg-dots');
+  });
+  it('auto dark emits a prefers-color-scheme block with the darkest palette', () => {
+    const slateTheme = THEMES.find((t) => t.id === 'slate')!;
+    const data: SiteData = { ...base, meta: { ...base.meta, autoDark: true } };
+    const { css } = renderSite(data, slateTheme);
+    expect(css).toContain('@media (prefers-color-scheme: dark)');
+    expect(css).toContain('--bg: #17191c'); // graphite
+  });
+  it('auto dark is a no-op when already on a dark palette', () => {
+    const slateTheme = THEMES.find((t) => t.id === 'slate')!;
+    const data: SiteData = {
+      ...base,
+      meta: { ...base.meta, paletteId: 'graphite', autoDark: true },
+    };
+    const { css } = renderSite(data, slateTheme);
+    expect(css).not.toContain('prefers-color-scheme: dark');
+  });
+  it('custom accent inside auto dark is refit against the dark bg', () => {
+    const slateTheme = THEMES.find((t) => t.id === 'slate')!;
+    const data: SiteData = { ...base, meta: { ...base.meta, autoDark: true, accent: '#00337f' } };
+    const { css } = renderSite(data, slateTheme);
+    const m = css.match(/prefers-color-scheme: dark\) \{\n:root \{[\s\S]*?--accent: (#[0-9a-f]{6});/);
+    expect(m).not.toBeNull();
+    expect(contrast(m![1]!, '#17191c')).toBeGreaterThanOrEqual(4.5);
+  });
   it('defaults resolve to the theme values', () => {
     const { css } = renderSite(base, THEMES[0]!);
     expect(css).toContain('--page-max: 42rem;');

@@ -1,4 +1,4 @@
-import { getTheme, THEMES } from '../../themes/index.js';
+import { getTheme, THEME_CATEGORIES, THEMES } from '../../themes/index.js';
 import { el } from '../dom.js';
 import { applyMyTheme, deleteMyTheme, loadMyThemes } from '../mythemes.js';
 import { previewHtml } from '../preview.js';
@@ -8,14 +8,53 @@ import type { StepCtx } from './content.js';
  * Theme gallery: every card is the user's own data rendered with that theme,
  * scaled down in a real iframe.
  */
+/** Session-scoped UI state (not part of the site data). */
+let activeCategory = 'all';
+let shuffleCounter = 0;
+
 export function renderThemeStep(pane: HTMLElement, ctx: StepCtx): void {
   const { data, onChange } = ctx;
   pane.append(el('h2', { text: 'Pick a look' }));
   pane.append(
     el('p', { class: 'step-intro', text: 'Each preview shows your own page. You can fine-tune colors in the next step.' }),
   );
+
+  // mood filter + deterministic shuffle
+  const filterRow = el('div', { class: 'chips-row filter-row' });
+  const cats = [{ id: 'all', label: 'All', themeIds: THEMES.map((t) => t.id) }, ...THEME_CATEGORIES];
+  for (const cat of cats) {
+    const chip = el('button', {
+      type: 'button',
+      class: `chip${activeCategory === cat.id ? ' chip-active' : ''}`,
+      'aria-pressed': String(activeCategory === cat.id),
+      text: cat.label,
+    });
+    chip.addEventListener('click', () => {
+      activeCategory = cat.id;
+      onChange(true);
+    });
+    filterRow.append(chip);
+  }
+  const shuffle = el('button', { type: 'button', class: 'chip', text: 'Shuffle' });
+  shuffle.addEventListener('click', () => {
+    shuffleCounter += 1;
+    const combos: { themeId: string; paletteId: string }[] = [];
+    for (const t of THEMES) for (const p of t.palettes) combos.push({ themeId: t.id, paletteId: p.id });
+    // deterministic stride walk so consecutive shuffles feel varied
+    const pick = combos[(shuffleCounter * 7) % combos.length]!;
+    const t = getTheme(pick.themeId);
+    data.meta = { ...data.meta, themeId: t.id, paletteId: pick.paletteId, fontId: t.defaults.fontId };
+    delete data.meta.accent;
+    onChange(true);
+  });
+  filterRow.append(shuffle);
+  pane.append(filterRow);
+
+  const shownIds = cats.find((c) => c.id === activeCategory)?.themeIds ?? THEMES.map((t) => t.id);
+  const shownThemes = THEMES.filter((t) => shownIds.includes(t.id) || t.id === data.meta.themeId);
+
   const grid = el('div', { class: 'theme-grid', role: 'radiogroup', 'aria-label': 'Theme' });
-  for (const theme of THEMES) {
+  for (const theme of shownThemes) {
     const selected = data.meta.themeId === theme.id;
     const card = el('button', {
       type: 'button',

@@ -205,6 +205,8 @@ fieldset.group { min-width: 0; }
 .chip:hover { border-color: var(--ink); }
 .chip.danger { color: var(--danger); }
 .chips-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.8rem; }
+.filter-row { margin: 0 0 1rem; }
+.chip.chip-active { background: var(--ink); color: #fff; border-color: var(--ink); }
 
 .icon-btn {
   font: inherit;
@@ -293,6 +295,8 @@ fieldset.group { min-width: 0; }
 }
 .palette-dot.active { box-shadow: 0 0 0 2px var(--marker); border-color: var(--ink); }
 .accent-row { margin-top: 0.8rem; align-items: center; }
+.check-row { display: flex; gap: 0.6rem; align-items: flex-start; cursor: pointer; }
+.check-row input { margin-top: 0.25rem; }
 .accent-row input[type='color'] {
   width: 2.6rem;
   height: 2rem;

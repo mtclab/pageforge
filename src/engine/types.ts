@@ -53,6 +53,16 @@ export interface SiteData {
     corners?: 'sharp' | 'soft' | 'round';
     shadow?: 'none' | 'soft' | 'lifted';
     density?: 'compact' | 'normal' | 'airy';
+    /** Heading treatment on top of the theme; absent = theme's own. */
+    headingStyle?: 'underline' | 'highlight' | 'caps';
+    /** Hero alignment override; absent = theme's own. */
+    heroAlign?: 'left' | 'center';
+    /** Photo size override; absent = theme's own. */
+    photoSize?: 's' | 'l';
+    /** One background treatment; absent = theme's own background. */
+    background?: 'dots' | 'grid' | 'lines' | 'wash-top' | 'wash-corner';
+    /** Follow the visitor's dark mode using the theme's darkest palette. */
+    autoDark?: boolean;
   };
 }
 

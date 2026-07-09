@@ -70,6 +70,62 @@ a:hover { text-decoration-thickness: 2px; }
   box-shadow: none;
   border-bottom: none;
 }
+
+/* heading treatments (body class set only when the user overrides) */
+.heading-underline .section h2 {
+  display: inline-block;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 0.2rem;
+}
+.heading-highlight .section h2 {
+  display: inline-block;
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  padding: 0.08em 0.45em;
+  border-radius: 4px;
+}
+.heading-caps .section h2 {
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+/* hero alignment overrides */
+.hero-center .hero { text-align: center; }
+.hero-center .hero .photo { margin-left: auto; margin-right: auto; }
+.hero-center .hero .links { justify-content: center; }
+.hero-left .hero { text-align: left; }
+.hero-left .hero .photo { margin-left: 0; margin-right: 0; }
+.hero-left .hero .links { justify-content: flex-start; }
+
+/* photo size overrides (beats theme .hero .photo by specificity) */
+.photo-sz-s .hero .photo { width: 84px; height: 84px; }
+.photo-sz-l .hero .photo { width: 190px; height: 190px; }
+
+/* background treatments (one choice; replaces the theme's own bg image) */
+body.bg-dots {
+  background-image: radial-gradient(color-mix(in srgb, var(--text) 9%, transparent) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+body.bg-grid {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--text) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--text) 7%, transparent) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+body.bg-lines {
+  background-image: repeating-linear-gradient(
+    45deg,
+    color-mix(in srgb, var(--text) 5%, transparent) 0 1px,
+    transparent 1px 14px
+  );
+}
+body.bg-wash-top {
+  background-image: radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%);
+  background-attachment: fixed;
+}
+body.bg-wash-corner {
+  background-image: radial-gradient(90% 90% at 100% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 65%);
+  background-attachment: fixed;
+}
 .section h2 { margin-bottom: 0.8rem; }
 .section p + p { margin-top: 0.8rem; }
 
