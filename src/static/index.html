@@ -33,9 +33,12 @@
   <aside id="preview-pane" class="preview-pane" aria-label="Live preview">
     <div class="preview-tools">
       <span class="preview-label">Live preview</span>
-      <span class="width-toggle">
-        <button type="button" data-width="desktop" aria-pressed="true">Wide</button>
-        <button type="button" data-width="mobile" aria-pressed="false">Phone</button>
+      <span class="preview-tools-right">
+        <span class="width-toggle">
+          <button type="button" data-width="desktop" aria-pressed="true">Wide</button>
+          <button type="button" data-width="mobile" aria-pressed="false">Phone</button>
+        </span>
+        <button type="button" id="fullscreen-toggle" class="chip" aria-pressed="false" title="See it at your real screen size">Full screen</button>
       </span>
     </div>
     <iframe id="preview-frame" title="Preview of your homepage" sandbox="allow-same-origin"></iframe>

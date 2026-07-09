@@ -92,6 +92,20 @@ function initWizard(): void {
     previewToggle.textContent = open ? 'Close preview' : 'Preview';
   });
 
+  // Full-screen preview: the iframe fills the browser window, i.e. the
+  // user's real screen - the honest answer to "how will it actually look".
+  const fsToggle = document.getElementById('fullscreen-toggle') as HTMLButtonElement;
+  function setFullscreen(on: boolean): void {
+    previewPane.classList.toggle('fullscreen', on);
+    document.body.classList.toggle('no-scroll', on);
+    fsToggle.setAttribute('aria-pressed', String(on));
+    fsToggle.textContent = on ? 'Exit full screen' : 'Full screen';
+  }
+  fsToggle.addEventListener('click', () => setFullscreen(!previewPane.classList.contains('fullscreen')));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && previewPane.classList.contains('fullscreen')) setFullscreen(false);
+  });
+
   // Desktop preview width toggle
   for (const btn of document.querySelectorAll<HTMLButtonElement>('[data-width]')) {
     btn.addEventListener('click', () => {

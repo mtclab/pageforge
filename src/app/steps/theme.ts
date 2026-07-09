@@ -31,15 +31,45 @@ export function renderThemeStep(pane: HTMLElement, ctx: StepCtx): void {
     });
     frame.srcdoc = previewHtml({
       ...data,
-      meta: { themeId: theme.id, paletteId: theme.defaults.paletteId, fontId: theme.defaults.fontId },
+      meta: {
+        ...data.meta,
+        themeId: theme.id,
+        paletteId: selected ? data.meta.paletteId : theme.defaults.paletteId,
+        fontId: selected ? data.meta.fontId : theme.defaults.fontId,
+      },
     });
+    const dots = el('span', { class: 'palette-dots', role: 'group', 'aria-label': `${theme.name} color choices` });
+    for (const palette of theme.palettes) {
+      const active = selected && data.meta.paletteId === palette.id;
+      const dot = el('span', {
+        class: `palette-dot${active ? ' active' : ''}`,
+        role: 'button',
+        tabindex: '0',
+        'aria-label': `${theme.name} in ${palette.name} colors`,
+        title: palette.name,
+      });
+      dot.style.background = `linear-gradient(135deg, ${palette.vars.bg} 50%, ${palette.vars.accent} 50%)`;
+      const pick = (e: Event) => {
+        e.stopPropagation();
+        data.meta = { ...data.meta, themeId: theme.id, paletteId: palette.id, fontId: theme.defaults.fontId };
+        delete data.meta.accent;
+        onChange(true);
+      };
+      dot.addEventListener('click', pick);
+      dot.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') pick(e);
+      });
+      dots.append(dot);
+    }
+
     card.append(
       el('span', { class: 'mini-wrap' }, frame),
-      el('span', { class: 'theme-name', text: theme.name }),
+      el('span', { class: 'theme-name' }, theme.name, dots),
       el('span', { class: 'theme-tagline', text: theme.tagline }),
     );
     card.addEventListener('click', () => {
       data.meta = {
+        ...data.meta,
         themeId: theme.id,
         paletteId: theme.defaults.paletteId,
         fontId: theme.defaults.fontId,

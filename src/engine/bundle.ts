@@ -1,7 +1,7 @@
 import { strToU8, zipSync } from 'fflate';
 import { renderFavicon } from './favicon.js';
 import { renderReadme } from './readme.js';
-import { renderSite, resolveFont, resolvePalette } from './render.js';
+import { effectivePalette, renderSite, resolveFont } from './render.js';
 import { collectImages, FAVICON_PATH, type SiteData, type ThemePack } from './types.js';
 
 /** Fixed timestamp for zip entries: same inputs -> byte-identical zip. */
@@ -18,7 +18,7 @@ function dataUrlBytes(dataUrl: string): Uint8Array {
 /** Every file that goes into the downloaded site, keyed by zip path. */
 export function buildSiteFiles(data: SiteData, theme: ThemePack): Record<string, Uint8Array> {
   const { html, css } = renderSite(data, theme);
-  const palette = resolvePalette(theme, data.meta.paletteId);
+  const palette = effectivePalette(data, theme);
   const font = resolveFont(theme, data.meta.fontId);
 
   const files: Record<string, Uint8Array> = {
