@@ -280,6 +280,8 @@ fieldset.group { min-width: 0; }
   background: #fff;
 }
 .theme-name { font-weight: 600; margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+.your-themes-h { margin: 1.4rem 0 0.8rem; font-size: 1.05rem; }
+.theme-name .icon-btn { margin-left: auto; width: 1.5rem; height: 1.5rem; font-size: 0.7rem; }
 .palette-dots { display: inline-flex; gap: 0.3rem; }
 .palette-dot {
   width: 1rem;

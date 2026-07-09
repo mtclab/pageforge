@@ -1,6 +1,7 @@
 import { getTheme } from '../../themes/index.js';
 import type { PhotoShape } from '../../engine/types.js';
 import { el } from '../dom.js';
+import { saveMyTheme } from '../mythemes.js';
 import type { StepCtx } from './content.js';
 
 /** Deterministic "surprise me": walks palette x font combos in order. */
@@ -219,6 +220,19 @@ export function renderCustomizeStep(pane: HTMLElement, ctx: StepCtx): void {
       },
     ),
   );
+
+  // #9 slice 1: freeze the current look as a reusable named theme
+  const saveLook = el('button', { type: 'button', class: 'chip', text: 'Save this look as your own theme' });
+  saveLook.addEventListener('click', () => {
+    const name = prompt('Name your theme:', 'My look');
+    if (!name?.trim()) return;
+    saveMyTheme(name.trim().slice(0, 40), data.meta);
+    saveLook.textContent = `Saved "${name.trim().slice(0, 40)}" - find it on the Look step`;
+    setTimeout(() => {
+      saveLook.textContent = 'Save this look as your own theme';
+    }, 2500);
+  });
+  pane.append(el('div', { class: 'row' }, saveLook));
 
   const surprise = el('button', { type: 'button', class: 'chip', text: 'Surprise me' });
   surprise.addEventListener('click', () => {

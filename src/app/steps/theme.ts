@@ -1,5 +1,6 @@
-import { THEMES } from '../../themes/index.js';
+import { getTheme, THEMES } from '../../themes/index.js';
 import { el } from '../dom.js';
+import { applyMyTheme, deleteMyTheme, loadMyThemes } from '../mythemes.js';
 import { previewHtml } from '../preview.js';
 import type { StepCtx } from './content.js';
 
@@ -79,4 +80,55 @@ export function renderThemeStep(pane: HTMLElement, ctx: StepCtx): void {
     grid.append(card);
   }
   pane.append(grid);
+
+  // #9 slice 1: user-saved looks
+  const mine = loadMyThemes();
+  if (mine.length) {
+    pane.append(el('h3', { class: 'your-themes-h', text: 'Your themes' }));
+    const myGrid = el('div', { class: 'theme-grid' });
+    for (const mt of mine) {
+      const active = JSON.stringify(data.meta) === JSON.stringify(mt.meta);
+      const card = el('button', {
+        type: 'button',
+        class: `theme-card${active ? ' selected' : ''}`,
+      });
+      const frame = el('iframe', {
+        class: 'mini-preview',
+        title: `${mt.name} preview`,
+        tabindex: '-1',
+        'aria-hidden': 'true',
+        sandbox: 'allow-same-origin',
+      });
+      frame.srcdoc = previewHtml({ ...data, meta: mt.meta });
+      // span+role, not <button>: the card itself is a button and buttons cannot nest
+      const del = el('span', {
+        class: 'icon-btn',
+        role: 'button',
+        tabindex: '0',
+        'aria-label': `Delete theme ${mt.name}`,
+        text: '✕',
+      });
+      const doDelete = (e: Event) => {
+        e.stopPropagation();
+        if (!confirm(`Delete your theme "${mt.name}"?`)) return;
+        deleteMyTheme(mt.id);
+        onChange(true);
+      };
+      del.addEventListener('click', doDelete);
+      del.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') doDelete(e);
+      });
+      card.append(
+        el('span', { class: 'mini-wrap' }, frame),
+        el('span', { class: 'theme-name' }, mt.name, del),
+        el('span', { class: 'theme-tagline', text: `Based on ${getTheme(mt.meta.themeId).name}` }),
+      );
+      card.addEventListener('click', () => {
+        applyMyTheme(data, mt);
+        onChange(true);
+      });
+      myGrid.append(card);
+    }
+    pane.append(myGrid);
+  }
 }
