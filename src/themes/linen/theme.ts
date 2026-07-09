@@ -7,7 +7,6 @@ import type { ThemePack } from '../../engine/types.js';
 
 const css = `/* theme: linen */
 .page {
-  max-width: 40rem;
   margin: 0 auto;
   padding: clamp(2rem, 5vw, 3.5rem) 1.25rem 3rem;
 }
@@ -44,6 +43,7 @@ export const linen: ThemePack = {
   tagline: 'Warm and personal',
   layout: 'centered-column',
   photoShape: 'circle',
+  pageMax: '40rem',
   fonts: [
     {
       id: 'humanist',

@@ -7,7 +7,6 @@ import type { ThemePack } from '../../engine/types.js';
 
 const css = `/* theme: meadow */
 .page {
-  max-width: 40rem;
   margin: 0 auto;
   padding: clamp(2rem, 5vw, 3.5rem) 1.25rem 3.5rem;
 }
@@ -59,6 +58,7 @@ export const meadow: ThemePack = {
   tagline: 'Bright and friendly',
   layout: 'centered-column',
   photoShape: 'circle',
+  pageMax: '40rem',
   fonts: [
     {
       id: 'rounded',

@@ -1,5 +1,5 @@
 import { accentContrastFor, fitAccent } from './color.js';
-import { BASE_CSS, rootVars } from './css.js';
+import { BASE_CSS, rootVars, type StyleVars } from './css.js';
 import { escAttr, esc } from './escape.js';
 import { renderSection } from './sections/blocks.js';
 import { renderFooter } from './sections/footer.js';
@@ -36,30 +36,29 @@ export function effectivePalette(data: SiteData, theme: ThemePack): Palette {
   };
 }
 
-const WIDTH_REM = { narrow: 36, wide: 54 } as const;
-const TEXT_FACTOR = { s: 0.92, l: 1.12 } as const;
+const WIDTH_SCALE = { narrow: 0.85, normal: 1, wide: 1.25 } as const;
+const TEXT_FACTOR = { s: 0.92, m: 1, l: 1.12 } as const;
+const PHOTO_RADIUS = { circle: '50%', rounded: '16px', square: '0' } as const;
 
 /**
- * User style overrides, emitted AFTER the theme CSS so the cascade wins
- * without !important. Custom accents are auto-nudged to keep WCAG AA
- * against the palette background.
+ * Everything the Style step controls, resolved to CSS custom property
+ * values. Width scales the THEME's natural content width so each theme
+ * keeps its proportions; text factor multiplies the base fluid type scale.
  */
-function overrideCss(data: SiteData, palette: Palette): string {
-  const parts: string[] = [];
-  const { width, textScale, accent } = data.meta;
-  if (width && width !== 'normal' && width in WIDTH_REM) {
-    parts.push(`.page { max-width: ${WIDTH_REM[width as keyof typeof WIDTH_REM]}rem; }`);
-  }
-  if (textScale && textScale !== 'm' && textScale in TEXT_FACTOR) {
-    parts.push(
-      `body { font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * ${TEXT_FACTOR[textScale as keyof typeof TEXT_FACTOR]}); }`,
-    );
-  }
-  if (accent) {
-    const fitted = fitAccent(accent, palette.vars.bg);
-    parts.push(`:root { --accent: ${fitted}; --accent-contrast: ${accentContrastFor(fitted)}; }`);
-  }
-  return parts.length ? `/* your style choices */\n${parts.join('\n')}\n` : '';
+export function styleVars(data: SiteData, theme: ThemePack): StyleVars {
+  const widthKey = data.meta.width ?? 'normal';
+  const scale = WIDTH_SCALE[widthKey in WIDTH_SCALE ? widthKey : 'normal'];
+  const baseRem = parseFloat(theme.pageMax);
+  const pageMax = Number.isFinite(baseRem)
+    ? `${Number((baseRem * scale).toFixed(2))}rem`
+    : theme.pageMax;
+  const scaleKey = data.meta.textScale ?? 'm';
+  const shape = data.meta.photoShape ?? theme.photoShape;
+  return {
+    pageMax,
+    textFactor: TEXT_FACTOR[scaleKey in TEXT_FACTOR ? scaleKey : 'm'],
+    photoRadius: PHOTO_RADIUS[shape in PHOTO_RADIUS ? shape : theme.photoShape],
+  };
 }
 
 export interface RenderOptions {
@@ -78,10 +77,10 @@ export interface RenderOptions {
  * No DOM, no clock, no randomness - same inputs give byte-identical output.
  */
 export function renderSite(data: SiteData, theme: ThemePack, opts: RenderOptions = {}): RenderedSite {
-  const palette = resolvePalette(theme, data.meta.paletteId);
+  const palette = effectivePalette(data, theme);
   const font = resolveFont(theme, data.meta.fontId);
 
-  const css = `${rootVars(palette, font)}\n${BASE_CSS}\n${theme.css}\n${overrideCss(data, palette)}`;
+  const css = `${rootVars(palette, font, styleVars(data, theme))}\n${BASE_CSS}\n${theme.css}`;
 
   const name = data.name.trim();
   const sections = data.sections

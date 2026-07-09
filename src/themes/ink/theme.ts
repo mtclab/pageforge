@@ -12,7 +12,7 @@ const css = `/* theme: ink */
   color: var(--accent-contrast);
   padding: clamp(2.5rem, 7vw, 5rem) 1.5rem clamp(2.25rem, 5vw, 3.5rem);
 }
-.hero > * { max-width: 44rem; margin-left: auto; margin-right: auto; }
+.hero > * { max-width: var(--page-max); margin-left: auto; margin-right: auto; }
 .hero .photo {
   width: clamp(96px, 18vw, 148px);
   height: clamp(96px, 18vw, 148px);
@@ -43,7 +43,7 @@ const css = `/* theme: ink */
 }
 .hero .links a:hover { background: var(--accent-contrast); color: var(--accent); text-decoration: none; }
 main {
-  max-width: 44rem;
+  max-width: var(--page-max);
   margin: 0 auto;
   padding: clamp(2rem, 5vw, 3.5rem) 1.5rem;
 }
@@ -57,7 +57,7 @@ main {
 .project h3 { font-weight: 800; }
 .chips li { border: 2px solid var(--accent); font-weight: 600; }
 footer {
-  max-width: 44rem;
+  max-width: var(--page-max);
   margin-left: auto;
   margin-right: auto;
   padding: 0 1.5rem 3rem;
@@ -70,6 +70,7 @@ export const ink: ThemePack = {
   tagline: 'Bold and loud',
   layout: 'banner',
   photoShape: 'square',
+  pageMax: '44rem',
   fonts: [
     {
       id: 'impact',

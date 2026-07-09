@@ -12,7 +12,6 @@ const css = `/* theme: atelier */
   grid-template-columns: 17rem 1fr;
   align-items: start;
   gap: clamp(1.5rem, 4vw, 3.5rem);
-  max-width: 66rem;
   margin: 0 auto;
   padding: clamp(1.5rem, 4vw, 3rem);
 }
@@ -69,6 +68,7 @@ export const atelier: ThemePack = {
   tagline: 'Professional and polished',
   layout: 'split-hero',
   photoShape: 'rounded',
+  pageMax: '66rem',
   fonts: [
     {
       id: 'grotesk',
