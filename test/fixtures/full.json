@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "name": "Anna Virtanen",
+  "tagline": "Gardener, baker, occasional poet",
+  "photo": { "dataUrl": "data:image/jpeg;base64,/9j/fixture" },
+  "links": [
+    { "label": "Instagram", "url": "https://www.instagram.com/annav" },
+    { "label": "GitHub", "url": "github.com/annav" },
+    { "label": "Email me", "url": "mailto:anna@example.com" },
+    { "label": "My blog", "url": "annasgarden.example.com" }
+  ],
+  "sections": [
+    {
+      "kind": "about",
+      "text": "I grow things: vegetables, sourdough starters and the occasional poem.\n\nBased in Tampere, Finland.\nUsually found in the garden."
+    },
+    {
+      "kind": "projects",
+      "title": "Things I make",
+      "items": [
+        { "name": "Community garden blog", "desc": "Weekly notes from plot 14.", "url": "https://annasgarden.example.com" },
+        { "name": "Sourdough starter guide", "desc": "A beginner-friendly PDF." },
+        { "name": "Poetry zine" }
+      ]
+    },
+    {
+      "kind": "hobbies",
+      "items": ["Gardening", "Baking", "Watercolors", "Winter swimming"]
+    },
+    {
+      "kind": "contact",
+      "email": "anna@example.com",
+      "note": "Happy to chat about gardens or bread."
+    },
+    {
+      "kind": "custom",
+      "title": "Reading now",
+      "text": "Braiding Sweetgrass by Robin Wall Kimmerer."
+    }
+  ],
+  "footerNote": "Made in Tampere",
+  "meta": { "themeId": "slate", "paletteId": "sage", "fontId": "serif" }
+}

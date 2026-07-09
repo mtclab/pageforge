@@ -1,0 +1,23 @@
+{
+  "name": "pageforge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/build.mjs --watch",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "sample": "node scripts/sample.mjs",
+    "deploy": "node scripts/build.mjs && wrangler deploy"
+  },
+  "dependencies": {
+    "fflate": "^0.8.2"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0",
+    "wrangler": "^4.0.0"
+  }
+}

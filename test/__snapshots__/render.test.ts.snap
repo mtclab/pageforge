@@ -1,0 +1,2574 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renderSite > snapshot: atelier x full > css 1`] = `
+":root {
+  --bg: #ffffff;
+  --surface: #f2f5fb;
+  --text: #1f2430;
+  --muted: #565f70;
+  --accent: #1d3a8a;
+  --accent-contrast: #ffffff;
+  --font-body: 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --font-heading: 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: clamp(1.9rem, 1.4rem + 2.5vw, 3rem); }
+h2 { font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; }
+.photo-circle .hero .photo { border-radius: 50%; }
+.photo-rounded .hero .photo { border-radius: 16px; }
+
+.tagline { color: var(--muted); }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: 2.5rem; }
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: atelier */
+.page {
+  display: grid;
+  grid-template-columns: 17rem 1fr;
+  align-items: start;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  max-width: 66rem;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3rem);
+}
+.hero {
+  grid-row: 1 / -1;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  background: var(--surface);
+  border-right: 1px solid color-mix(in srgb, var(--muted) 30%, transparent);
+  padding: clamp(1.25rem, 3vw, 2rem);
+  margin: calc(-1 * clamp(1.5rem, 4vw, 3rem)) 0;
+  min-height: 100vh;
+}
+.hero .photo { width: 120px; height: 120px; margin-bottom: 1.25rem; }
+.hero h1 { font-size: clamp(1.7rem, 1.4rem + 1vw, 2.2rem); letter-spacing: -0.01em; }
+.tagline { margin-top: 0.35rem; font-size: 0.95rem; }
+.hero .links {
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 1.5rem;
+}
+.hero .links a { font-size: 0.95rem; }
+.hero .links .icon { color: var(--accent); }
+main { padding-top: clamp(0.5rem, 2vw, 1.5rem); }
+.section h2 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--muted) 30%, transparent);
+}
+.project h3 { font-size: 1.05rem; }
+.chips li { border-color: color-mix(in srgb, var(--muted) 45%, transparent); }
+@media (max-width: 46rem) {
+  .page { display: block; padding: 0; max-width: none; }
+  .hero {
+    position: static;
+    min-height: 0;
+    margin: 0;
+    border-right: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--muted) 30%, transparent);
+  }
+  .hero .photo { margin-left: 0; }
+  main, footer { padding: clamp(1.5rem, 5vw, 2.5rem); padding-top: 1.5rem; }
+}
+"
+`;
+
+exports[`renderSite > snapshot: atelier x full > html 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anna Virtanen</title>
+<meta name="description" content="Gardener, baker, occasional poet">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-split-hero photo-rounded has-photo">
+<div class="page">
+<header class="hero">
+<img class="photo" src="assets/photo.jpg" alt="Anna Virtanen" width="512" height="512">
+<h1>Anna Virtanen</h1>
+<p class="tagline">Gardener, baker, occasional poet</p>
+<nav class="links" aria-label="Links">
+<a href="https://www.instagram.com/annav"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 7.5zm0 2A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5zM17.5 5.5a1 1 0 1 1-1 1 1 1 0 0 1 1-1z"/></svg><span>Instagram</span></a>
+<a href="https://github.com/annav"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.2-3.4-1.2-.4-1.1-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.6-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.2-.4-1.2.1-2.6 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.6.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9v2.7c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg><span>GitHub</span></a>
+<a href="mailto:anna@example.com"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 5v14h20V5H2zm18 2v.4l-8 5.3-8-5.3V7h16zM4 17V9.8l8 5.3 8-5.3V17H4z"/></svg><span>Email me</span></a>
+<a href="https://annasgarden.example.com/"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm7.9 9h-3.4a15.6 15.6 0 0 0-1.2-5.7A8 8 0 0 1 19.9 11zM12 4.1c.9 1.1 2 3.3 2.4 6.9H9.6c.3-3.6 1.5-5.8 2.4-6.9zM8.7 5.3A15.6 15.6 0 0 0 7.5 11H4.1a8 8 0 0 1 4.6-5.7zM4.1 13h3.4c.1 2.2.6 4.1 1.2 5.7A8 8 0 0 1 4.1 13zm5.5 0h4.8c-.3 3.6-1.5 5.8-2.4 6.9-.9-1.1-2-3.3-2.4-6.9zm5.7 5.7c.6-1.6 1-3.5 1.2-5.7h3.4a8 8 0 0 1-4.6 5.7z"/></svg><span>My blog</span></a>
+</nav>
+</header>
+<main>
+<section class="section section-about" aria-labelledby="sec-1-h">
+<h2 id="sec-1-h">About</h2>
+<p>I grow things: vegetables, sourdough starters and the occasional poem.</p>
+<p>Based in Tampere, Finland.<br>Usually found in the garden.</p>
+</section>
+<section class="section section-projects" aria-labelledby="sec-2-h">
+<h2 id="sec-2-h">Things I make</h2>
+<ul class="projects">
+<li class="project"><h3><a href="https://annasgarden.example.com/">Community garden blog</a></h3>
+<p class="desc">Weekly notes from plot 14.</p></li>
+<li class="project"><h3>Sourdough starter guide</h3>
+<p class="desc">A beginner-friendly PDF.</p></li>
+<li class="project"><h3>Poetry zine</h3></li>
+</ul>
+</section>
+<section class="section section-hobbies" aria-labelledby="sec-3-h">
+<h2 id="sec-3-h">Things I love</h2>
+<ul class="chips">
+<li>Gardening</li>
+<li>Baking</li>
+<li>Watercolors</li>
+<li>Winter swimming</li>
+</ul>
+</section>
+<section class="section section-contact" aria-labelledby="sec-4-h">
+<h2 id="sec-4-h">Get in touch</h2>
+<p><a href="mailto:anna@example.com">anna@example.com</a></p>
+<p>Happy to chat about gardens or bread.</p>
+</section>
+<section class="section section-custom" aria-labelledby="sec-5-h">
+<h2 id="sec-5-h">Reading now</h2>
+<p>Braiding Sweetgrass by Robin Wall Kimmerer.</p>
+</section>
+</main>
+<footer>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+"
+`;
+
+exports[`renderSite > snapshot: atelier x hostile > css 1`] = `
+":root {
+  --bg: #ffffff;
+  --surface: #f2f5fb;
+  --text: #1f2430;
+  --muted: #565f70;
+  --accent: #1d3a8a;
+  --accent-contrast: #ffffff;
+  --font-body: 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --font-heading: 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: clamp(1.9rem, 1.4rem + 2.5vw, 3rem); }
+h2 { font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; }
+.photo-circle .hero .photo { border-radius: 50%; }
+.photo-rounded .hero .photo { border-radius: 16px; }
+
+.tagline { color: var(--muted); }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: 2.5rem; }
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: atelier */
+.page {
+  display: grid;
+  grid-template-columns: 17rem 1fr;
+  align-items: start;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  max-width: 66rem;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3rem);
+}
+.hero {
+  grid-row: 1 / -1;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  background: var(--surface);
+  border-right: 1px solid color-mix(in srgb, var(--muted) 30%, transparent);
+  padding: clamp(1.25rem, 3vw, 2rem);
+  margin: calc(-1 * clamp(1.5rem, 4vw, 3rem)) 0;
+  min-height: 100vh;
+}
+.hero .photo { width: 120px; height: 120px; margin-bottom: 1.25rem; }
+.hero h1 { font-size: clamp(1.7rem, 1.4rem + 1vw, 2.2rem); letter-spacing: -0.01em; }
+.tagline { margin-top: 0.35rem; font-size: 0.95rem; }
+.hero .links {
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 1.5rem;
+}
+.hero .links a { font-size: 0.95rem; }
+.hero .links .icon { color: var(--accent); }
+main { padding-top: clamp(0.5rem, 2vw, 1.5rem); }
+.section h2 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--muted) 30%, transparent);
+}
+.project h3 { font-size: 1.05rem; }
+.chips li { border-color: color-mix(in srgb, var(--muted) 45%, transparent); }
+@media (max-width: 46rem) {
+  .page { display: block; padding: 0; max-width: none; }
+  .hero {
+    position: static;
+    min-height: 0;
+    margin: 0;
+    border-right: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--muted) 30%, transparent);
+  }
+  .hero .photo { margin-left: 0; }
+  main, footer { padding: clamp(1.5rem, 5vw, 2.5rem); padding-top: 1.5rem; }
+}
+"
+`;
+
+exports[`renderSite > snapshot: atelier x hostile > html 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>&lt;script&gt;alert(1)&lt;/script&gt; "O'Brien" &amp; Sons</title>
+<meta name="description" content="&lt;img src=x onerror=alert(1)&gt; שלום 🌱">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-split-hero photo-rounded has-photo">
+<div class="page">
+<header class="hero">
+<img class="photo" src="assets/photo.jpg" alt="&lt;script&gt;alert(1)&lt;/script&gt; &quot;O'Brien&quot; &amp; Sons" width="512" height="512">
+<h1>&lt;script&gt;alert(1)&lt;/script&gt; "O'Brien" &amp; Sons</h1>
+<p class="tagline">&lt;img src=x onerror=alert(1)&gt; שלום 🌱</p>
+<nav class="links" aria-label="Links">
+<span>Click "here"</span>
+<a href="https://example.com/?q=%22%3E%3Cscript%3Ealert(1)%3C/script%3E"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm7.9 9h-3.4a15.6 15.6 0 0 0-1.2-5.7A8 8 0 0 1 19.9 11zM12 4.1c.9 1.1 2 3.3 2.4 6.9H9.6c.3-3.6 1.5-5.8 2.4-6.9zM8.7 5.3A15.6 15.6 0 0 0 7.5 11H4.1a8 8 0 0 1 4.6-5.7zM4.1 13h3.4c.1 2.2.6 4.1 1.2 5.7A8 8 0 0 1 4.1 13zm5.5 0h4.8c-.3 3.6-1.5 5.8-2.4 6.9-.9-1.1-2-3.3-2.4-6.9zm5.7 5.7c.6-1.6 1-3.5 1.2-5.7h3.4a8 8 0 0 1-4.6 5.7z"/></svg><span>&lt;b&gt;bold&lt;/b&gt;</span></a>
+<span>data sneaky</span>
+<span>vbscript:evil</span>
+<span>spaces only</span>
+</nav>
+</header>
+<main>
+<section class="section section-about" aria-labelledby="sec-1-h">
+<h2 id="sec-1-h">About</h2>
+<p>Line with &lt;tags&gt; &amp; "quotes"</p>
+<p>&lt;script&gt;alert('about')&lt;/script&gt;</p>
+</section>
+<section class="section section-projects" aria-labelledby="sec-2-h">
+<h2 id="sec-2-h">&lt;script&gt;t&lt;/script&gt;</h2>
+<ul class="projects">
+<li class="project"><h3>proj "x"</h3>
+<p class="desc">&lt;svg onload=alert(1)&gt;</p></li>
+</ul>
+</section>
+<section class="section section-hobbies" aria-labelledby="sec-3-h">
+<h2 id="sec-3-h">Things I love</h2>
+<ul class="chips">
+<li>&lt;li&gt;escape me</li>
+<li>normal</li>
+</ul>
+</section>
+<section class="section section-contact" aria-labelledby="sec-4-h">
+<h2 id="sec-4-h">Get in touch</h2>
+<p><a href="mailto:evil&quot;@ex.com&lt;script&gt;">evil"@ex.com&lt;script&gt;</a></p>
+<p>note &amp; &lt;note&gt;</p>
+</section>
+<section class="section section-custom" aria-labelledby="sec-5-h">
+<h2 id="sec-5-h">T &amp; &lt;T&gt;</h2>
+<p>body &lt;script&gt;alert(3)&lt;/script&gt;</p>
+</section>
+</main>
+<footer>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+"
+`;
+
+exports[`renderSite > snapshot: atelier x minimal > css 1`] = `
+":root {
+  --bg: #ffffff;
+  --surface: #f2f5fb;
+  --text: #1f2430;
+  --muted: #565f70;
+  --accent: #1d3a8a;
+  --accent-contrast: #ffffff;
+  --font-body: 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --font-heading: 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: clamp(1.9rem, 1.4rem + 2.5vw, 3rem); }
+h2 { font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; }
+.photo-circle .hero .photo { border-radius: 50%; }
+.photo-rounded .hero .photo { border-radius: 16px; }
+
+.tagline { color: var(--muted); }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: 2.5rem; }
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: atelier */
+.page {
+  display: grid;
+  grid-template-columns: 17rem 1fr;
+  align-items: start;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  max-width: 66rem;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3rem);
+}
+.hero {
+  grid-row: 1 / -1;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  background: var(--surface);
+  border-right: 1px solid color-mix(in srgb, var(--muted) 30%, transparent);
+  padding: clamp(1.25rem, 3vw, 2rem);
+  margin: calc(-1 * clamp(1.5rem, 4vw, 3rem)) 0;
+  min-height: 100vh;
+}
+.hero .photo { width: 120px; height: 120px; margin-bottom: 1.25rem; }
+.hero h1 { font-size: clamp(1.7rem, 1.4rem + 1vw, 2.2rem); letter-spacing: -0.01em; }
+.tagline { margin-top: 0.35rem; font-size: 0.95rem; }
+.hero .links {
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 1.5rem;
+}
+.hero .links a { font-size: 0.95rem; }
+.hero .links .icon { color: var(--accent); }
+main { padding-top: clamp(0.5rem, 2vw, 1.5rem); }
+.section h2 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--muted) 30%, transparent);
+}
+.project h3 { font-size: 1.05rem; }
+.chips li { border-color: color-mix(in srgb, var(--muted) 45%, transparent); }
+@media (max-width: 46rem) {
+  .page { display: block; padding: 0; max-width: none; }
+  .hero {
+    position: static;
+    min-height: 0;
+    margin: 0;
+    border-right: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--muted) 30%, transparent);
+  }
+  .hero .photo { margin-left: 0; }
+  main, footer { padding: clamp(1.5rem, 5vw, 2.5rem); padding-top: 1.5rem; }
+}
+"
+`;
+
+exports[`renderSite > snapshot: atelier x minimal > html 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anna Virtanen</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-split-hero photo-rounded">
+<div class="page">
+<header class="hero">
+<h1>Anna Virtanen</h1>
+</header>
+<main></main>
+<footer>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+"
+`;
+
+exports[`renderSite > snapshot: ink x full > css 1`] = `
+":root {
+  --bg: #fbfbfa;
+  --surface: #ffffff;
+  --text: #1a1a1a;
+  --muted: #565656;
+  --accent: #b3122e;
+  --accent-contrast: #ffffff;
+  --font-body: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-heading: 'Arial Black', 'Helvetica Neue', Impact, system-ui, sans-serif;
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: clamp(1.9rem, 1.4rem + 2.5vw, 3rem); }
+h2 { font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; }
+.photo-circle .hero .photo { border-radius: 50%; }
+.photo-rounded .hero .photo { border-radius: 16px; }
+
+.tagline { color: var(--muted); }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: 2.5rem; }
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: ink */
+.page { max-width: none; margin: 0; padding: 0; }
+.hero {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  padding: clamp(2.5rem, 7vw, 5rem) 1.5rem clamp(2.25rem, 5vw, 3.5rem);
+}
+.hero > * { max-width: 44rem; margin-left: auto; margin-right: auto; }
+.hero .photo {
+  width: clamp(96px, 18vw, 148px);
+  height: clamp(96px, 18vw, 148px);
+  margin-bottom: 1.5rem;
+  border: 4px solid var(--accent-contrast);
+}
+.hero h1 {
+  font-size: clamp(3rem, 10vw, 6rem);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: var(--accent-contrast);
+}
+.hero .tagline {
+  color: var(--accent-contrast);
+  font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+  font-weight: 600;
+  margin-top: 1rem;
+  opacity: 0.92;
+}
+.hero .links { margin-top: 1.75rem; }
+.hero .links a {
+  color: var(--accent-contrast);
+  border: 2px solid var(--accent-contrast);
+  padding: 0.4rem 0.9rem;
+  font-weight: 700;
+}
+.hero .links a:hover { background: var(--accent-contrast); color: var(--accent); text-decoration: none; }
+main {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 3.5rem) 1.5rem;
+}
+.section { border-left: 6px solid var(--accent); padding-left: 1.25rem; }
+.section h2 {
+  font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+.project h3 { font-weight: 800; }
+.chips li { border: 2px solid var(--accent); font-weight: 600; }
+footer {
+  max-width: 44rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 1.5rem 3rem;
+}
+"
+`;
+
+exports[`renderSite > snapshot: ink x full > html 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anna Virtanen</title>
+<meta name="description" content="Gardener, baker, occasional poet">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-banner photo-square has-photo">
+<div class="page">
+<header class="hero">
+<img class="photo" src="assets/photo.jpg" alt="Anna Virtanen" width="512" height="512">
+<h1>Anna Virtanen</h1>
+<p class="tagline">Gardener, baker, occasional poet</p>
+<nav class="links" aria-label="Links">
+<a href="https://www.instagram.com/annav"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 7.5zm0 2A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5zM17.5 5.5a1 1 0 1 1-1 1 1 1 0 0 1 1-1z"/></svg><span>Instagram</span></a>
+<a href="https://github.com/annav"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.2-3.4-1.2-.4-1.1-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.6-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.2-.4-1.2.1-2.6 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.6.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9v2.7c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg><span>GitHub</span></a>
+<a href="mailto:anna@example.com"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 5v14h20V5H2zm18 2v.4l-8 5.3-8-5.3V7h16zM4 17V9.8l8 5.3 8-5.3V17H4z"/></svg><span>Email me</span></a>
+<a href="https://annasgarden.example.com/"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm7.9 9h-3.4a15.6 15.6 0 0 0-1.2-5.7A8 8 0 0 1 19.9 11zM12 4.1c.9 1.1 2 3.3 2.4 6.9H9.6c.3-3.6 1.5-5.8 2.4-6.9zM8.7 5.3A15.6 15.6 0 0 0 7.5 11H4.1a8 8 0 0 1 4.6-5.7zM4.1 13h3.4c.1 2.2.6 4.1 1.2 5.7A8 8 0 0 1 4.1 13zm5.5 0h4.8c-.3 3.6-1.5 5.8-2.4 6.9-.9-1.1-2-3.3-2.4-6.9zm5.7 5.7c.6-1.6 1-3.5 1.2-5.7h3.4a8 8 0 0 1-4.6 5.7z"/></svg><span>My blog</span></a>
+</nav>
+</header>
+<main>
+<section class="section section-about" aria-labelledby="sec-1-h">
+<h2 id="sec-1-h">About</h2>
+<p>I grow things: vegetables, sourdough starters and the occasional poem.</p>
+<p>Based in Tampere, Finland.<br>Usually found in the garden.</p>
+</section>
+<section class="section section-projects" aria-labelledby="sec-2-h">
+<h2 id="sec-2-h">Things I make</h2>
+<ul class="projects">
+<li class="project"><h3><a href="https://annasgarden.example.com/">Community garden blog</a></h3>
+<p class="desc">Weekly notes from plot 14.</p></li>
+<li class="project"><h3>Sourdough starter guide</h3>
+<p class="desc">A beginner-friendly PDF.</p></li>
+<li class="project"><h3>Poetry zine</h3></li>
+</ul>
+</section>
+<section class="section section-hobbies" aria-labelledby="sec-3-h">
+<h2 id="sec-3-h">Things I love</h2>
+<ul class="chips">
+<li>Gardening</li>
+<li>Baking</li>
+<li>Watercolors</li>
+<li>Winter swimming</li>
+</ul>
+</section>
+<section class="section section-contact" aria-labelledby="sec-4-h">
+<h2 id="sec-4-h">Get in touch</h2>
+<p><a href="mailto:anna@example.com">anna@example.com</a></p>
+<p>Happy to chat about gardens or bread.</p>
+</section>
+<section class="section section-custom" aria-labelledby="sec-5-h">
+<h2 id="sec-5-h">Reading now</h2>
+<p>Braiding Sweetgrass by Robin Wall Kimmerer.</p>
+</section>
+</main>
+<footer>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+"
+`;
+
+exports[`renderSite > snapshot: ink x hostile > css 1`] = `
+":root {
+  --bg: #fbfbfa;
+  --surface: #ffffff;
+  --text: #1a1a1a;
+  --muted: #565656;
+  --accent: #b3122e;
+  --accent-contrast: #ffffff;
+  --font-body: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-heading: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: clamp(1.9rem, 1.4rem + 2.5vw, 3rem); }
+h2 { font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; }
+.photo-circle .hero .photo { border-radius: 50%; }
+.photo-rounded .hero .photo { border-radius: 16px; }
+
+.tagline { color: var(--muted); }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: 2.5rem; }
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: ink */
+.page { max-width: none; margin: 0; padding: 0; }
+.hero {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  padding: clamp(2.5rem, 7vw, 5rem) 1.5rem clamp(2.25rem, 5vw, 3.5rem);
+}
+.hero > * { max-width: 44rem; margin-left: auto; margin-right: auto; }
+.hero .photo {
+  width: clamp(96px, 18vw, 148px);
+  height: clamp(96px, 18vw, 148px);
+  margin-bottom: 1.5rem;
+  border: 4px solid var(--accent-contrast);
+}
+.hero h1 {
+  font-size: clamp(3rem, 10vw, 6rem);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: var(--accent-contrast);
+}
+.hero .tagline {
+  color: var(--accent-contrast);
+  font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+  font-weight: 600;
+  margin-top: 1rem;
+  opacity: 0.92;
+}
+.hero .links { margin-top: 1.75rem; }
+.hero .links a {
+  color: var(--accent-contrast);
+  border: 2px solid var(--accent-contrast);
+  padding: 0.4rem 0.9rem;
+  font-weight: 700;
+}
+.hero .links a:hover { background: var(--accent-contrast); color: var(--accent); text-decoration: none; }
+main {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 3.5rem) 1.5rem;
+}
+.section { border-left: 6px solid var(--accent); padding-left: 1.25rem; }
+.section h2 {
+  font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+.project h3 { font-weight: 800; }
+.chips li { border: 2px solid var(--accent); font-weight: 600; }
+footer {
+  max-width: 44rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 1.5rem 3rem;
+}
+"
+`;
+
+exports[`renderSite > snapshot: ink x hostile > html 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>&lt;script&gt;alert(1)&lt;/script&gt; "O'Brien" &amp; Sons</title>
+<meta name="description" content="&lt;img src=x onerror=alert(1)&gt; שלום 🌱">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-banner photo-square has-photo">
+<div class="page">
+<header class="hero">
+<img class="photo" src="assets/photo.jpg" alt="&lt;script&gt;alert(1)&lt;/script&gt; &quot;O'Brien&quot; &amp; Sons" width="512" height="512">
+<h1>&lt;script&gt;alert(1)&lt;/script&gt; "O'Brien" &amp; Sons</h1>
+<p class="tagline">&lt;img src=x onerror=alert(1)&gt; שלום 🌱</p>
+<nav class="links" aria-label="Links">
+<span>Click "here"</span>
+<a href="https://example.com/?q=%22%3E%3Cscript%3Ealert(1)%3C/script%3E"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm7.9 9h-3.4a15.6 15.6 0 0 0-1.2-5.7A8 8 0 0 1 19.9 11zM12 4.1c.9 1.1 2 3.3 2.4 6.9H9.6c.3-3.6 1.5-5.8 2.4-6.9zM8.7 5.3A15.6 15.6 0 0 0 7.5 11H4.1a8 8 0 0 1 4.6-5.7zM4.1 13h3.4c.1 2.2.6 4.1 1.2 5.7A8 8 0 0 1 4.1 13zm5.5 0h4.8c-.3 3.6-1.5 5.8-2.4 6.9-.9-1.1-2-3.3-2.4-6.9zm5.7 5.7c.6-1.6 1-3.5 1.2-5.7h3.4a8 8 0 0 1-4.6 5.7z"/></svg><span>&lt;b&gt;bold&lt;/b&gt;</span></a>
+<span>data sneaky</span>
+<span>vbscript:evil</span>
+<span>spaces only</span>
+</nav>
+</header>
+<main>
+<section class="section section-about" aria-labelledby="sec-1-h">
+<h2 id="sec-1-h">About</h2>
+<p>Line with &lt;tags&gt; &amp; "quotes"</p>
+<p>&lt;script&gt;alert('about')&lt;/script&gt;</p>
+</section>
+<section class="section section-projects" aria-labelledby="sec-2-h">
+<h2 id="sec-2-h">&lt;script&gt;t&lt;/script&gt;</h2>
+<ul class="projects">
+<li class="project"><h3>proj "x"</h3>
+<p class="desc">&lt;svg onload=alert(1)&gt;</p></li>
+</ul>
+</section>
+<section class="section section-hobbies" aria-labelledby="sec-3-h">
+<h2 id="sec-3-h">Things I love</h2>
+<ul class="chips">
+<li>&lt;li&gt;escape me</li>
+<li>normal</li>
+</ul>
+</section>
+<section class="section section-contact" aria-labelledby="sec-4-h">
+<h2 id="sec-4-h">Get in touch</h2>
+<p><a href="mailto:evil&quot;@ex.com&lt;script&gt;">evil"@ex.com&lt;script&gt;</a></p>
+<p>note &amp; &lt;note&gt;</p>
+</section>
+<section class="section section-custom" aria-labelledby="sec-5-h">
+<h2 id="sec-5-h">T &amp; &lt;T&gt;</h2>
+<p>body &lt;script&gt;alert(3)&lt;/script&gt;</p>
+</section>
+</main>
+<footer>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+"
+`;
+
+exports[`renderSite > snapshot: ink x minimal > css 1`] = `
+":root {
+  --bg: #fbfbfa;
+  --surface: #ffffff;
+  --text: #1a1a1a;
+  --muted: #565656;
+  --accent: #b3122e;
+  --accent-contrast: #ffffff;
+  --font-body: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-heading: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: clamp(1.9rem, 1.4rem + 2.5vw, 3rem); }
+h2 { font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; }
+.photo-circle .hero .photo { border-radius: 50%; }
+.photo-rounded .hero .photo { border-radius: 16px; }
+
+.tagline { color: var(--muted); }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: 2.5rem; }
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: ink */
+.page { max-width: none; margin: 0; padding: 0; }
+.hero {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  padding: clamp(2.5rem, 7vw, 5rem) 1.5rem clamp(2.25rem, 5vw, 3.5rem);
+}
+.hero > * { max-width: 44rem; margin-left: auto; margin-right: auto; }
+.hero .photo {
+  width: clamp(96px, 18vw, 148px);
+  height: clamp(96px, 18vw, 148px);
+  margin-bottom: 1.5rem;
+  border: 4px solid var(--accent-contrast);
+}
+.hero h1 {
+  font-size: clamp(3rem, 10vw, 6rem);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: var(--accent-contrast);
+}
+.hero .tagline {
+  color: var(--accent-contrast);
+  font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+  font-weight: 600;
+  margin-top: 1rem;
+  opacity: 0.92;
+}
+.hero .links { margin-top: 1.75rem; }
+.hero .links a {
+  color: var(--accent-contrast);
+  border: 2px solid var(--accent-contrast);
+  padding: 0.4rem 0.9rem;
+  font-weight: 700;
+}
+.hero .links a:hover { background: var(--accent-contrast); color: var(--accent); text-decoration: none; }
+main {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 3.5rem) 1.5rem;
+}
+.section { border-left: 6px solid var(--accent); padding-left: 1.25rem; }
+.section h2 {
+  font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+.project h3 { font-weight: 800; }
+.chips li { border: 2px solid var(--accent); font-weight: 600; }
+footer {
+  max-width: 44rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 1.5rem 3rem;
+}
+"
+`;
+
+exports[`renderSite > snapshot: ink x minimal > html 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anna Virtanen</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-banner photo-square">
+<div class="page">
+<header class="hero">
+<h1>Anna Virtanen</h1>
+</header>
+<main></main>
+<footer>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+"
+`;
+
+exports[`renderSite > snapshot: linen x full > css 1`] = `
+":root {
+  --bg: #faf5ef;
+  --surface: #ffffff;
+  --text: #3a2f28;
+  --muted: #6f6157;
+  --accent: #b23a1e;
+  --accent-contrast: #ffffff;
+  --font-body: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-heading: Georgia, 'Times New Roman', serif;
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: clamp(1.9rem, 1.4rem + 2.5vw, 3rem); }
+h2 { font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; }
+.photo-circle .hero .photo { border-radius: 50%; }
+.photo-rounded .hero .photo { border-radius: 16px; }
+
+.tagline { color: var(--muted); }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: 2.5rem; }
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: linen */
+.page {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 3.5rem) 1.25rem 3rem;
+}
+.hero { text-align: center; padding-bottom: 2rem; }
+.hero .photo {
+  width: 132px;
+  height: 132px;
+  margin: 0 auto 1.25rem;
+  border: 3px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--text) 12%, transparent);
+}
+.hero h1 { letter-spacing: -0.005em; }
+.tagline { margin-top: 0.5rem; font-style: italic; }
+.hero .links { justify-content: center; margin-top: 1.5rem; }
+.section {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 1.75rem 1.75rem 1.9rem;
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--text) 8%, transparent);
+}
+.section h2 { color: var(--accent); }
+.projects { gap: 1.1rem; }
+.project h3 { font-size: 1.1rem; }
+.chips li {
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+}
+footer { text-align: center; }
+"
+`;
+
+exports[`renderSite > snapshot: linen x full > html 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anna Virtanen</title>
+<meta name="description" content="Gardener, baker, occasional poet">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-centered-column photo-circle has-photo">
+<div class="page">
+<header class="hero">
+<img class="photo" src="assets/photo.jpg" alt="Anna Virtanen" width="512" height="512">
+<h1>Anna Virtanen</h1>
+<p class="tagline">Gardener, baker, occasional poet</p>
+<nav class="links" aria-label="Links">
+<a href="https://www.instagram.com/annav"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 7.5zm0 2A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5zM17.5 5.5a1 1 0 1 1-1 1 1 1 0 0 1 1-1z"/></svg><span>Instagram</span></a>
+<a href="https://github.com/annav"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.2-3.4-1.2-.4-1.1-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.6-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.2-.4-1.2.1-2.6 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.6.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9v2.7c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg><span>GitHub</span></a>
+<a href="mailto:anna@example.com"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 5v14h20V5H2zm18 2v.4l-8 5.3-8-5.3V7h16zM4 17V9.8l8 5.3 8-5.3V17H4z"/></svg><span>Email me</span></a>
+<a href="https://annasgarden.example.com/"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm7.9 9h-3.4a15.6 15.6 0 0 0-1.2-5.7A8 8 0 0 1 19.9 11zM12 4.1c.9 1.1 2 3.3 2.4 6.9H9.6c.3-3.6 1.5-5.8 2.4-6.9zM8.7 5.3A15.6 15.6 0 0 0 7.5 11H4.1a8 8 0 0 1 4.6-5.7zM4.1 13h3.4c.1 2.2.6 4.1 1.2 5.7A8 8 0 0 1 4.1 13zm5.5 0h4.8c-.3 3.6-1.5 5.8-2.4 6.9-.9-1.1-2-3.3-2.4-6.9zm5.7 5.7c.6-1.6 1-3.5 1.2-5.7h3.4a8 8 0 0 1-4.6 5.7z"/></svg><span>My blog</span></a>
+</nav>
+</header>
+<main>
+<section class="section section-about" aria-labelledby="sec-1-h">
+<h2 id="sec-1-h">About</h2>
+<p>I grow things: vegetables, sourdough starters and the occasional poem.</p>
+<p>Based in Tampere, Finland.<br>Usually found in the garden.</p>
+</section>
+<section class="section section-projects" aria-labelledby="sec-2-h">
+<h2 id="sec-2-h">Things I make</h2>
+<ul class="projects">
+<li class="project"><h3><a href="https://annasgarden.example.com/">Community garden blog</a></h3>
+<p class="desc">Weekly notes from plot 14.</p></li>
+<li class="project"><h3>Sourdough starter guide</h3>
+<p class="desc">A beginner-friendly PDF.</p></li>
+<li class="project"><h3>Poetry zine</h3></li>
+</ul>
+</section>
+<section class="section section-hobbies" aria-labelledby="sec-3-h">
+<h2 id="sec-3-h">Things I love</h2>
+<ul class="chips">
+<li>Gardening</li>
+<li>Baking</li>
+<li>Watercolors</li>
+<li>Winter swimming</li>
+</ul>
+</section>
+<section class="section section-contact" aria-labelledby="sec-4-h">
+<h2 id="sec-4-h">Get in touch</h2>
+<p><a href="mailto:anna@example.com">anna@example.com</a></p>
+<p>Happy to chat about gardens or bread.</p>
+</section>
+<section class="section section-custom" aria-labelledby="sec-5-h">
+<h2 id="sec-5-h">Reading now</h2>
+<p>Braiding Sweetgrass by Robin Wall Kimmerer.</p>
+</section>
+</main>
+<footer>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+"
+`;
+
+exports[`renderSite > snapshot: linen x hostile > css 1`] = `
+":root {
+  --bg: #faf5ef;
+  --surface: #ffffff;
+  --text: #3a2f28;
+  --muted: #6f6157;
+  --accent: #b23a1e;
+  --accent-contrast: #ffffff;
+  --font-body: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-heading: Georgia, 'Times New Roman', serif;
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: clamp(1.9rem, 1.4rem + 2.5vw, 3rem); }
+h2 { font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; }
+.photo-circle .hero .photo { border-radius: 50%; }
+.photo-rounded .hero .photo { border-radius: 16px; }
+
+.tagline { color: var(--muted); }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: 2.5rem; }
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: linen */
+.page {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 3.5rem) 1.25rem 3rem;
+}
+.hero { text-align: center; padding-bottom: 2rem; }
+.hero .photo {
+  width: 132px;
+  height: 132px;
+  margin: 0 auto 1.25rem;
+  border: 3px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--text) 12%, transparent);
+}
+.hero h1 { letter-spacing: -0.005em; }
+.tagline { margin-top: 0.5rem; font-style: italic; }
+.hero .links { justify-content: center; margin-top: 1.5rem; }
+.section {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 1.75rem 1.75rem 1.9rem;
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--text) 8%, transparent);
+}
+.section h2 { color: var(--accent); }
+.projects { gap: 1.1rem; }
+.project h3 { font-size: 1.1rem; }
+.chips li {
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+}
+footer { text-align: center; }
+"
+`;
+
+exports[`renderSite > snapshot: linen x hostile > html 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>&lt;script&gt;alert(1)&lt;/script&gt; "O'Brien" &amp; Sons</title>
+<meta name="description" content="&lt;img src=x onerror=alert(1)&gt; שלום 🌱">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-centered-column photo-circle has-photo">
+<div class="page">
+<header class="hero">
+<img class="photo" src="assets/photo.jpg" alt="&lt;script&gt;alert(1)&lt;/script&gt; &quot;O'Brien&quot; &amp; Sons" width="512" height="512">
+<h1>&lt;script&gt;alert(1)&lt;/script&gt; "O'Brien" &amp; Sons</h1>
+<p class="tagline">&lt;img src=x onerror=alert(1)&gt; שלום 🌱</p>
+<nav class="links" aria-label="Links">
+<span>Click "here"</span>
+<a href="https://example.com/?q=%22%3E%3Cscript%3Ealert(1)%3C/script%3E"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm7.9 9h-3.4a15.6 15.6 0 0 0-1.2-5.7A8 8 0 0 1 19.9 11zM12 4.1c.9 1.1 2 3.3 2.4 6.9H9.6c.3-3.6 1.5-5.8 2.4-6.9zM8.7 5.3A15.6 15.6 0 0 0 7.5 11H4.1a8 8 0 0 1 4.6-5.7zM4.1 13h3.4c.1 2.2.6 4.1 1.2 5.7A8 8 0 0 1 4.1 13zm5.5 0h4.8c-.3 3.6-1.5 5.8-2.4 6.9-.9-1.1-2-3.3-2.4-6.9zm5.7 5.7c.6-1.6 1-3.5 1.2-5.7h3.4a8 8 0 0 1-4.6 5.7z"/></svg><span>&lt;b&gt;bold&lt;/b&gt;</span></a>
+<span>data sneaky</span>
+<span>vbscript:evil</span>
+<span>spaces only</span>
+</nav>
+</header>
+<main>
+<section class="section section-about" aria-labelledby="sec-1-h">
+<h2 id="sec-1-h">About</h2>
+<p>Line with &lt;tags&gt; &amp; "quotes"</p>
+<p>&lt;script&gt;alert('about')&lt;/script&gt;</p>
+</section>
+<section class="section section-projects" aria-labelledby="sec-2-h">
+<h2 id="sec-2-h">&lt;script&gt;t&lt;/script&gt;</h2>
+<ul class="projects">
+<li class="project"><h3>proj "x"</h3>
+<p class="desc">&lt;svg onload=alert(1)&gt;</p></li>
+</ul>
+</section>
+<section class="section section-hobbies" aria-labelledby="sec-3-h">
+<h2 id="sec-3-h">Things I love</h2>
+<ul class="chips">
+<li>&lt;li&gt;escape me</li>
+<li>normal</li>
+</ul>
+</section>
+<section class="section section-contact" aria-labelledby="sec-4-h">
+<h2 id="sec-4-h">Get in touch</h2>
+<p><a href="mailto:evil&quot;@ex.com&lt;script&gt;">evil"@ex.com&lt;script&gt;</a></p>
+<p>note &amp; &lt;note&gt;</p>
+</section>
+<section class="section section-custom" aria-labelledby="sec-5-h">
+<h2 id="sec-5-h">T &amp; &lt;T&gt;</h2>
+<p>body &lt;script&gt;alert(3)&lt;/script&gt;</p>
+</section>
+</main>
+<footer>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+"
+`;
+
+exports[`renderSite > snapshot: linen x minimal > css 1`] = `
+":root {
+  --bg: #faf5ef;
+  --surface: #ffffff;
+  --text: #3a2f28;
+  --muted: #6f6157;
+  --accent: #b23a1e;
+  --accent-contrast: #ffffff;
+  --font-body: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-heading: Georgia, 'Times New Roman', serif;
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: clamp(1.9rem, 1.4rem + 2.5vw, 3rem); }
+h2 { font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; }
+.photo-circle .hero .photo { border-radius: 50%; }
+.photo-rounded .hero .photo { border-radius: 16px; }
+
+.tagline { color: var(--muted); }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: 2.5rem; }
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: linen */
+.page {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 3.5rem) 1.25rem 3rem;
+}
+.hero { text-align: center; padding-bottom: 2rem; }
+.hero .photo {
+  width: 132px;
+  height: 132px;
+  margin: 0 auto 1.25rem;
+  border: 3px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--text) 12%, transparent);
+}
+.hero h1 { letter-spacing: -0.005em; }
+.tagline { margin-top: 0.5rem; font-style: italic; }
+.hero .links { justify-content: center; margin-top: 1.5rem; }
+.section {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 1.75rem 1.75rem 1.9rem;
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--text) 8%, transparent);
+}
+.section h2 { color: var(--accent); }
+.projects { gap: 1.1rem; }
+.project h3 { font-size: 1.1rem; }
+.chips li {
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+}
+footer { text-align: center; }
+"
+`;
+
+exports[`renderSite > snapshot: linen x minimal > html 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anna Virtanen</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-centered-column photo-circle">
+<div class="page">
+<header class="hero">
+<h1>Anna Virtanen</h1>
+</header>
+<main></main>
+<footer>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+"
+`;
+
+exports[`renderSite > snapshot: slate x full > css 1`] = `
+":root {
+  --bg: #f4f7f2;
+  --surface: #ffffff;
+  --text: #2a3129;
+  --muted: #5e675c;
+  --accent: #3d6b35;
+  --accent-contrast: #ffffff;
+  --font-body: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-heading: Georgia, 'Times New Roman', serif;
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: clamp(1.9rem, 1.4rem + 2.5vw, 3rem); }
+h2 { font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; }
+.photo-circle .hero .photo { border-radius: 50%; }
+.photo-rounded .hero .photo { border-radius: 16px; }
+
+.tagline { color: var(--muted); }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: 2.5rem; }
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: slate */
+.page {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 4rem) 1.25rem 3rem;
+}
+.hero { text-align: center; padding-bottom: 2.5rem; border-bottom: 1px solid color-mix(in srgb, var(--muted) 35%, transparent); }
+.hero .photo { width: 128px; height: 128px; margin: 0 auto 1.25rem; }
+.hero h1 { letter-spacing: -0.01em; }
+.tagline { margin-top: 0.5rem; }
+.hero .links { justify-content: center; margin-top: 1.5rem; }
+.section h2 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.section { border-bottom: 1px solid color-mix(in srgb, var(--muted) 35%, transparent); padding-bottom: 2.5rem; }
+.section:last-child { border-bottom: none; }
+.chips li { border-color: color-mix(in srgb, var(--muted) 45%, transparent); }
+footer { text-align: center; }
+"
+`;
+
+exports[`renderSite > snapshot: slate x full > html 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anna Virtanen</title>
+<meta name="description" content="Gardener, baker, occasional poet">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-centered-column photo-circle has-photo">
+<div class="page">
+<header class="hero">
+<img class="photo" src="assets/photo.jpg" alt="Anna Virtanen" width="512" height="512">
+<h1>Anna Virtanen</h1>
+<p class="tagline">Gardener, baker, occasional poet</p>
+<nav class="links" aria-label="Links">
+<a href="https://www.instagram.com/annav"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 7.5zm0 2A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5zM17.5 5.5a1 1 0 1 1-1 1 1 1 0 0 1 1-1z"/></svg><span>Instagram</span></a>
+<a href="https://github.com/annav"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.2-3.4-1.2-.4-1.1-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.6-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.2-.4-1.2.1-2.6 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.6.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9v2.7c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg><span>GitHub</span></a>
+<a href="mailto:anna@example.com"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 5v14h20V5H2zm18 2v.4l-8 5.3-8-5.3V7h16zM4 17V9.8l8 5.3 8-5.3V17H4z"/></svg><span>Email me</span></a>
+<a href="https://annasgarden.example.com/"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm7.9 9h-3.4a15.6 15.6 0 0 0-1.2-5.7A8 8 0 0 1 19.9 11zM12 4.1c.9 1.1 2 3.3 2.4 6.9H9.6c.3-3.6 1.5-5.8 2.4-6.9zM8.7 5.3A15.6 15.6 0 0 0 7.5 11H4.1a8 8 0 0 1 4.6-5.7zM4.1 13h3.4c.1 2.2.6 4.1 1.2 5.7A8 8 0 0 1 4.1 13zm5.5 0h4.8c-.3 3.6-1.5 5.8-2.4 6.9-.9-1.1-2-3.3-2.4-6.9zm5.7 5.7c.6-1.6 1-3.5 1.2-5.7h3.4a8 8 0 0 1-4.6 5.7z"/></svg><span>My blog</span></a>
+</nav>
+</header>
+<main>
+<section class="section section-about" aria-labelledby="sec-1-h">
+<h2 id="sec-1-h">About</h2>
+<p>I grow things: vegetables, sourdough starters and the occasional poem.</p>
+<p>Based in Tampere, Finland.<br>Usually found in the garden.</p>
+</section>
+<section class="section section-projects" aria-labelledby="sec-2-h">
+<h2 id="sec-2-h">Things I make</h2>
+<ul class="projects">
+<li class="project"><h3><a href="https://annasgarden.example.com/">Community garden blog</a></h3>
+<p class="desc">Weekly notes from plot 14.</p></li>
+<li class="project"><h3>Sourdough starter guide</h3>
+<p class="desc">A beginner-friendly PDF.</p></li>
+<li class="project"><h3>Poetry zine</h3></li>
+</ul>
+</section>
+<section class="section section-hobbies" aria-labelledby="sec-3-h">
+<h2 id="sec-3-h">Things I love</h2>
+<ul class="chips">
+<li>Gardening</li>
+<li>Baking</li>
+<li>Watercolors</li>
+<li>Winter swimming</li>
+</ul>
+</section>
+<section class="section section-contact" aria-labelledby="sec-4-h">
+<h2 id="sec-4-h">Get in touch</h2>
+<p><a href="mailto:anna@example.com">anna@example.com</a></p>
+<p>Happy to chat about gardens or bread.</p>
+</section>
+<section class="section section-custom" aria-labelledby="sec-5-h">
+<h2 id="sec-5-h">Reading now</h2>
+<p>Braiding Sweetgrass by Robin Wall Kimmerer.</p>
+</section>
+</main>
+<footer>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+"
+`;
+
+exports[`renderSite > snapshot: slate x hostile > css 1`] = `
+":root {
+  --bg: #fafaf8;
+  --surface: #ffffff;
+  --text: #26282b;
+  --muted: #5f646b;
+  --accent: #3b5bdb;
+  --accent-contrast: #ffffff;
+  --font-body: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-heading: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: clamp(1.9rem, 1.4rem + 2.5vw, 3rem); }
+h2 { font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; }
+.photo-circle .hero .photo { border-radius: 50%; }
+.photo-rounded .hero .photo { border-radius: 16px; }
+
+.tagline { color: var(--muted); }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: 2.5rem; }
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: slate */
+.page {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 4rem) 1.25rem 3rem;
+}
+.hero { text-align: center; padding-bottom: 2.5rem; border-bottom: 1px solid color-mix(in srgb, var(--muted) 35%, transparent); }
+.hero .photo { width: 128px; height: 128px; margin: 0 auto 1.25rem; }
+.hero h1 { letter-spacing: -0.01em; }
+.tagline { margin-top: 0.5rem; }
+.hero .links { justify-content: center; margin-top: 1.5rem; }
+.section h2 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.section { border-bottom: 1px solid color-mix(in srgb, var(--muted) 35%, transparent); padding-bottom: 2.5rem; }
+.section:last-child { border-bottom: none; }
+.chips li { border-color: color-mix(in srgb, var(--muted) 45%, transparent); }
+footer { text-align: center; }
+"
+`;
+
+exports[`renderSite > snapshot: slate x hostile > html 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>&lt;script&gt;alert(1)&lt;/script&gt; "O'Brien" &amp; Sons</title>
+<meta name="description" content="&lt;img src=x onerror=alert(1)&gt; שלום 🌱">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-centered-column photo-circle has-photo">
+<div class="page">
+<header class="hero">
+<img class="photo" src="assets/photo.jpg" alt="&lt;script&gt;alert(1)&lt;/script&gt; &quot;O'Brien&quot; &amp; Sons" width="512" height="512">
+<h1>&lt;script&gt;alert(1)&lt;/script&gt; "O'Brien" &amp; Sons</h1>
+<p class="tagline">&lt;img src=x onerror=alert(1)&gt; שלום 🌱</p>
+<nav class="links" aria-label="Links">
+<span>Click "here"</span>
+<a href="https://example.com/?q=%22%3E%3Cscript%3Ealert(1)%3C/script%3E"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm7.9 9h-3.4a15.6 15.6 0 0 0-1.2-5.7A8 8 0 0 1 19.9 11zM12 4.1c.9 1.1 2 3.3 2.4 6.9H9.6c.3-3.6 1.5-5.8 2.4-6.9zM8.7 5.3A15.6 15.6 0 0 0 7.5 11H4.1a8 8 0 0 1 4.6-5.7zM4.1 13h3.4c.1 2.2.6 4.1 1.2 5.7A8 8 0 0 1 4.1 13zm5.5 0h4.8c-.3 3.6-1.5 5.8-2.4 6.9-.9-1.1-2-3.3-2.4-6.9zm5.7 5.7c.6-1.6 1-3.5 1.2-5.7h3.4a8 8 0 0 1-4.6 5.7z"/></svg><span>&lt;b&gt;bold&lt;/b&gt;</span></a>
+<span>data sneaky</span>
+<span>vbscript:evil</span>
+<span>spaces only</span>
+</nav>
+</header>
+<main>
+<section class="section section-about" aria-labelledby="sec-1-h">
+<h2 id="sec-1-h">About</h2>
+<p>Line with &lt;tags&gt; &amp; "quotes"</p>
+<p>&lt;script&gt;alert('about')&lt;/script&gt;</p>
+</section>
+<section class="section section-projects" aria-labelledby="sec-2-h">
+<h2 id="sec-2-h">&lt;script&gt;t&lt;/script&gt;</h2>
+<ul class="projects">
+<li class="project"><h3>proj "x"</h3>
+<p class="desc">&lt;svg onload=alert(1)&gt;</p></li>
+</ul>
+</section>
+<section class="section section-hobbies" aria-labelledby="sec-3-h">
+<h2 id="sec-3-h">Things I love</h2>
+<ul class="chips">
+<li>&lt;li&gt;escape me</li>
+<li>normal</li>
+</ul>
+</section>
+<section class="section section-contact" aria-labelledby="sec-4-h">
+<h2 id="sec-4-h">Get in touch</h2>
+<p><a href="mailto:evil&quot;@ex.com&lt;script&gt;">evil"@ex.com&lt;script&gt;</a></p>
+<p>note &amp; &lt;note&gt;</p>
+</section>
+<section class="section section-custom" aria-labelledby="sec-5-h">
+<h2 id="sec-5-h">T &amp; &lt;T&gt;</h2>
+<p>body &lt;script&gt;alert(3)&lt;/script&gt;</p>
+</section>
+</main>
+<footer>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+"
+`;
+
+exports[`renderSite > snapshot: slate x minimal > css 1`] = `
+":root {
+  --bg: #fafaf8;
+  --surface: #ffffff;
+  --text: #26282b;
+  --muted: #5f646b;
+  --accent: #3b5bdb;
+  --accent-contrast: #ffffff;
+  --font-body: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-heading: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: clamp(1.9rem, 1.4rem + 2.5vw, 3rem); }
+h2 { font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; }
+.photo-circle .hero .photo { border-radius: 50%; }
+.photo-rounded .hero .photo { border-radius: 16px; }
+
+.tagline { color: var(--muted); }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: 2.5rem; }
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: slate */
+.page {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 4rem) 1.25rem 3rem;
+}
+.hero { text-align: center; padding-bottom: 2.5rem; border-bottom: 1px solid color-mix(in srgb, var(--muted) 35%, transparent); }
+.hero .photo { width: 128px; height: 128px; margin: 0 auto 1.25rem; }
+.hero h1 { letter-spacing: -0.01em; }
+.tagline { margin-top: 0.5rem; }
+.hero .links { justify-content: center; margin-top: 1.5rem; }
+.section h2 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.section { border-bottom: 1px solid color-mix(in srgb, var(--muted) 35%, transparent); padding-bottom: 2.5rem; }
+.section:last-child { border-bottom: none; }
+.chips li { border-color: color-mix(in srgb, var(--muted) 45%, transparent); }
+footer { text-align: center; }
+"
+`;
+
+exports[`renderSite > snapshot: slate x minimal > html 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anna Virtanen</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-centered-column photo-circle">
+<div class="page">
+<header class="hero">
+<h1>Anna Virtanen</h1>
+</header>
+<main></main>
+<footer>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+"
+`;
+
+exports[`renderSite > snapshot: terminal x full > css 1`] = `
+":root {
+  --bg: #0a0f0a;
+  --surface: #111a11;
+  --text: #c8f0cc;
+  --muted: #7fa886;
+  --accent: #33ff66;
+  --accent-contrast: #001100;
+  --font-body: ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
+  --font-heading: ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: clamp(1.9rem, 1.4rem + 2.5vw, 3rem); }
+h2 { font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; }
+.photo-circle .hero .photo { border-radius: 50%; }
+.photo-rounded .hero .photo { border-radius: 16px; }
+
+.tagline { color: var(--muted); }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: 2.5rem; }
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: terminal */
+.page {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3rem) 1.25rem 3rem;
+}
+.hero, .section {
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--muted) 45%, transparent);
+  border-top: 3px solid var(--accent);
+  border-radius: 4px;
+  padding: 1.5rem;
+}
+.hero { padding-bottom: 1.75rem; }
+.hero .photo {
+  width: 120px; height: 120px;
+  border: 2px solid var(--accent);
+  border-radius: 2px;
+  image-rendering: pixelated;
+  margin-bottom: 1rem;
+}
+.hero h1::before { content: '> '; color: var(--accent); }
+.hero h1::after {
+  content: '\\258B';
+  color: var(--accent);
+  animation: blink 1.2s step-end infinite;
+}
+@keyframes blink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
+.tagline { margin-top: 0.5rem; }
+.hero .links { margin-top: 1.25rem; }
+.links a { text-decoration: none; }
+.links a::before { content: '['; color: var(--muted); }
+.links a::after { content: ']'; color: var(--muted); }
+.section h2::before { content: '$ '; color: var(--accent); }
+.section h2 {
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+}
+.project h3::before { content: '# '; color: var(--muted); }
+.chips li { border-color: color-mix(in srgb, var(--muted) 55%, transparent); border-radius: 2px; }
+.chips li::before { content: '~/'; color: var(--muted); }
+footer { text-align: center; }
+footer::before { content: '// '; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) {
+  .hero h1::after { animation: none; }
+}
+"
+`;
+
+exports[`renderSite > snapshot: terminal x full > html 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anna Virtanen</title>
+<meta name="description" content="Gardener, baker, occasional poet">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-card-stack photo-square has-photo">
+<div class="page">
+<header class="hero">
+<img class="photo" src="assets/photo.jpg" alt="Anna Virtanen" width="512" height="512">
+<h1>Anna Virtanen</h1>
+<p class="tagline">Gardener, baker, occasional poet</p>
+<nav class="links" aria-label="Links">
+<a href="https://www.instagram.com/annav"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 7.5zm0 2A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5zM17.5 5.5a1 1 0 1 1-1 1 1 1 0 0 1 1-1z"/></svg><span>Instagram</span></a>
+<a href="https://github.com/annav"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.2-3.4-1.2-.4-1.1-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.6-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.2-.4-1.2.1-2.6 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.6.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9v2.7c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg><span>GitHub</span></a>
+<a href="mailto:anna@example.com"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 5v14h20V5H2zm18 2v.4l-8 5.3-8-5.3V7h16zM4 17V9.8l8 5.3 8-5.3V17H4z"/></svg><span>Email me</span></a>
+<a href="https://annasgarden.example.com/"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm7.9 9h-3.4a15.6 15.6 0 0 0-1.2-5.7A8 8 0 0 1 19.9 11zM12 4.1c.9 1.1 2 3.3 2.4 6.9H9.6c.3-3.6 1.5-5.8 2.4-6.9zM8.7 5.3A15.6 15.6 0 0 0 7.5 11H4.1a8 8 0 0 1 4.6-5.7zM4.1 13h3.4c.1 2.2.6 4.1 1.2 5.7A8 8 0 0 1 4.1 13zm5.5 0h4.8c-.3 3.6-1.5 5.8-2.4 6.9-.9-1.1-2-3.3-2.4-6.9zm5.7 5.7c.6-1.6 1-3.5 1.2-5.7h3.4a8 8 0 0 1-4.6 5.7z"/></svg><span>My blog</span></a>
+</nav>
+</header>
+<main>
+<section class="section section-about" aria-labelledby="sec-1-h">
+<h2 id="sec-1-h">About</h2>
+<p>I grow things: vegetables, sourdough starters and the occasional poem.</p>
+<p>Based in Tampere, Finland.<br>Usually found in the garden.</p>
+</section>
+<section class="section section-projects" aria-labelledby="sec-2-h">
+<h2 id="sec-2-h">Things I make</h2>
+<ul class="projects">
+<li class="project"><h3><a href="https://annasgarden.example.com/">Community garden blog</a></h3>
+<p class="desc">Weekly notes from plot 14.</p></li>
+<li class="project"><h3>Sourdough starter guide</h3>
+<p class="desc">A beginner-friendly PDF.</p></li>
+<li class="project"><h3>Poetry zine</h3></li>
+</ul>
+</section>
+<section class="section section-hobbies" aria-labelledby="sec-3-h">
+<h2 id="sec-3-h">Things I love</h2>
+<ul class="chips">
+<li>Gardening</li>
+<li>Baking</li>
+<li>Watercolors</li>
+<li>Winter swimming</li>
+</ul>
+</section>
+<section class="section section-contact" aria-labelledby="sec-4-h">
+<h2 id="sec-4-h">Get in touch</h2>
+<p><a href="mailto:anna@example.com">anna@example.com</a></p>
+<p>Happy to chat about gardens or bread.</p>
+</section>
+<section class="section section-custom" aria-labelledby="sec-5-h">
+<h2 id="sec-5-h">Reading now</h2>
+<p>Braiding Sweetgrass by Robin Wall Kimmerer.</p>
+</section>
+</main>
+<footer>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+"
+`;
+
+exports[`renderSite > snapshot: terminal x hostile > css 1`] = `
+":root {
+  --bg: #0a0f0a;
+  --surface: #111a11;
+  --text: #c8f0cc;
+  --muted: #7fa886;
+  --accent: #33ff66;
+  --accent-contrast: #001100;
+  --font-body: ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
+  --font-heading: ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: clamp(1.9rem, 1.4rem + 2.5vw, 3rem); }
+h2 { font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; }
+.photo-circle .hero .photo { border-radius: 50%; }
+.photo-rounded .hero .photo { border-radius: 16px; }
+
+.tagline { color: var(--muted); }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: 2.5rem; }
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: terminal */
+.page {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3rem) 1.25rem 3rem;
+}
+.hero, .section {
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--muted) 45%, transparent);
+  border-top: 3px solid var(--accent);
+  border-radius: 4px;
+  padding: 1.5rem;
+}
+.hero { padding-bottom: 1.75rem; }
+.hero .photo {
+  width: 120px; height: 120px;
+  border: 2px solid var(--accent);
+  border-radius: 2px;
+  image-rendering: pixelated;
+  margin-bottom: 1rem;
+}
+.hero h1::before { content: '> '; color: var(--accent); }
+.hero h1::after {
+  content: '\\258B';
+  color: var(--accent);
+  animation: blink 1.2s step-end infinite;
+}
+@keyframes blink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
+.tagline { margin-top: 0.5rem; }
+.hero .links { margin-top: 1.25rem; }
+.links a { text-decoration: none; }
+.links a::before { content: '['; color: var(--muted); }
+.links a::after { content: ']'; color: var(--muted); }
+.section h2::before { content: '$ '; color: var(--accent); }
+.section h2 {
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+}
+.project h3::before { content: '# '; color: var(--muted); }
+.chips li { border-color: color-mix(in srgb, var(--muted) 55%, transparent); border-radius: 2px; }
+.chips li::before { content: '~/'; color: var(--muted); }
+footer { text-align: center; }
+footer::before { content: '// '; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) {
+  .hero h1::after { animation: none; }
+}
+"
+`;
+
+exports[`renderSite > snapshot: terminal x hostile > html 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>&lt;script&gt;alert(1)&lt;/script&gt; "O'Brien" &amp; Sons</title>
+<meta name="description" content="&lt;img src=x onerror=alert(1)&gt; שלום 🌱">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-card-stack photo-square has-photo">
+<div class="page">
+<header class="hero">
+<img class="photo" src="assets/photo.jpg" alt="&lt;script&gt;alert(1)&lt;/script&gt; &quot;O'Brien&quot; &amp; Sons" width="512" height="512">
+<h1>&lt;script&gt;alert(1)&lt;/script&gt; "O'Brien" &amp; Sons</h1>
+<p class="tagline">&lt;img src=x onerror=alert(1)&gt; שלום 🌱</p>
+<nav class="links" aria-label="Links">
+<span>Click "here"</span>
+<a href="https://example.com/?q=%22%3E%3Cscript%3Ealert(1)%3C/script%3E"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm7.9 9h-3.4a15.6 15.6 0 0 0-1.2-5.7A8 8 0 0 1 19.9 11zM12 4.1c.9 1.1 2 3.3 2.4 6.9H9.6c.3-3.6 1.5-5.8 2.4-6.9zM8.7 5.3A15.6 15.6 0 0 0 7.5 11H4.1a8 8 0 0 1 4.6-5.7zM4.1 13h3.4c.1 2.2.6 4.1 1.2 5.7A8 8 0 0 1 4.1 13zm5.5 0h4.8c-.3 3.6-1.5 5.8-2.4 6.9-.9-1.1-2-3.3-2.4-6.9zm5.7 5.7c.6-1.6 1-3.5 1.2-5.7h3.4a8 8 0 0 1-4.6 5.7z"/></svg><span>&lt;b&gt;bold&lt;/b&gt;</span></a>
+<span>data sneaky</span>
+<span>vbscript:evil</span>
+<span>spaces only</span>
+</nav>
+</header>
+<main>
+<section class="section section-about" aria-labelledby="sec-1-h">
+<h2 id="sec-1-h">About</h2>
+<p>Line with &lt;tags&gt; &amp; "quotes"</p>
+<p>&lt;script&gt;alert('about')&lt;/script&gt;</p>
+</section>
+<section class="section section-projects" aria-labelledby="sec-2-h">
+<h2 id="sec-2-h">&lt;script&gt;t&lt;/script&gt;</h2>
+<ul class="projects">
+<li class="project"><h3>proj "x"</h3>
+<p class="desc">&lt;svg onload=alert(1)&gt;</p></li>
+</ul>
+</section>
+<section class="section section-hobbies" aria-labelledby="sec-3-h">
+<h2 id="sec-3-h">Things I love</h2>
+<ul class="chips">
+<li>&lt;li&gt;escape me</li>
+<li>normal</li>
+</ul>
+</section>
+<section class="section section-contact" aria-labelledby="sec-4-h">
+<h2 id="sec-4-h">Get in touch</h2>
+<p><a href="mailto:evil&quot;@ex.com&lt;script&gt;">evil"@ex.com&lt;script&gt;</a></p>
+<p>note &amp; &lt;note&gt;</p>
+</section>
+<section class="section section-custom" aria-labelledby="sec-5-h">
+<h2 id="sec-5-h">T &amp; &lt;T&gt;</h2>
+<p>body &lt;script&gt;alert(3)&lt;/script&gt;</p>
+</section>
+</main>
+<footer>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+"
+`;
+
+exports[`renderSite > snapshot: terminal x minimal > css 1`] = `
+":root {
+  --bg: #0a0f0a;
+  --surface: #111a11;
+  --text: #c8f0cc;
+  --muted: #7fa886;
+  --accent: #33ff66;
+  --accent-contrast: #001100;
+  --font-body: ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
+  --font-heading: ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: clamp(1.9rem, 1.4rem + 2.5vw, 3rem); }
+h2 { font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; }
+.photo-circle .hero .photo { border-radius: 50%; }
+.photo-rounded .hero .photo { border-radius: 16px; }
+
+.tagline { color: var(--muted); }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: 2.5rem; }
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: terminal */
+.page {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3rem) 1.25rem 3rem;
+}
+.hero, .section {
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--muted) 45%, transparent);
+  border-top: 3px solid var(--accent);
+  border-radius: 4px;
+  padding: 1.5rem;
+}
+.hero { padding-bottom: 1.75rem; }
+.hero .photo {
+  width: 120px; height: 120px;
+  border: 2px solid var(--accent);
+  border-radius: 2px;
+  image-rendering: pixelated;
+  margin-bottom: 1rem;
+}
+.hero h1::before { content: '> '; color: var(--accent); }
+.hero h1::after {
+  content: '\\258B';
+  color: var(--accent);
+  animation: blink 1.2s step-end infinite;
+}
+@keyframes blink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
+.tagline { margin-top: 0.5rem; }
+.hero .links { margin-top: 1.25rem; }
+.links a { text-decoration: none; }
+.links a::before { content: '['; color: var(--muted); }
+.links a::after { content: ']'; color: var(--muted); }
+.section h2::before { content: '$ '; color: var(--accent); }
+.section h2 {
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+}
+.project h3::before { content: '# '; color: var(--muted); }
+.chips li { border-color: color-mix(in srgb, var(--muted) 55%, transparent); border-radius: 2px; }
+.chips li::before { content: '~/'; color: var(--muted); }
+footer { text-align: center; }
+footer::before { content: '// '; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) {
+  .hero h1::after { animation: none; }
+}
+"
+`;
+
+exports[`renderSite > snapshot: terminal x minimal > html 1`] = `
+"<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anna Virtanen</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-card-stack photo-square">
+<div class="page">
+<header class="hero">
+<h1>Anna Virtanen</h1>
+</header>
+<main></main>
+<footer>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+"
+`;

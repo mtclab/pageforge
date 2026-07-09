@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "name": "<script>alert(1)</script> \"O'Brien\" & Sons",
+  "tagline": "<img src=x onerror=alert(1)> שלום 🌱",
+  "photo": { "dataUrl": "data:image/jpeg;base64,/9j/fixture" },
+  "links": [
+    { "label": "Click \"here\"", "url": "javascript:alert(1)" },
+    { "label": "<b>bold</b>", "url": "https://example.com/?q=\"><script>alert(1)</script>" },
+    { "label": "data sneaky", "url": "data:text/html,<script>alert(1)</script>" },
+    { "label": "", "url": "vbscript:evil" },
+    { "label": "spaces only", "url": "   " }
+  ],
+  "sections": [
+    { "kind": "about", "text": "Line with <tags> & \"quotes\"\n\n<script>alert('about')</script>" },
+    {
+      "kind": "projects",
+      "title": "<script>t</script>",
+      "items": [
+        { "name": "proj \"x\"", "desc": "<svg onload=alert(1)>", "url": "javascript:alert(2)" }
+      ]
+    },
+    { "kind": "hobbies", "items": ["<li>escape me", "normal"] },
+    { "kind": "contact", "email": "evil\"@ex.com<script>", "note": "note & <note>" },
+    { "kind": "custom", "title": "T & <T>", "text": "body <script>alert(3)</script>" }
+  ],
+  "footerNote": "<footer injection>",
+  "meta": { "themeId": "slate", "paletteId": "paper", "fontId": "system" }
+}

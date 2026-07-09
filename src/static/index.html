@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pageforge - make your own homepage</title>
+<meta name="description" content="Build your own personal homepage in minutes. Free, no account, no tracking - you download the whole site and it is yours.">
+<meta property="og:title" content="pageforge - make your own homepage">
+<meta property="og:description" content="Answer a few questions, pick a look, download your whole website as a zip. Free, no account, your data never leaves your browser.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pageforge.mtclab.net/">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="ui.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">pageforge</div>
+  <nav id="steps" class="steps" aria-label="Steps"></nav>
+  <button id="preview-toggle" type="button" class="preview-toggle" aria-expanded="false">Preview</button>
+</header>
+
+<div class="wizard">
+  <section class="form-pane">
+    <div id="pane" class="pane"></div>
+    <div class="pager">
+      <button id="prev" type="button" class="chip">Back</button>
+      <button id="next" type="button" class="primary">Next</button>
+    </div>
+  </section>
+
+  <aside id="preview-pane" class="preview-pane" aria-label="Live preview">
+    <div class="preview-tools">
+      <span class="preview-label">Live preview</span>
+      <span class="width-toggle">
+        <button type="button" data-width="desktop" aria-pressed="true">Wide</button>
+        <button type="button" data-width="mobile" aria-pressed="false">Phone</button>
+      </span>
+    </div>
+    <iframe id="preview-frame" title="Preview of your homepage" sandbox="allow-same-origin"></iframe>
+  </aside>
+</div>
+
+<footer class="app-footer">
+  <p>Free and open - no account, no tracking. Your text and photo never leave your browser.</p>
+  <p><a href="https://ko-fi.com/kolli94431" target="_blank" rel="noopener">Buy me a coffee</a></p>
+</footer>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

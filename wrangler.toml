@@ -1,0 +1,9 @@
+name = "pageforge"
+compatibility_date = "2026-07-01"
+workers_dev = true
+routes = [
+  { pattern = "pageforge.mtclab.net", custom_domain = true },
+]
+
+[assets]
+directory = "dist"
