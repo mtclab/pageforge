@@ -99,6 +99,13 @@ function validateSiteData(data: SiteData): string | null {
   if (data.lang !== undefined && !/^[a-z]{2,3}(-[a-zA-Z0-9-]{1,10})?$/.test(data.lang)) {
     return 'bad language code';
   }
+  const cp = data.meta.customPalette;
+  if (cp !== undefined) {
+    const hexes = [cp?.bg, cp?.surface, cp?.text, cp?.muted, cp?.accent];
+    if (hexes.some((h) => typeof h !== 'string' || !/^#[0-9a-f]{6}$/.test(h))) {
+      return 'bad custom colors';
+    }
+  }
   return null;
 }
 
