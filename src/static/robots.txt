@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://pageforge.mtclab.net/sitemap.xml
