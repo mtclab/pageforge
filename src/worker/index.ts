@@ -222,7 +222,8 @@ function serveSite(request: Request, stored: StoredSite, slug: string, rest: str
       if (!m) break;
       const bytes = b64ToBytes(m[1]!);
       const buf = bytes.buffer as ArrayBuffer;
-      return new Response(buf, { headers: { 'content-type': 'image/jpeg', ...cache } });
+      const type = dataUrl.startsWith('data:image/png') ? 'image/png' : 'image/jpeg';
+      return new Response(buf, { headers: { 'content-type': type, ...cache } });
     }
   }
   return new Response('Not found', { status: 404 });

@@ -5,6 +5,7 @@ import { renderSection } from './sections/blocks.js';
 import { renderFooter } from './sections/footer.js';
 import { renderHero } from './sections/hero.js';
 import {
+  CUSTOM_FAVICON_PATH,
   FAVICON_PATH,
   type Font,
   type Palette,
@@ -214,7 +215,11 @@ ${renderFooter(data, opts.hosted)}`;
 <title>${esc(name)}</title>
 ${description ? `<meta name="description" content="${escAttr(description)}">\n` : ''}<meta property="og:title" content="${escAttr(name)}">
 ${description ? `<meta property="og:description" content="${escAttr(description)}">\n` : ''}<meta property="og:type" content="website">
-${ogExtras}<link rel="icon" href="${FAVICON_PATH}" type="image/svg+xml">
+${ogExtras}${
+    data.favicon
+      ? `<link rel="icon" href="${CUSTOM_FAVICON_PATH}" type="image/png">`
+      : `<link rel="icon" href="${FAVICON_PATH}" type="image/svg+xml">`
+  }
 <link rel="stylesheet" href="style.css">
 </head>
 <body class="${bodyClass}">

@@ -1,7 +1,9 @@
+import { slugify } from '../../engine/bundle.js';
 import { getTheme } from '../../themes/index.js';
 import { publishEnabled } from '../config.js';
 import { el } from '../dom.js';
 import { renderOgCard } from '../og.js';
+import { downloadQr, openPrintCards } from '../qr.js';
 import { renderPublishBox } from '../publish.js';
 import { encodeShare } from '../share.js';
 import { downloadZip } from '../zip.js';
@@ -114,6 +116,48 @@ export function renderDownloadStep(pane: HTMLElement, ctx: StepCtx): void {
   });
   share.append(el('div', { class: 'row' }, shareBtn, shareMsg));
   pane.append(share);
+
+  // QR + printable cards: for events, noticeboards, business cards
+  const qrBox = el('div', { class: 'group' }, el('h3', { text: 'QR code and print cards' }));
+  qrBox.append(
+    el('p', {
+      class: 'hint',
+      text: 'Once your page is online, paste its address here to get a QR code and a printable card sheet - great for events and noticeboards.',
+    }),
+  );
+  const qrInput = el('input', { type: 'text', placeholder: 'e.g. https://yourname.netlify.app', 'aria-label': "Your page's address" });
+  const qrActions = el('div', { class: 'row' });
+  const qrBtn = el('button', { type: 'button', class: 'chip', text: 'Download QR (.svg)' });
+  const printBtn = el('button', { type: 'button', class: 'chip', text: 'Print cards' });
+  const qrMsg = el('span', { class: 'hint', text: '' });
+  const readUrl = (): string | null => {
+    const raw = qrInput.value.trim();
+    if (!raw) {
+      qrMsg.textContent = 'Paste your address first.';
+      return null;
+    }
+    const withScheme = /^[a-z]+:/i.test(raw) ? raw : `https://${raw}`;
+    try {
+      const u = new URL(withScheme);
+      if (u.protocol !== 'https:' && u.protocol !== 'http:') throw new Error('scheme');
+      qrMsg.textContent = '';
+      return u.href;
+    } catch {
+      qrMsg.textContent = 'That does not look like a web address.';
+      return null;
+    }
+  };
+  qrBtn.addEventListener('click', () => {
+    const url = readUrl();
+    if (url) downloadQr(url, slugify(data.name));
+  });
+  printBtn.addEventListener('click', () => {
+    const url = readUrl();
+    if (url) openPrintCards(data, url);
+  });
+  qrActions.append(qrBtn, printBtn, qrMsg);
+  qrBox.append(qrInput, qrActions);
+  pane.append(qrBox);
 
   const tip = el('p', { class: 'tip' }, 'This tool is free. If it made you smile, you can ', linkEl(KOFI_URL, 'buy me a coffee'), '.');
   pane.append(tip);
