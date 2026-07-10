@@ -297,6 +297,20 @@ fieldset.group { min-width: 0; }
 .accent-row { margin-top: 0.8rem; align-items: center; }
 .check-row { display: flex; gap: 0.6rem; align-items: flex-start; cursor: pointer; }
 .designer summary { cursor: pointer; font-weight: 600; }
+.band {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.8rem 1rem;
+  margin: 0.9rem 0;
+}
+.band > summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.02rem;
+}
+.band[open] > summary { margin-bottom: 0.4rem; }
+.band .group { border: none; padding: 0.6rem 0 0; margin: 0; }
+.bottom-actions { margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid var(--line); }
 .design-cell { display: inline-flex; flex-direction: column; align-items: center; gap: 0.2rem; }
 .design-cell input[type='color'] { width: 2.6rem; height: 2rem; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; cursor: pointer; }
 .check-row input { margin-top: 0.25rem; }
