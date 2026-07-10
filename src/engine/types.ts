@@ -35,6 +35,8 @@ export interface SiteData {
   tagline?: string;
   /** Cropped square JPEG data URL, max 512x512. Produced by the wizard. */
   photo?: { dataUrl: string };
+  /** Custom tab icon: 64x64 PNG data URL. Absent = generated initials icon. */
+  favicon?: { dataUrl: string };
   links: Link[];
   sections: Section[];
   footerNote?: string;
@@ -124,6 +126,7 @@ export interface RenderedSite {
 /** Path the generated HTML uses for the photo; the zip and the preview both key off this. */
 export const PHOTO_PATH = 'assets/photo.jpg';
 export const FAVICON_PATH = 'assets/favicon.svg';
+export const CUSTOM_FAVICON_PATH = 'assets/favicon.png';
 
 /** Stable asset path for gallery photo j of section i (1-based section index). */
 export function galleryPath(sectionIdx: number, photoIdx: number): string {
@@ -134,6 +137,7 @@ export function galleryPath(sectionIdx: number, photoIdx: number): string {
 export function collectImages(data: SiteData): [string, string][] {
   const images: [string, string][] = [];
   if (data.photo) images.push([PHOTO_PATH, data.photo.dataUrl]);
+  if (data.favicon) images.push([CUSTOM_FAVICON_PATH, data.favicon.dataUrl]);
   data.sections.forEach((section, i) => {
     if (section.kind !== 'gallery') return;
     section.photos.forEach((photo, j) => {

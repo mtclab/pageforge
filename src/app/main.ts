@@ -36,11 +36,56 @@ function initWizard(): void {
     savedTimer = setTimeout(() => savedNote.classList.remove('show'), 1200);
   }
 
+  // App-level undo/redo: snapshots of the whole draft, rapid typing coalesced
+  const undoBtn = document.getElementById('undo') as HTMLButtonElement;
+  const redoBtn = document.getElementById('redo') as HTMLButtonElement;
+  const history: string[] = [JSON.stringify(state.data)];
+  let hIndex = 0;
+  let lastPush = 0;
+  function updateUndoButtons(): void {
+    undoBtn.disabled = hIndex === 0;
+    redoBtn.disabled = hIndex === history.length - 1;
+  }
+  function recordHistory(): void {
+    const snap = JSON.stringify(state.data);
+    if (snap === history[hIndex]) return;
+    const now = performance.now();
+    if (now - lastPush < 800 && hIndex === history.length - 1 && hIndex > 0) {
+      history[hIndex] = snap; // coalesce keystrokes into one step
+    } else {
+      history.splice(hIndex + 1);
+      history.push(snap);
+      if (history.length > 60) history.shift();
+      hIndex = history.length - 1;
+    }
+    lastPush = now;
+    updateUndoButtons();
+  }
+  function restore(idx: number): void {
+    if (idx < 0 || idx > history.length - 1) return;
+    hIndex = idx;
+    lastPush = 0;
+    state.data = JSON.parse(history[idx]!) as typeof state.data;
+    ctx.data = state.data;
+    saveState(state);
+    schedulePreview(iframe, state.data);
+    renderPane();
+    updateUndoButtons();
+  }
+  undoBtn.addEventListener('click', () => restore(hIndex - 1));
+  redoBtn.addEventListener('click', () => restore(hIndex + 1));
+  document.addEventListener('keydown', (e) => {
+    if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== 'z') return;
+    e.preventDefault();
+    restore(e.shiftKey ? hIndex + 1 : hIndex - 1);
+  });
+
   const ctx: StepCtx = {
     data: state.data,
     onChange(structural = false) {
       ctx.data = state.data;
       saveState(state);
+      recordHistory();
       pulseSaved();
       schedulePreview(iframe, state.data);
       if (structural) renderPane();

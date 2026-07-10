@@ -25,9 +25,11 @@ export function buildSiteFiles(data: SiteData, theme: ThemePack): Record<string,
     'index.html': strToU8(html),
     'style.css': strToU8(css),
     'README.md': strToU8(renderReadme(data.name.trim(), Boolean(data.photo))),
-    [FAVICON_PATH]: strToU8(renderFavicon(data.name, palette, font)),
     'site.json': strToU8(JSON.stringify(data, null, 2) + '\n'),
   };
+  if (!data.favicon) {
+    files[FAVICON_PATH] = strToU8(renderFavicon(data.name, palette, font));
+  }
   for (const [path, dataUrl] of collectImages(data)) {
     files[path] = dataUrlBytes(dataUrl);
   }

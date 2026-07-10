@@ -12,7 +12,8 @@
     "deploy": "node scripts/build.mjs && wrangler deploy"
   },
   "dependencies": {
-    "fflate": "^0.8.2"
+    "fflate": "^0.8.2",
+    "qrcode-generator": "^2.0.4"
   },
   "devDependencies": {
     "esbuild": "^0.24.0",

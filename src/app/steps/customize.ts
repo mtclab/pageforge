@@ -304,6 +304,57 @@ export function renderCustomizeStep(pane: HTMLElement, ctx: StepCtx): void {
       ),
     );
   }
+  // Custom tab icon (favicon); default is the generated initials mark
+  const favGroup = el('div', { class: 'group' });
+  favGroup.append(el('h3', { text: 'Tab icon' }));
+  if (data.favicon) {
+    const img = el('img', { class: 'fav-thumb', alt: 'Your tab icon' });
+    img.src = data.favicon.dataUrl;
+    const rm = el('button', { type: 'button', class: 'chip', text: 'Use the generated icon instead' });
+    rm.addEventListener('click', () => {
+      delete data.favicon;
+      onChange(true);
+    });
+    favGroup.append(el('div', { class: 'row center' }, img, rm));
+  } else {
+    const favInput = el('input', { type: 'file', accept: 'image/*', class: 'visually-hidden' });
+    const favBtn = el('button', { type: 'button', class: 'chip', text: 'Upload your own tab icon' });
+    favBtn.addEventListener('click', () => favInput.click());
+    favInput.addEventListener('change', async () => {
+      const file = favInput.files?.[0];
+      if (!file) return;
+      try {
+        const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+        const canvas = document.createElement('canvas');
+        canvas.width = 64;
+        canvas.height = 64;
+        const side = Math.min(bitmap.width, bitmap.height);
+        canvas.getContext('2d')!.drawImage(
+          bitmap,
+          (bitmap.width - side) / 2,
+          (bitmap.height - side) / 2,
+          side,
+          side,
+          0,
+          0,
+          64,
+          64,
+        );
+        bitmap.close();
+        data.favicon = { dataUrl: canvas.toDataURL('image/png') };
+        onChange(true);
+      } catch {
+        favGroup.append(el('p', { class: 'error', text: 'Sorry, that image could not be read.' }));
+      }
+    });
+    favGroup.append(
+      favBtn,
+      favInput,
+      el('p', { class: 'hint', text: 'The little icon in the browser tab. Without one we make a neat initials icon for you.' }),
+    );
+  }
+  layoutChildren.push(favGroup);
+
   layoutChildren.push(
     choiceRow(
       'Page width',

@@ -23,6 +23,17 @@ describe('buildSiteFiles / buildZip', () => {
     ]);
   });
 
+  it('custom favicon replaces the generated one in zip and html', () => {
+    const data: SiteData = {
+      ...(minimal as SiteData),
+      favicon: { dataUrl: 'data:image/png;base64,iVBORw0KGgo=' },
+    };
+    const files = buildSiteFiles(data, theme);
+    expect(Object.keys(files)).toContain('assets/favicon.png');
+    expect(Object.keys(files)).not.toContain('assets/favicon.svg');
+    expect(strFromU8(files['index.html']!)).toContain('assets/favicon.png');
+  });
+
   it('photo omitted when not provided', () => {
     const files = unzipSync(buildZip(buildSiteFiles(minimal as SiteData, theme)));
     expect(Object.keys(files)).not.toContain('assets/photo.jpg');

@@ -135,6 +135,7 @@ body {
 }
 #preview-frame.narrow { width: 390px; }
 .preview-toggle { display: none; }
+.undo-group { display: inline-flex; gap: 0.3rem; }
 .saved-note {
   font-size: 0.78rem;
   color: var(--muted);
@@ -368,6 +369,7 @@ code { font-family: var(--mono); font-size: 0.9em; background: var(--desk); padd
 
 /* photo */
 .photo-thumb { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 1px solid var(--line); }
+.fav-thumb { width: 32px; height: 32px; border: 1px solid var(--line); border-radius: 6px; image-rendering: auto; }
 .crop { margin-top: 0.8rem; }
 .crop-canvas {
   width: 220px;
