@@ -10,8 +10,6 @@ import { downloadZip } from '../zip.js';
 import { clearDraft } from '../state.js';
 import type { StepCtx } from './content.js';
 
-const KOFI_URL = 'https://ko-fi.com/kolli94431';
-
 export function renderDownloadStep(pane: HTMLElement, ctx: StepCtx): void {
   const { data, onChange } = ctx;
   pane.append(el('h2', { text: 'Your site is ready' }));
@@ -159,7 +157,7 @@ export function renderDownloadStep(pane: HTMLElement, ctx: StepCtx): void {
   qrBox.append(qrInput, qrActions);
   pane.append(qrBox);
 
-  const tip = el('p', { class: 'tip' }, 'This tool is free. If it made you smile, you can ', linkEl(KOFI_URL, 'buy me a coffee'), '.');
+  const tip = el('p', { class: 'tip', text: 'This tool is free.' });
   pane.append(tip);
 
   const startOver = el('button', { type: 'button', class: 'chip danger', text: 'Start over (clears everything)' });
