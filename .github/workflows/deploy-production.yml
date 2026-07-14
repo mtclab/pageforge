@@ -56,7 +56,11 @@ jobs:
       - name: Smoke test the live deploy
         run: |
           set -euo pipefail
-          base="https://pageforge.mtclab.net"
+          # Smoke the worker's own *.workers.dev URL, NOT the custom domain:
+          # the mtclab.net zone's Cloudflare bot-management challenges GitHub
+          # runner IPs ("Just a moment..." interstitial), which would fail smoke.
+          # Same worker code; edge/bot behavior of the custom domain is prod-only.
+          base="https://pageforge.kurki-olli.workers.dev"
           short="${GITHUB_SHA:0:12}"
 
           # /version must report THIS commit (retry for edge propagation).
