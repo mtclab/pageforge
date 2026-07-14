@@ -1,4 +1,5 @@
 import { el } from './dom.js';
+import { shouldCoalesceHistory, type TextEditMarker } from './history.js';
 import { renderGallery } from './gallery.js';
 import { decodeShare } from './share.js';
 import { renderSharedView } from './shared-view.js';
@@ -27,13 +28,15 @@ function initWizard(): void {
 
   // "Draft saved" pulse: autosave is invisible otherwise, and invisible
   // safety reads as no safety.
-  const savedNote = el('span', { class: 'saved-note', text: 'Draft saved', 'aria-hidden': 'true' });
+  const savedNote = el('span', { class: 'saved-note', text: 'Draft saved', 'aria-live': 'polite' });
   document.querySelector('.topbar')?.insertBefore(savedNote, document.getElementById('preview-toggle'));
   let savedTimer: ReturnType<typeof setTimeout> | undefined;
-  function pulseSaved(): void {
+  function showSaveStatus(saved: boolean): void {
+    savedNote.textContent = saved ? 'Draft saved' : 'Draft not saved - browser storage is unavailable or full.';
+    savedNote.classList.toggle('unsaved', !saved);
     savedNote.classList.add('show');
     clearTimeout(savedTimer);
-    savedTimer = setTimeout(() => savedNote.classList.remove('show'), 1200);
+    if (saved) savedTimer = setTimeout(() => savedNote.classList.remove('show'), 1200);
   }
 
   // App-level undo/redo: snapshots of the whole draft, rapid typing coalesced
@@ -41,16 +44,19 @@ function initWizard(): void {
   const redoBtn = document.getElementById('redo') as HTMLButtonElement;
   const history: string[] = [JSON.stringify(state.data)];
   let hIndex = 0;
-  let lastPush = 0;
+  let lastTextEdit: TextEditMarker | undefined;
   function updateUndoButtons(): void {
     undoBtn.disabled = hIndex === 0;
     redoBtn.disabled = hIndex === history.length - 1;
   }
-  function recordHistory(): void {
+  function recordHistory(structural: boolean, textField?: string): void {
     const snap = JSON.stringify(state.data);
     if (snap === history[hIndex]) return;
     const now = performance.now();
-    if (now - lastPush < 800 && hIndex === history.length - 1 && hIndex > 0) {
+    const coalesce = hIndex > 0 && shouldCoalesceHistory(
+      lastTextEdit, structural, textField, now, hIndex === history.length - 1,
+    );
+    if (coalesce) {
       history[hIndex] = snap; // coalesce keystrokes into one step
     } else {
       history.splice(hIndex + 1);
@@ -58,16 +64,16 @@ function initWizard(): void {
       if (history.length > 60) history.shift();
       hIndex = history.length - 1;
     }
-    lastPush = now;
+    lastTextEdit = !structural && textField !== undefined ? { field: textField, at: now } : undefined;
     updateUndoButtons();
   }
   function restore(idx: number): void {
     if (idx < 0 || idx > history.length - 1) return;
     hIndex = idx;
-    lastPush = 0;
+    lastTextEdit = undefined;
     state.data = JSON.parse(history[idx]!) as typeof state.data;
     ctx.data = state.data;
-    saveState(state);
+    showSaveStatus(saveState(state));
     schedulePreview(iframe, state.data);
     renderPane();
     updateUndoButtons();
@@ -82,11 +88,11 @@ function initWizard(): void {
 
   const ctx: StepCtx = {
     data: state.data,
-    onChange(structural = false) {
+    onChange(structural = false, textField) {
       ctx.data = state.data;
-      saveState(state);
-      recordHistory();
-      pulseSaved();
+      const saved = saveState(state);
+      recordHistory(structural, textField);
+      showSaveStatus(saved);
       schedulePreview(iframe, state.data);
       if (structural) renderPane();
     },
@@ -94,7 +100,7 @@ function initWizard(): void {
 
   function goto(step: AppState['step']): void {
     state.step = step;
-    saveState(state);
+    showSaveStatus(saveState(state));
     renderPane();
     window.scrollTo({ top: 0 });
   }

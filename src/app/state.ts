@@ -1,5 +1,6 @@
 import type { SiteData } from '../engine/types.js';
 import { THEMES } from '../themes/index.js';
+import { decodeSiteData } from './site-data.js';
 
 const LEGACY_KEY = 'pageforge-draft-v1';
 const PAGES_KEY = 'pageforge-pages-v1';
@@ -34,58 +35,108 @@ export function freshData(): SiteData {
   };
 }
 
-function validState(raw: unknown): AppState | null {
-  const parsed = raw as { step?: number; data?: SiteData };
-  if (parsed?.data?.version === 1 && typeof parsed.data.name === 'string') {
-    const step = [1, 2, 3, 4].includes(parsed.step ?? 0) ? (parsed.step as AppState['step']) : 1;
-    return { step, data: { ...freshData(), ...parsed.data } };
+export function decodeAppState(raw: unknown): AppState | null {
+  if (typeof raw !== 'object' || raw === null) return null;
+  const parsed = raw as { step?: unknown; data?: unknown };
+  const data = decodeSiteData(parsed.data);
+  if (!data) return null;
+  const step = typeof parsed.step === 'number' && [1, 2, 3, 4].includes(parsed.step)
+    ? parsed.step as AppState['step']
+    : 1;
+  return { step, data };
+}
+
+function pageId(): string {
+  return crypto.randomUUID();
+}
+
+function freshStore(): PagesStore {
+  const id = pageId();
+  return { activeId: id, pages: [{ id, state: { step: 1, data: freshData() } }] };
+}
+
+function decodeStore(raw: unknown): { store: PagesStore; changed: boolean } | null {
+  if (typeof raw !== 'object' || raw === null) return null;
+  const parsed = raw as { activeId?: unknown; pages?: unknown };
+  if (!Array.isArray(parsed.pages)) return null;
+  const pages: PageRecord[] = [];
+  const seen = new Set<string>();
+  let changed = false;
+  for (const record of parsed.pages) {
+    if (typeof record !== 'object' || record === null) {
+      changed = true;
+      continue;
+    }
+    const candidate = record as { id?: unknown; state?: unknown };
+    const state = decodeAppState(candidate.state);
+    if (!state) {
+      changed = true;
+      continue;
+    }
+    const hasId = typeof candidate.id === 'string' && candidate.id.length > 0;
+    let id = hasId ? candidate.id as string : pageId();
+    if (!hasId) changed = true;
+    if (seen.has(id)) {
+      id = pageId();
+      changed = true;
+    }
+    seen.add(id);
+    pages.push({ id, state });
   }
-  return null;
+  if (!pages.length) return null;
+  const requestedActive = typeof parsed.activeId === 'string' ? parsed.activeId : '';
+  const activeId = pages.some((page) => page.id === requestedActive) ? requestedActive : pages[0]!.id;
+  if (activeId !== parsed.activeId) changed = true;
+  return { store: { activeId, pages }, changed };
 }
 
 function readStore(): PagesStore {
   try {
     const raw = localStorage.getItem(PAGES_KEY);
     if (raw) {
-      const store = JSON.parse(raw) as PagesStore;
-      if (Array.isArray(store.pages) && store.pages.length) return store;
+      const decoded = decodeStore(JSON.parse(raw));
+      if (decoded) {
+        if (decoded.changed) writeStore(decoded.store);
+        return decoded.store;
+      }
     }
     // migrate the single-draft era
     const legacy = localStorage.getItem(LEGACY_KEY);
     if (legacy) {
-      const state = validState(JSON.parse(legacy));
+      const state = decodeAppState(JSON.parse(legacy));
       if (state) {
-        const store: PagesStore = { activeId: 'p1', pages: [{ id: 'p1', state }] };
-        localStorage.setItem(PAGES_KEY, JSON.stringify(store));
-        localStorage.removeItem(LEGACY_KEY);
+        const id = pageId();
+        const store: PagesStore = { activeId: id, pages: [{ id, state }] };
+        if (writeStore(store)) localStorage.removeItem(LEGACY_KEY);
         return store;
       }
     }
   } catch {
     // corrupt: start over rather than dead-end
   }
-  return { activeId: 'p1', pages: [{ id: 'p1', state: { step: 1, data: freshData() } }] };
+  return freshStore();
 }
 
-function writeStore(store: PagesStore): void {
+function writeStore(store: PagesStore): boolean {
   try {
     localStorage.setItem(PAGES_KEY, JSON.stringify(store));
+    return true;
   } catch {
-    // storage full or blocked: the app still works, drafts just do not persist
+    return false;
   }
 }
 
 export function loadState(): AppState {
   const store = readStore();
   const active = store.pages.find((p) => p.id === store.activeId) ?? store.pages[0]!;
-  return validState(active.state) ?? { step: 1, data: freshData() };
+  return decodeAppState(active.state) ?? { step: 1, data: freshData() };
 }
 
-export function saveState(state: AppState): void {
+export function saveState(state: AppState): boolean {
   const store = readStore();
   const active = store.pages.find((p) => p.id === store.activeId) ?? store.pages[0]!;
   active.state = state;
-  writeStore(store);
+  return writeStore(store);
 }
 
 /** [id, display name, active] for the my-pages switcher. */
@@ -104,7 +155,7 @@ export function switchPage(id: string): void {
 
 export function newPage(): void {
   const store = readStore();
-  const id = `p${store.pages.length + 1}-${store.pages.map((p) => p.id).join('').length}`;
+  const id = pageId();
   store.pages.push({ id, state: { step: 1, data: freshData() } });
   store.activeId = id;
   writeStore(store);
@@ -113,7 +164,7 @@ export function newPage(): void {
 export function deletePage(id: string): void {
   const store = readStore();
   store.pages = store.pages.filter((p) => p.id !== id);
-  if (!store.pages.length) store.pages = [{ id: 'p1', state: { step: 1, data: freshData() } }];
+  if (!store.pages.length) store.pages = [{ id: pageId(), state: { step: 1, data: freshData() } }];
   if (!store.pages.some((p) => p.id === store.activeId)) store.activeId = store.pages[0]!.id;
   writeStore(store);
 }

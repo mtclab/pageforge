@@ -1,6 +1,7 @@
-import { accentContrastFor, contrast, fitAccent, luminance } from './color.js';
+import { accentContrastFor, fitAccent, fitAccentFor, luminance } from './color.js';
 import { BASE_CSS, rootVars, type StyleVars } from './css.js';
 import { escAttr, esc } from './escape.js';
+import { EMAIL_ACTIVATION_SCRIPT } from './links.js';
 import { renderSection } from './sections/blocks.js';
 import { renderFooter } from './sections/footer.js';
 import { renderHero } from './sections/hero.js';
@@ -39,11 +40,18 @@ export function effectivePalette(data: SiteData, theme: ThemePack): Palette {
   const cp = data.meta.customPalette;
   if (cp && [cp.bg, cp.surface, cp.text, cp.muted, cp.accent].every((c) => HEX_RE.test(c ?? ''))) {
     const bg = cp.bg;
-    const text = fitAccent(cp.text, bg);
-    // surface must carry body text too; fall back to bg when it cannot
-    const surface = contrast(text, cp.surface) >= 4.5 ? cp.surface : bg;
-    const muted = fitAccent(cp.muted, bg);
-    const accent = fitAccent(cp.accent, bg);
+    let surface = cp.surface;
+    let text = fitAccentFor(cp.text, [bg, surface]);
+    let muted = fitAccentFor(cp.muted, [bg, surface]);
+    let accent = fitAccentFor(cp.accent, [bg, surface]);
+    // Opposing backgrounds can make AA impossible for any one foreground.
+    // In that case reject the custom surface and use the page background.
+    if (!text || !muted || !accent) {
+      surface = bg;
+      text = fitAccent(cp.text, bg);
+      muted = fitAccent(cp.muted, bg);
+      accent = fitAccent(cp.accent, bg);
+    }
     palette = {
       id: 'custom',
       name: 'Custom',
@@ -52,7 +60,10 @@ export function effectivePalette(data: SiteData, theme: ThemePack): Palette {
   }
 
   if (!data.meta.accent) return palette;
-  const fitted = fitAccent(data.meta.accent, palette.vars.bg);
+  const backgrounds = [palette.vars.bg, palette.vars.surface];
+  const fitted = fitAccentFor(data.meta.accent, backgrounds)
+    ?? fitAccentFor(palette.vars.accent, backgrounds)
+    ?? palette.vars.accent;
   return {
     ...palette,
     vars: { ...palette.vars, accent: fitted, 'accent-contrast': accentContrastFor(fitted) },
@@ -85,7 +96,9 @@ function autoDarkCss(data: SiteData, theme: ThemePack, lightPalette: Palette): s
   let accent = dark.vars.accent;
   let accentContrast = dark.vars['accent-contrast'];
   if (data.meta.accent) {
-    accent = fitAccent(data.meta.accent, dark.vars.bg);
+    accent = fitAccentFor(data.meta.accent, [dark.vars.bg, dark.vars.surface])
+      ?? fitAccentFor(dark.vars.accent, [dark.vars.bg, dark.vars.surface])
+      ?? dark.vars.accent;
     accentContrast = accentContrastFor(accent);
   }
   return `@media (prefers-color-scheme: dark) {
@@ -166,9 +179,13 @@ export function renderSite(data: SiteData, theme: ThemePack, opts: RenderOptions
     .filter(Boolean);
 
   const description = data.tagline?.trim();
-  const photoShape = data.meta.photoShape ?? theme.photoShape;
+  const photoShape = data.meta.photoShape && ['circle', 'rounded', 'square'].includes(data.meta.photoShape)
+    ? data.meta.photoShape
+    : theme.photoShape;
   const flags: string[] = [`layout-${theme.layout}`, `photo-${photoShape}`];
-  if (data.meta.surface) flags.push(`surface-${data.meta.surface}`);
+  if (data.meta.surface && ['card', 'flat', 'bordered', 'tinted'].includes(data.meta.surface)) {
+    flags.push(`surface-${data.meta.surface}`);
+  }
   if (data.meta.headingStyle && ['underline', 'highlight', 'caps'].includes(data.meta.headingStyle)) {
     flags.push(`heading-${data.meta.headingStyle}`);
   }
@@ -185,7 +202,7 @@ export function renderSite(data: SiteData, theme: ThemePack, opts: RenderOptions
     flags.push(`bg-${data.meta.background}`);
   }
   if (data.photo) flags.push('has-photo');
-  const bodyClass = flags.join(' ');
+  const bodyClass = escAttr(flags.join(' '));
 
   const ogExtras = opts.baseUrl
     ? `<meta property="og:image" content="${escAttr(opts.baseUrl)}/assets/og.png">
@@ -197,6 +214,8 @@ export function renderSite(data: SiteData, theme: ThemePack, opts: RenderOptions
   let body = `${renderHero(data)}
 ${sections.length ? `<main>\n${sections.join('\n')}\n</main>` : '<main></main>'}
 ${renderFooter(data, opts.hosted)}`;
+
+  if (body.includes('data-email-a=')) body += `\n${EMAIL_ACTIVATION_SCRIPT}`;
 
   if (opts.hosted) {
     // Hosted pages: outbound user links get nofollow (SEO-spam deterrent).

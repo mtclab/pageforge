@@ -24,5 +24,11 @@
     { "kind": "custom", "title": "T & <T>", "text": "body <script>alert(3)</script>" }
   ],
   "footerNote": "<footer injection>",
-  "meta": { "themeId": "slate", "paletteId": "paper", "fontId": "system" }
+  "meta": {
+    "themeId": "slate",
+    "paletteId": "paper",
+    "fontId": "system",
+    "surface": "card\" autofocus onfocus=\"alert(4)",
+    "photoShape": "circle\" data-injected=\"yes"
+  }
 }

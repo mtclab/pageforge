@@ -147,11 +147,21 @@ export function renderDownloadStep(pane: HTMLElement, ctx: StepCtx): void {
   };
   qrBtn.addEventListener('click', () => {
     const url = readUrl();
-    if (url) downloadQr(url, slugify(data.name));
+    if (!url) return;
+    try {
+      downloadQr(url, slugify(data.name));
+    } catch {
+      qrMsg.textContent = 'That address is too long for a QR code.';
+    }
   });
   printBtn.addEventListener('click', () => {
     const url = readUrl();
-    if (url) openPrintCards(data, url);
+    if (!url) return;
+    try {
+      openPrintCards(data, url);
+    } catch {
+      qrMsg.textContent = 'That address is too long for a QR code.';
+    }
   });
   qrActions.append(qrBtn, printBtn, qrMsg);
   qrBox.append(qrInput, qrActions);

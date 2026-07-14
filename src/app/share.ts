@@ -1,5 +1,6 @@
 import { deflateSync, inflateSync, strFromU8, strToU8 } from 'fflate';
 import type { SiteData } from '../engine/types.js';
+import { decodeSiteData } from './site-data.js';
 
 /**
  * Share-preview links: the whole SiteData (minus the photo - too big for a
@@ -33,11 +34,9 @@ export function decodeShare(hash: string): SiteData | null {
   const m = hash.match(/^#s=([A-Za-z0-9_-]+)$/);
   if (!m) return null;
   try {
-    const parsed = JSON.parse(strFromU8(inflateSync(fromBase64Url(m[1]!)))) as SiteData;
-    if (parsed.version !== 1 || typeof parsed.name !== 'string' || !Array.isArray(parsed.sections)) {
-      return null;
-    }
-    delete parsed.photo; // never trust a photo through a share link
+    const parsed = decodeSiteData(JSON.parse(strFromU8(inflateSync(fromBase64Url(m[1]!)))));
+    if (!parsed) return null;
+    delete parsed.photo; // share links never carry photos
     return parsed;
   } catch {
     return null;

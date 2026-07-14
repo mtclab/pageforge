@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "name": "Image test",
+  "photo": {
+    "dataUrl": "data:image/jpeg;base64,/9j/AAAA\" onerror=\"alert(1)"
+  },
+  "links": [],
+  "sections": [
+    {
+      "kind": "gallery",
+      "photos": [
+        { "dataUrl": "data:image/png;base64,iVBORw0KGgo=\" loading=\"eager" }
+      ]
+    }
+  ],
+  "meta": { "themeId": "slate", "paletteId": "paper", "fontId": "system" }
+}

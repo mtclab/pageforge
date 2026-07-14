@@ -34,7 +34,8 @@ describe('renderSite', () => {
     for (const theme of THEMES) {
       const { html } = renderSite(FIXTURES.hostile!, theme);
       // No live markup survives escaping.
-      expect(html.toLowerCase()).not.toContain('<script');
+      expect(html.toLowerCase()).not.toContain('<script>alert');
+      expect([...html.matchAll(/<script>/g)]).toHaveLength(1); // trusted email activation only
       expect(html.toLowerCase()).not.toContain('<img src=x');
       expect(html.toLowerCase()).not.toContain('<svg onload');
       // Every emitted href uses an allowed scheme (hostile schemes render as plain text).
@@ -42,7 +43,7 @@ describe('renderSite', () => {
       const hrefs = [...html.matchAll(/href="([^"]*)"/g)].map((m) => decodeEntities(m[1]!));
       expect(hrefs.length).toBeGreaterThan(0);
       for (const href of hrefs) {
-        expect(href).toMatch(/^(https?:|mailto:|style\.css$|assets\/)/);
+        expect(href).toMatch(/^(https?:|mailto:|#$|style\.css$|assets\/)/);
       }
     }
   });
@@ -90,7 +91,8 @@ describe('renderSite', () => {
   it('emails never appear as plain text in the output (scraper guard)', () => {
     const { html } = renderSite(FIXTURES.full!, THEMES[0]!);
     expect(html).not.toContain('anna@example.com');
-    expect(html).toContain('&#97;&#110;&#110;&#97;'); // "anna" encoded
+    expect(html).toContain('data-email-a="mailto:');
+    expect(html).toContain('data-email-b="');
   });
 
   it('photo only renders when provided', () => {

@@ -22,7 +22,7 @@ function contrast(a: string, b: string): number {
 /**
  * WCAG AA guardrail for palette authoring:
  * body text on bg and surface >= 4.5, accent (link color) on bg >= 4.5,
- * accent-contrast on accent >= 4.5, muted (secondary text) on bg >= 4.5.
+ * accent-contrast on accent >= 4.5; accent and muted on bg and surface >= 4.5.
  */
 describe('palette contrast (WCAG AA)', () => {
   for (const theme of THEMES) {
@@ -32,8 +32,10 @@ describe('palette contrast (WCAG AA)', () => {
         expect(contrast(v.text, v.bg)).toBeGreaterThanOrEqual(4.5);
         expect(contrast(v.text, v.surface)).toBeGreaterThanOrEqual(4.5);
         expect(contrast(v.accent, v.bg)).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(v.accent, v.surface)).toBeGreaterThanOrEqual(4.5);
         expect(contrast(v['accent-contrast'], v.accent)).toBeGreaterThanOrEqual(4.5);
         expect(contrast(v.muted, v.bg)).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(v.muted, v.surface)).toBeGreaterThanOrEqual(4.5);
       });
     }
   }
