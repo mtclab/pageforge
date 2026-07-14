@@ -1,0 +1,78 @@
+name: deploy-production
+
+# Pilot for the mtclab CI/CD model (see CICD_DESIGN.md):
+# deploy on merge to main, stamp /version, smoke-test the live deploy.
+# The ONLY thing allowed to deploy production is this workflow (GitHub-only token).
+# Rollback = merge a git revert to main; this same workflow redeploys the reverted state.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-pageforge
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: https://pageforge.mtclab.net
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_RELEASE_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # Gate: never deploy a red build.
+      - name: Typecheck + tests
+        run: |
+          npm run typecheck
+          npm test
+
+      - name: Build app assets
+        run: node scripts/build.mjs
+
+      - name: Deploy to production
+        run: |
+          BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          npx wrangler deploy \
+            --var BUILD_COMMIT:"${GITHUB_SHA}" \
+            --var BUILD_TIME:"${BUILD_TIME}"
+
+      - name: Smoke test the live deploy
+        run: |
+          set -euo pipefail
+          base="https://pageforge.mtclab.net"
+          short="${GITHUB_SHA:0:12}"
+
+          # /version must report THIS commit (retry for edge propagation).
+          ok=""
+          for i in $(seq 1 12); do
+            v="$(curl -s "$base/version?_cb=$RANDOM$i" || true)"
+            if printf '%s' "$v" | grep -q "$GITHUB_SHA"; then ok=1; echo "version live: $v"; break; fi
+            echo "attempt $i: not yet propagated ($v)"; sleep 5
+          done
+          [ -n "$ok" ] || { echo "::error::/version never reported $GITHUB_SHA"; exit 1; }
+
+          # Home page loads.
+          curl -sf -o /dev/null "$base/?_cb=$RANDOM" || { echo "::error::home not 2xx"; exit 1; }
+
+          # Publish gate stays closed (503) — the flag must not have leaked open.
+          code="$(curl -s -o /dev/null -w '%{http_code}' -X POST "$base/api/publish" -d '{}')"
+          [ "$code" = "503" ] || { echo "::error::publish gate expected 503, got $code"; exit 1; }
+
+          echo "smoke passed for $short"

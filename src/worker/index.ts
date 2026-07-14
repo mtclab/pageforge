@@ -33,6 +33,9 @@ interface Env {
   ASSETS: AssetsFetcher;
   /** "true" opens hosted publish; anything else keeps the API closed. */
   PUBLISH_ENABLED?: string;
+  /** Build stamp injected by the deploy workflow (`wrangler deploy --var`). */
+  BUILD_COMMIT?: string;
+  BUILD_TIME?: string;
 }
 
 interface StoredSite {
@@ -233,6 +236,15 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const { pathname } = url;
+
+    // Public build stamp: what commit is live + when it deployed. Populated by
+    // the deploy workflow; falls back to "dev" for local `wrangler dev`.
+    if (pathname === '/version') {
+      return new Response(
+        JSON.stringify({ commit: env.BUILD_COMMIT ?? 'dev', deployed_at: env.BUILD_TIME ?? null }),
+        { headers: { ...JSON_HEADERS, 'cache-control': 'no-store' } },
+      );
+    }
 
     if (pathname.startsWith('/api/') && env.PUBLISH_ENABLED !== 'true') {
       return json(503, { error: 'Hosting here is not open yet. Download the zip - the README gets you online in minutes.' });
