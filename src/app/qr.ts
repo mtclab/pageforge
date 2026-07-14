@@ -2,12 +2,20 @@ import qrcode from 'qrcode-generator';
 import { esc } from '../engine/escape.js';
 import type { SiteData } from '../engine/types.js';
 
+/** QR version 40, byte mode, error correction M. */
+export const QR_MAX_BYTES = 2331;
+
 /** Deterministic QR of a URL as a scalable SVG string. */
 export function qrSvg(url: string): string {
-  const qr = qrcode(0, 'M');
-  qr.addData(url);
-  qr.make();
-  return qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+  if (new TextEncoder().encode(url).length > QR_MAX_BYTES) throw new Error('address too long');
+  try {
+    const qr = qrcode(0, 'M');
+    qr.addData(url);
+    qr.make();
+    return qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+  } catch {
+    throw new Error('address too long');
+  }
 }
 
 /**

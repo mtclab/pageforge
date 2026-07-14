@@ -36,24 +36,31 @@ function blend(hex: string, toward: [number, number, number], t: number): string
   ]);
 }
 
+/** Fit one canonical color against every background, or reject the combination. */
+export function fitAccentFor(accent: string, backgrounds: string[]): string | null {
+  const rgb = hexToRgb(accent);
+  if (!rgb || !backgrounds.length || backgrounds.some((bg) => !hexToRgb(bg))) return null;
+  const canonical = rgbToHex(rgb);
+  if (backgrounds.every((bg) => contrast(canonical, bg) >= 4.5)) return canonical;
+  const poles: [number, number, number][] = [[0, 0, 0], [255, 255, 255]];
+  for (let step = 1; step <= 20; step += 1) {
+    for (const pole of poles) {
+      const candidate = blend(canonical, pole, step / 20);
+      if (backgrounds.every((bg) => contrast(candidate, bg) >= 4.5)) return candidate;
+    }
+  }
+  return null;
+}
+
 /**
  * User picked any accent color; make it usable. Nudges the color toward
  * black or white (whichever direction works against the background) in
  * small steps until it reads at WCAG AA (4.5:1). Deterministic.
  */
-export function fitAccent(accent: string, bg: string): string {
-  if (!hexToRgb(accent)) return accent;
-  if (contrast(accent, bg) >= 4.5) return accent;
-  // Head toward whichever pole actually reads on this bg (mid-gray bgs
-  // can only be beaten by black, even though they feel "dark").
-  const black: [number, number, number] = [0, 0, 0];
-  const white: [number, number, number] = [255, 255, 255];
-  const toward = contrast('#000000', bg) >= contrast('#ffffff', bg) ? black : white;
-  for (let t = 0.05; t <= 1; t += 0.05) {
-    const candidate = blend(accent, toward, t);
-    if (contrast(candidate, bg) >= 4.5) return candidate;
-  }
-  return rgbToHex(toward);
+export function fitAccent(accent: string, bg: string, fallback = '#000000'): string {
+  return fitAccentFor(accent, [bg])
+    ?? fitAccentFor(fallback, [bg])
+    ?? (contrast('#000000', bg) >= contrast('#ffffff', bg) ? '#000000' : '#ffffff');
 }
 
 /** Text color that reads on the (fitted) accent: plain white or near-black. */

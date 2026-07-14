@@ -1,13 +1,14 @@
 import type { Section, SiteData } from '../../engine/types.js';
 import { el, labeled } from '../dom.js';
 import { fileToResizedDataUrl, renderPhotoField } from '../photo.js';
+import { decodeSiteData, replaceSiteData } from '../site-data.js';
 import { STARTERS } from '../starters.js';
 import { deletePage, listPages, newPage, switchPage } from '../state.js';
 
 export interface StepCtx {
   data: SiteData;
-  /** Persist + refresh preview. Pass structural=true to re-render the form pane too. */
-  onChange: (structural?: boolean) => void;
+  /** Text field identity is used only to coalesce consecutive keystrokes. */
+  onChange: (structural?: boolean, textField?: string) => void;
 }
 
 function textInput(value: string, placeholder: string, oninput: (v: string) => void): HTMLInputElement {
@@ -42,7 +43,7 @@ export function renderContentStep(pane: HTMLElement, ctx: StepCtx): void {
 
   const nameInput = textInput(data.name, 'e.g. Anna Virtanen', (v) => {
     data.name = v;
-    onChange();
+    onChange(false, 'name');
   });
   nameInput.required = true;
   nameInput.autocomplete = 'name';
@@ -53,7 +54,7 @@ export function renderContentStep(pane: HTMLElement, ctx: StepCtx): void {
       'A short line about you',
       textInput(data.tagline ?? '', 'e.g. Dog person, amateur astronomer', (v) => {
         data.tagline = v;
-        onChange();
+        onChange(false, 'tagline');
       }),
     ),
   );
@@ -99,11 +100,11 @@ export function renderContentStep(pane: HTMLElement, ctx: StepCtx): void {
     const row = el('div', { class: 'row' });
     const urlInput = textInput(link.url, 'e.g. instagram.com/yourname', (v) => {
       link.url = v;
-      onChange();
+      onChange(false, `links.${i}.url`);
     });
     const labelInput = textInput(link.label, 'Name it, e.g. My Instagram', (v) => {
       link.label = v;
-      onChange();
+      onChange(false, `links.${i}.label`);
     });
     const up = el('button', { type: 'button', class: 'icon-btn', 'aria-label': `Move link ${i + 1} up`, text: '↑' });
     const down = el('button', { type: 'button', class: 'icon-btn', 'aria-label': `Move link ${i + 1} down`, text: '↓' });
@@ -240,17 +241,9 @@ function importField(ctx: StepCtx): HTMLElement {
       } else {
         text = await file.text();
       }
-      const parsed = JSON.parse(text) as SiteData;
-      if (parsed.version !== 1 || typeof parsed.name !== 'string' || !Array.isArray(parsed.sections)) {
-        throw new Error('shape');
-      }
-      data.name = parsed.name;
-      data.tagline = parsed.tagline;
-      data.photo = parsed.photo;
-      data.links = parsed.links ?? [];
-      data.sections = parsed.sections;
-      data.footerNote = parsed.footerNote;
-      data.meta = parsed.meta ?? data.meta;
+      const parsed = decodeSiteData(JSON.parse(text));
+      if (!parsed) throw new Error('shape');
+      replaceSiteData(data, parsed);
       onChange(true);
     } catch {
       wrap.append(el('p', { class: 'error', text: 'That file does not look like a pageforge site.json.' }));
@@ -300,7 +293,7 @@ function sectionEditor(section: Section, i: number, ctx: StepCtx): HTMLElement {
       ta.value = section.text;
       ta.addEventListener('input', () => {
         section.text = ta.value;
-        onChange();
+        onChange(false, `sections.${i}.about.text`);
       });
       card.append(ta);
       break;
@@ -312,19 +305,19 @@ function sectionEditor(section: Section, i: number, ctx: StepCtx): HTMLElement {
         name.value = item.name;
         name.addEventListener('input', () => {
           item.name = name.value;
-          onChange();
+          onChange(false, `sections.${i}.projects.${j}.name`);
         });
         const desc = el('input', { type: 'text', placeholder: 'One line about it (optional)' });
         desc.value = item.desc ?? '';
         desc.addEventListener('input', () => {
           item.desc = desc.value;
-          onChange();
+          onChange(false, `sections.${i}.projects.${j}.desc`);
         });
         const url = el('input', { type: 'text', placeholder: 'Link (optional)' });
         url.value = item.url ?? '';
         url.addEventListener('input', () => {
           item.url = url.value;
-          onChange();
+          onChange(false, `sections.${i}.projects.${j}.url`);
         });
         const rm = el('button', { type: 'button', class: 'icon-btn', 'aria-label': `Remove item ${j + 1}`, text: '✕' });
         rm.addEventListener('click', () => {
@@ -350,7 +343,7 @@ function sectionEditor(section: Section, i: number, ctx: StepCtx): HTMLElement {
       input.value = section.items.join(', ');
       input.addEventListener('input', () => {
         section.items = input.value.split(',').map((s) => s.trim()).filter(Boolean);
-        onChange();
+        onChange(false, `sections.${i}.hobbies.items`);
       });
       card.append(labeled('List them, separated by commas', input));
       break;
@@ -360,14 +353,14 @@ function sectionEditor(section: Section, i: number, ctx: StepCtx): HTMLElement {
       email.value = section.email ?? '';
       email.addEventListener('input', () => {
         section.email = email.value;
-        onChange();
+        onChange(false, `sections.${i}.contact.email`);
       });
       card.append(labeled('Email (shown on your page)', email));
       const note = el('input', { type: 'text', placeholder: 'e.g. Happy to chat about gardens or bread.' });
       note.value = section.note ?? '';
       note.addEventListener('input', () => {
         section.note = note.value;
-        onChange();
+        onChange(false, `sections.${i}.contact.note`);
       });
       card.append(labeled('A short note (optional)', note));
       break;
@@ -413,14 +406,14 @@ function sectionEditor(section: Section, i: number, ctx: StepCtx): HTMLElement {
       title.value = section.title;
       title.addEventListener('input', () => {
         section.title = title.value;
-        onChange();
+        onChange(false, `sections.${i}.custom.title`);
       });
       card.append(labeled('Title', title));
       const ta = el('textarea', { rows: '4', placeholder: 'Whatever you want to say.' });
       ta.value = section.text;
       ta.addEventListener('input', () => {
         section.text = ta.value;
-        onChange();
+        onChange(false, `sections.${i}.custom.text`);
       });
       card.append(ta);
       break;

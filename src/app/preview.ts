@@ -1,6 +1,8 @@
 import { renderSite } from '../engine/render.js';
+import { escAttr } from '../engine/escape.js';
 import { collectImages, type SiteData } from '../engine/types.js';
 import { getTheme } from '../themes/index.js';
+import { validImageDataUrl } from './site-data.js';
 
 /**
  * Self-contained preview document: stylesheet inlined, photo swapped to its
@@ -16,7 +18,9 @@ export function previewHtml(data: SiteData): string {
     `<style>${css}</style>`,
   );
   for (const [path, dataUrl] of collectImages(shown)) {
-    doc = doc.replace(`src="${path}"`, `src="${dataUrl}"`);
+    if (validImageDataUrl(dataUrl)) {
+      doc = doc.replace(`src="${path}"`, `src="${escAttr(dataUrl)}"`);
+    }
   }
   return doc;
 }

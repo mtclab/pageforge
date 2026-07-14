@@ -143,6 +143,7 @@ body {
   transition: opacity 0.25s ease;
 }
 .saved-note.show { opacity: 1; }
+.saved-note.unsaved { color: var(--danger); }
 .preview-tools-right { display: inline-flex; align-items: center; gap: 0.6rem; }
 
 /* full-screen preview: iframe at the user's real window size */

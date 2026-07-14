@@ -1,4 +1,5 @@
-import { entityEncode, esc, escAttr, safeUrl, textToHtml } from '../escape.js';
+import { esc, escAttr, safeUrl, textToHtml } from '../escape.js';
+import { obfuscatedEmailLink } from '../links.js';
 import { galleryPath, type Section } from '../types.js';
 
 /**
@@ -61,12 +62,8 @@ function renderContact(s: Extract<Section, { kind: 'contact' }>, idx: number): s
   if (s.email?.trim()) {
     const email = s.email.trim();
     const url = safeUrl(`mailto:${email}`);
-    // entity-encoded so plain-text scrapers do not harvest the address
-    parts.push(
-      url
-        ? `<p><a href="${entityEncode(url)}">${entityEncode(email)}</a></p>`
-        : `<p>${entityEncode(email)}</p>`,
-    );
+    const link = url ? obfuscatedEmailLink(url, 'Email me') : '';
+    if (link) parts.push(`<p>${link}</p>`);
   }
   if (s.note?.trim()) parts.push(textToHtml(s.note));
   if (!parts.length) return '';

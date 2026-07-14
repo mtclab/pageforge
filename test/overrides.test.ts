@@ -92,6 +92,13 @@ describe('style overrides', () => {
     const m = css.match(/--accent: (#[0-9a-f]{6});/);
     expect(m).not.toBeNull();
     expect(contrast(m![1]!, '#fafaf8')).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(m![1]!, '#ffffff')).toBeGreaterThanOrEqual(4.5);
+  });
+  it('invalid custom accent falls back to the canonical palette accent', () => {
+    const data = { ...base, meta: { ...base.meta, accent: 'red; } body { display: none' } } as SiteData;
+    const { css } = renderSite(data, THEMES[0]!);
+    expect(css).not.toContain('display: none');
+    expect(css).toContain('--accent: #3b5bdb;');
   });
   it('surface/corners/shadow/density land as body class + vars (v2a)', () => {
     const data: SiteData = {
@@ -162,10 +169,25 @@ describe('style overrides', () => {
       const get = (v: string) => css.match(new RegExp(`--${v}: (#[0-9a-f]{6})`))![1]!;
       expect(contrast(get('text'), get('bg'))).toBeGreaterThanOrEqual(4.5);
       expect(contrast(get('accent'), get('bg'))).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(get('accent'), get('surface'))).toBeGreaterThanOrEqual(4.5);
       expect(contrast(get('muted'), get('bg'))).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(get('muted'), get('surface'))).toBeGreaterThanOrEqual(4.5);
       expect(contrast(get('accent-contrast'), get('accent'))).toBeGreaterThanOrEqual(4.5);
       expect(contrast(get('text'), get('surface'))).toBeGreaterThanOrEqual(4.5);
     }
+  });
+  it('rejects a custom surface when no foreground can pass on both backgrounds', () => {
+    const data: SiteData = {
+      ...base,
+      meta: {
+        ...base.meta,
+        customPalette: {
+          bg: '#ffffff', surface: '#000000', text: '#777777', muted: '#888888', accent: '#777777',
+        },
+      },
+    };
+    const { css } = renderSite(data, THEMES[0]!);
+    expect(css).toContain('--surface: #ffffff;');
   });
   it('invalid custom palette is ignored', () => {
     const data: SiteData = {

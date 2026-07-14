@@ -1,4 +1,4 @@
-import { entityEncode, escAttr, esc, safeUrl } from './escape.js';
+import { escAttr, esc, safeUrl } from './escape.js';
 import type { Link, LinkKind } from './types.js';
 
 /** Guess the platform from a URL so we can show the right icon. */
@@ -44,6 +44,39 @@ export function iconSvg(kind: LinkKind): string {
   return `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${ICON_PATHS[kind]}"/></svg>`;
 }
 
+/**
+ * Email targets are split across attributes and assembled only on activation.
+ * No complete address exists in page source, DOM text, or any one attribute.
+ */
+export function obfuscatedEmailLink(url: string, label: string, prefix = ''): string {
+  const addressEnd = url.indexOf('?') === -1 ? url.length : url.indexOf('?');
+  const addressLength = addressEnd - 'mailto:'.length;
+  if (!url.startsWith('mailto:') || addressLength < 2) return '';
+  const splitAt = 'mailto:'.length + Math.floor(addressLength / 2);
+  const first = url.slice(0, splitAt);
+  const second = url.slice(splitAt);
+  let shown = label.trim() || 'Email';
+  try {
+    const address = decodeURIComponent(url.slice('mailto:'.length, addressEnd));
+    if (shown.toLowerCase().includes(address.toLowerCase()) || shown.toLowerCase().includes(url.toLowerCase())) {
+      shown = 'Email';
+    }
+  } catch {
+    shown = 'Email';
+  }
+  return `<a href="#" data-email-a="${escAttr(first)}" data-email-b="${escAttr(second)}">${prefix}<span>${esc(shown)}</span></a>`;
+}
+
+/** Added only to pages containing an email control. */
+export const EMAIL_ACTIVATION_SCRIPT = `<script>
+document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
+  link.addEventListener('click', function (event) {
+    event.preventDefault();
+    window.location.href = link.dataset.emailA + link.dataset.emailB;
+  });
+});
+</script>`;
+
 /** Render the links strip. Links whose URL fails validation render as plain text. */
 export function renderLinks(links: Link[]): string {
   const items = links
@@ -53,9 +86,10 @@ export function renderLinks(links: Link[]): string {
       const kind = link.kind ?? detectKind(link.url);
       const label = esc(link.label.trim() || link.url.trim());
       if (!url) return `<span>${label}</span>`;
-      // mailto targets are entity-encoded against address scrapers
-      const href = url.startsWith('mailto:') ? entityEncode(url) : escAttr(url);
-      return `<a href="${href}">${iconSvg(kind)}<span>${label}</span></a>`;
+      if (url.startsWith('mailto:')) {
+        return obfuscatedEmailLink(url, link.label.trim(), iconSvg(kind));
+      }
+      return `<a href="${escAttr(url)}">${iconSvg(kind)}<span>${label}</span></a>`;
     });
   if (!items.length) return '';
   return `<nav class="links" aria-label="Links">\n${items.join('\n')}\n</nav>`;

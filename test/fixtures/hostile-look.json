@@ -1,0 +1,16 @@
+{
+  "pageforgeTheme": 1,
+  "meta": {
+    "themeId": "slate",
+    "paletteId": "paper",
+    "fontId": "system",
+    "accent": "#fff; } body { background: url(javascript:alert(1))",
+    "customPalette": {
+      "bg": "#ffffff",
+      "surface": "#ffffff",
+      "text": "#111111",
+      "muted": "#222222",
+      "accent": "red; --owned: 1"
+    }
+  }
+}

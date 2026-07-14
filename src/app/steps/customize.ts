@@ -3,6 +3,7 @@ import { darkestPalette } from '../../engine/render.js';
 import type { PhotoShape, SiteData } from '../../engine/types.js';
 import { el } from '../dom.js';
 import { saveMyTheme } from '../mythemes.js';
+import { decodeSiteMeta, validImageDataUrl } from '../site-data.js';
 import type { StepCtx } from './content.js';
 
 /** Deterministic "surprise me": walks palette x font combos in order. */
@@ -341,7 +342,9 @@ export function renderCustomizeStep(pane: HTMLElement, ctx: StepCtx): void {
           64,
         );
         bitmap.close();
-        data.favicon = { dataUrl: canvas.toDataURL('image/png') };
+        const dataUrl = canvas.toDataURL('image/png');
+        if (!validImageDataUrl(dataUrl)) throw new Error('image');
+        data.favicon = { dataUrl };
         onChange(true);
       } catch {
         favGroup.append(el('p', { class: 'error', text: 'Sorry, that image could not be read.' }));
@@ -497,9 +500,12 @@ export function renderCustomizeStep(pane: HTMLElement, ctx: StepCtx): void {
     const file = importInput.files?.[0];
     if (!file) return;
     try {
-      const parsed = JSON.parse(await file.text()) as { pageforgeTheme?: number; meta?: SiteData['meta'] };
-      if (parsed.pageforgeTheme !== 1 || typeof parsed.meta?.themeId !== 'string') throw new Error('shape');
-      data.meta = parsed.meta;
+      const parsed = JSON.parse(await file.text()) as { pageforgeTheme?: unknown; meta?: unknown };
+      const meta = decodeSiteMeta(parsed.meta);
+      if (parsed.pageforgeTheme !== 1 || !meta || typeof (parsed.meta as { themeId?: unknown })?.themeId !== 'string') {
+        throw new Error('shape');
+      }
+      data.meta = meta;
       onChange(true);
     } catch {
       actions.append(el('span', { class: 'error', text: 'That does not look like a pageforge look file.' }));

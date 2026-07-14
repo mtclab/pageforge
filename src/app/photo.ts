@@ -1,4 +1,5 @@
 import { el } from './dom.js';
+import { validImageDataUrl } from './site-data.js';
 import type { StepCtx } from './steps/content.js';
 
 const VIEW = 220; // on-screen crop viewport (CSS px)
@@ -13,7 +14,9 @@ export async function fileToResizedDataUrl(file: File, maxEdge = 1024): Promise<
   canvas.height = Math.round(bitmap.height * scale);
   canvas.getContext('2d')!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close();
-  return canvas.toDataURL('image/jpeg', 0.82);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+  if (!validImageDataUrl(dataUrl)) throw new Error('image too large');
+  return dataUrl;
 }
 
 /**
@@ -136,7 +139,9 @@ function cropUi(bitmap: ImageBitmap, ctx: StepCtx): HTMLElement {
     out.width = OUT;
     out.height = OUT;
     draw(out.getContext('2d')!, OUT);
-    data.photo = { dataUrl: out.toDataURL('image/jpeg', 0.85) };
+    const dataUrl = out.toDataURL('image/jpeg', 0.85);
+    if (!validImageDataUrl(dataUrl)) return;
+    data.photo = { dataUrl };
     bitmap.close();
     onChange(true);
   });
