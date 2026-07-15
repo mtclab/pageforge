@@ -17,7 +17,7 @@ npm run typecheck
 npm run build     # esbuild -> dist/
 npm run dev       # esbuild watch + serve on :8787 (static copies not watched)
 npm run sample    # render the full.json fixture to stdout (--out DIR writes files)
-npm run deploy    # build + wrangler deploy (assets-only worker)
+npm run deploy    # local/operator testing only; production deploys from merged main
 ```
 
 ## Adding a theme
@@ -29,4 +29,6 @@ npm run deploy    # build + wrangler deploy (assets-only worker)
 
 ## Deploy
 
-Assets-only worker (`wrangler.toml` has no `main`). `npm run deploy` with a Cloudflare API token in the environment. workers.dev first; `pageforge.mtclab.net` custom domain later.
+Assets-only worker (`wrangler.toml` has no `main`). Production deploys `main` to
+`pageforge.mtclab.net` via `deploy-production.yml`; smoke uses workers.dev and
+`/version` must report the deployed commit.
