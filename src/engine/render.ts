@@ -175,7 +175,7 @@ export function renderSite(data: SiteData, theme: ThemePack, opts: RenderOptions
 
   const name = data.name.trim();
   const sections = data.sections
-    .map((s, i) => renderSection(s, i + 1))
+    .map((s, i) => renderSection(s, i + 1, data.lang, data.business))
     .filter(Boolean);
 
   const description = data.tagline?.trim();

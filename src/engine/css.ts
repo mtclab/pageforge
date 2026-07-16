@@ -132,6 +132,24 @@ body.bg-wash-corner {
 .projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .project .desc { color: var(--muted); }
 
+.hours-list { display: grid; gap: 0.35rem; }
+.hours-row { display: grid; grid-template-columns: minmax(8rem, 1fr) auto; gap: 1rem; }
+.hours-row dd { text-align: right; }
+.hours-exceptions { margin-top: 0.5rem; }
+
+.services { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.service .desc { color: var(--muted); }
+.service-price { color: var(--accent); font-weight: 700; }
+
+.section-notice {
+  background: var(--surface);
+  border-left: 0.35rem solid var(--accent);
+  padding: calc(1rem * var(--density));
+  color: var(--text);
+}
+.notice-until { color: var(--muted); }
+.location-address { white-space: pre-line; }
+
 .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
 .chips li {
   background: var(--surface);

@@ -25,7 +25,20 @@ export type Section =
   | { kind: 'hobbies'; title?: string; items: string[] }
   | { kind: 'contact'; email?: string; note?: string }
   | { kind: 'custom'; title: string; text: string }
-  | { kind: 'gallery'; title?: string; photos: { dataUrl: string }[] };
+  | { kind: 'gallery'; title?: string; photos: { dataUrl: string }[] }
+  | {
+      kind: 'hours';
+      title?: string;
+      days: { label: string; open?: string; close?: string; closed?: boolean }[];
+      exceptions?: { date: string; text: string }[];
+    }
+  | {
+      kind: 'services';
+      title?: string;
+      items: { name: string; desc?: string; price?: string }[];
+    }
+  | { kind: 'notice'; text: string; until?: string }
+  | { kind: 'location'; title?: string; address?: string; phone?: string; mapUrl?: string };
 
 export interface SiteData {
   version: 1;
@@ -39,6 +52,15 @@ export interface SiteData {
   favicon?: { dataUrl: string };
   links: Link[];
   sections: Section[];
+  business?: { phone?: string; address?: string; yTunnus?: string };
+  capabilities?: {
+    hours?: boolean;
+    services?: boolean;
+    gallery?: boolean;
+    notice?: boolean;
+    location?: boolean;
+    contact?: boolean;
+  };
   footerNote?: string;
   meta: {
     themeId: string;

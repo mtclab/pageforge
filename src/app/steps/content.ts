@@ -252,14 +252,14 @@ function importField(ctx: StepCtx): HTMLElement {
   return wrap;
 }
 
-const SECTION_TITLES: Record<Section['kind'], string> = {
+const SECTION_TITLES = {
   about: 'About me',
   projects: 'Things I make',
   hobbies: 'Things I love',
   contact: 'How to reach me',
   custom: 'Own section',
   gallery: 'Photo gallery',
-};
+} as Record<Section['kind'], string>;
 
 function sectionEditor(section: Section, i: number, ctx: StepCtx): HTMLElement {
   const { data, onChange } = ctx;
