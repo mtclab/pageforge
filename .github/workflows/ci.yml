@@ -1,11 +1,19 @@
 name: ci
+
+# Actions-budget discipline: no push-triggered runs. PRs get one gated run
+# (superseded runs cancelled); production safety lives in deploy-production.yml,
+# which typechecks + tests before every deploy.
 on:
-  push:
-    branches: [main, dev]
   pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
