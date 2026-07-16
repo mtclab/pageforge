@@ -1,12 +1,40 @@
 import { esc, escAttr, safeUrl, textToHtml } from '../escape.js';
 import { obfuscatedEmailLink } from '../links.js';
-import { galleryPath, type Section } from '../types.js';
+import { galleryPath, type Section, type SiteData } from '../types.js';
+
+const BUSINESS_LABELS = {
+  fi: {
+    hours: 'Aukioloajat',
+    services: 'Palvelut',
+    location: 'Yhteystiedot',
+    closed: 'Suljettu',
+    map: 'Kartta',
+    exceptions: 'Poikkeusaukiolot',
+  },
+  en: {
+    hours: 'Hours',
+    services: 'Services',
+    location: 'Contact',
+    closed: 'Closed',
+    map: 'Map',
+    exceptions: 'Exceptions',
+  },
+} as const;
+
+function businessLabels(lang?: string): typeof BUSINESS_LABELS.fi | typeof BUSINESS_LABELS.en {
+  return lang?.startsWith('fi') ? BUSINESS_LABELS.fi : BUSINESS_LABELS.en;
+}
 
 /**
  * All <main> section renderers. Each returns '' when the section has no
  * content, so empty sections never render. `idx` keys the aria-labelledby ids.
  */
-export function renderSection(section: Section, idx: number): string {
+export function renderSection(
+  section: Section,
+  idx: number,
+  lang?: string,
+  business?: SiteData['business'],
+): string {
   switch (section.kind) {
     case 'about':
       return renderAbout(section, idx);
@@ -20,6 +48,14 @@ export function renderSection(section: Section, idx: number): string {
       return renderCustom(section, idx);
     case 'gallery':
       return renderGallery(section, idx);
+    case 'hours':
+      return renderHours(section, idx, lang);
+    case 'services':
+      return renderServices(section, idx, lang);
+    case 'notice':
+      return renderNotice(section);
+    case 'location':
+      return renderLocation(section, idx, lang, business);
   }
 }
 
@@ -83,4 +119,81 @@ function renderCustom(s: Extract<Section, { kind: 'custom' }>, idx: number): str
   const body = textToHtml(s.text);
   if (!body || !s.title.trim()) return '';
   return wrap('custom', idx, s.title.trim(), body);
+}
+
+function renderHours(s: Extract<Section, { kind: 'hours' }>, idx: number, lang?: string): string {
+  const labels = businessLabels(lang);
+  const days = s.days
+    .filter((day) => day.label.trim())
+    .map((day) => {
+      let value = '';
+      if (day.closed) {
+        value = labels.closed;
+      } else if (day.open?.trim() && day.close?.trim()) {
+        value = `${day.open.trim()}–${day.close.trim()}`;
+      } else {
+        value = day.open?.trim() || day.close?.trim() || '';
+      }
+      return `<div class="hours-row"><dt>${esc(day.label.trim())}</dt><dd>${esc(value)}</dd></div>`;
+    });
+  const exceptions = (s.exceptions ?? [])
+    .filter((exception) => exception.date.trim() || exception.text.trim())
+    .map(
+      (exception) =>
+        `<li><strong>${esc(exception.date.trim())}</strong> ${esc(exception.text.trim())}</li>`,
+    );
+  if (!days.length && !exceptions.length) return '';
+  const exceptionList = exceptions.length
+    ? `\n<h3>${labels.exceptions}</h3>\n<ul class="hours-exceptions">\n${exceptions.join('\n')}\n</ul>`
+    : '';
+  return wrap(
+    'hours',
+    idx,
+    s.title?.trim() || labels.hours,
+    `<dl class="hours-list">\n${days.join('\n')}\n</dl>${exceptionList}`,
+  );
+}
+
+function renderServices(s: Extract<Section, { kind: 'services' }>, idx: number, lang?: string): string {
+  const items = s.items
+    .filter((item) => item.name.trim())
+    .map((item) => {
+      const desc = item.desc?.trim() ? `\n<p class="desc">${esc(item.desc.trim())}</p>` : '';
+      const price = item.price?.trim() ? `\n<p class="service-price">${esc(item.price.trim())}</p>` : '';
+      return `<li class="service"><h3>${esc(item.name.trim())}</h3>${desc}${price}</li>`;
+    });
+  if (!items.length) return '';
+  return wrap(
+    'services',
+    idx,
+    s.title?.trim() || businessLabels(lang).services,
+    `<ul class="services">\n${items.join('\n')}\n</ul>`,
+  );
+}
+
+function renderNotice(s: Extract<Section, { kind: 'notice' }>): string {
+  const text = s.text.trim();
+  if (!text) return '';
+  const until = s.until?.trim() ? ` <span class="notice-until">${esc(s.until.trim())}</span>` : '';
+  return `<section class="section section-notice" role="status"><p>${esc(text)}${until}</p></section>`;
+}
+
+function renderLocation(
+  s: Extract<Section, { kind: 'location' }>,
+  idx: number,
+  lang?: string,
+  business?: SiteData['business'],
+): string {
+  const labels = businessLabels(lang);
+  const address = s.address?.trim() || business?.address?.trim();
+  const phone = s.phone?.trim() || business?.phone?.trim();
+  const parts: string[] = [];
+  if (address) parts.push(`<p class="location-address">${esc(address)}</p>`);
+  if (phone) parts.push(`<p><a href="${escAttr(`tel:${phone}`)}">${esc(phone)}</a></p>`);
+  const mapUrl = s.mapUrl ? safeUrl(s.mapUrl) : null;
+  if (mapUrl && /^https?:/.test(mapUrl)) {
+    parts.push(`<p><a href="${escAttr(mapUrl)}">${labels.map}</a></p>`);
+  }
+  if (!parts.length) return '';
+  return wrap('location', idx, s.title?.trim() || labels.location, parts.join('\n'));
 }

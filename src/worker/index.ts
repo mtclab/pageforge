@@ -2,6 +2,12 @@ import { renderFavicon } from '../engine/favicon.js';
 import { effectivePalette, renderSite, resolveFont } from '../engine/render.js';
 import { collectImages, type SiteData } from '../engine/types.js';
 import { getTheme } from '../themes/index.js';
+import { handleBizRequest } from './biz.js';
+import { handleMcpRequest } from './mcp.js';
+import { type Env, JSON_HEADERS, MAX_BODY, json, sha256Hex } from './shared.js';
+import { validateSiteData } from './validate.js';
+
+export { validateSiteData } from './validate.js';
 
 /**
  * Hosted publish (beta). Everything else on this worker is static assets;
@@ -17,27 +23,6 @@ import { getTheme } from '../themes/index.js';
  *   spam deterrent).
  */
 
-/* Minimal Workers runtime types - kept local to avoid @cloudflare/workers-types
-   vs DOM lib global collisions in one tsconfig. */
-interface KVNamespace {
-  get(key: string): Promise<string | null>;
-  put(key: string, value: string, opts?: { expirationTtl?: number }): Promise<void>;
-  delete(key: string): Promise<void>;
-}
-interface AssetsFetcher {
-  fetch(request: Request): Promise<Response>;
-}
-
-interface Env {
-  SITES: KVNamespace;
-  ASSETS: AssetsFetcher;
-  /** "true" opens hosted publish; anything else keeps the API closed. */
-  PUBLISH_ENABLED?: string;
-  /** Build stamp injected by the deploy workflow (`wrangler deploy --var`). */
-  BUILD_COMMIT?: string;
-  BUILD_TIME?: string;
-}
-
 interface StoredSite {
   v: 1;
   data: SiteData;
@@ -48,20 +33,8 @@ interface StoredSite {
 
 const SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])?$/;
 const RESERVED = new Set(['api', 's', 'www', 'admin', 'help', 'assets', 'app', 'static', 'pageforge']);
-const MAX_BODY = 6 * 1024 * 1024; // photos are client-resized; this is generous
 const MAX_IMAGE_B64 = 1_100_000; // ~800 KB binary
 const PUBLISHES_PER_DAY = 20;
-
-const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8' };
-
-function json(status: number, body: unknown): Response {
-  return new Response(JSON.stringify(body), { status, headers: JSON_HEADERS });
-}
-
-async function sha256Hex(s: string): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
-  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
-}
 
 function b64ToBytes(b64: string): Uint8Array {
   const bin = atob(b64);
@@ -71,46 +44,6 @@ function b64ToBytes(b64: string): Uint8Array {
 }
 
 const DATA_URL_RE = /^data:image\/(?:jpeg|png);base64,([A-Za-z0-9+/=]+)$/;
-
-/** Reject anything that is not a sane, size-capped SiteData. Returns an error string or null. */
-function validateSiteData(data: SiteData): string | null {
-  if (data?.version !== 1) return 'unsupported data version';
-  if (typeof data.name !== 'string' || !data.name.trim()) return 'name is required';
-  if (data.name.length > 120) return 'name too long';
-  if ((data.tagline ?? '').length > 300) return 'tagline too long';
-  if ((data.footerNote ?? '').length > 300) return 'footer note too long';
-  if (!Array.isArray(data.links) || data.links.length > 20) return 'too many links';
-  for (const link of data.links) {
-    if (typeof link?.label !== 'string' || typeof link?.url !== 'string') return 'bad link';
-    if (link.label.length > 120 || link.url.length > 500) return 'link too long';
-  }
-  if (!Array.isArray(data.sections) || data.sections.length > 20) return 'too many sections';
-  for (const s of data.sections) {
-    const text = 'text' in s ? s.text : '';
-    if (typeof text === 'string' && text.length > 8000) return 'section text too long';
-    if ('items' in s && Array.isArray(s.items) && s.items.length > 40) return 'too many items';
-    if (s.kind === 'gallery') {
-      if (!Array.isArray(s.photos) || s.photos.length > 6) return 'too many gallery photos';
-    }
-  }
-  for (const [, dataUrl] of collectImages(data)) {
-    const m = dataUrl.match(DATA_URL_RE);
-    if (!m) return 'bad image encoding';
-    if (m[1]!.length > MAX_IMAGE_B64) return 'an image is too large';
-  }
-  if (typeof data.meta?.themeId !== 'string') return 'missing theme';
-  if (data.lang !== undefined && !/^[a-z]{2,3}(-[a-zA-Z0-9-]{1,10})?$/.test(data.lang)) {
-    return 'bad language code';
-  }
-  const cp = data.meta.customPalette;
-  if (cp !== undefined) {
-    const hexes = [cp?.bg, cp?.surface, cp?.text, cp?.muted, cp?.accent];
-    if (hexes.some((h) => typeof h !== 'string' || !/^#[0-9a-f]{6}$/.test(h))) {
-      return 'bad custom colors';
-    }
-  }
-  return null;
-}
 
 async function rateLimit(env: Env, ip: string): Promise<boolean> {
   const day = new Date().toISOString().slice(0, 10);
@@ -244,6 +177,18 @@ export default {
         JSON.stringify({ commit: env.BUILD_COMMIT ?? 'dev', deployed_at: env.BUILD_TIME ?? null }),
         { headers: { ...JSON_HEADERS, 'cache-control': 'no-store' } },
       );
+    }
+
+    const mutationPath = pathname === '/api/mcp'
+      || pathname.startsWith('/api/biz/')
+      || pathname.startsWith('/p/')
+      || pathname.startsWith('/b/');
+    if (mutationPath) {
+      if (env.MUTATION_API_ENABLED !== 'true' || !env.OPERATOR_KEY) {
+        return new Response('Not found', { status: 404 });
+      }
+      if (pathname === '/api/mcp') return handleMcpRequest(request, env);
+      return handleBizRequest(request, env);
     }
 
     if (pathname.startsWith('/api/') && env.PUBLISH_ENABLED !== 'true') {
