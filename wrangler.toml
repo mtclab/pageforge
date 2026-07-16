@@ -8,11 +8,12 @@ routes = [
 
 [vars]
 PUBLISH_ENABLED = "false"
+MUTATION_API_ENABLED = "false"
 
 [assets]
 directory = "dist"
 binding = "ASSETS"
-run_worker_first = ["/api/*", "/s/*"]
+run_worker_first = ["/api/*", "/s/*", "/p/*", "/b/*"]
 
 [[kv_namespaces]]
 binding = "SITES"
