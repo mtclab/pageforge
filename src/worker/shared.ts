@@ -69,3 +69,12 @@ export function bearerToken(request: Request): string | null {
 export async function secretMatches(token: string, expectedHash: string): Promise<boolean> {
   return constantTimeEqual(await sha256Hex(token), expectedHash);
 }
+
+export async function requireOperator(request: Request, env: Env): Promise<Response | null> {
+  const token = bearerToken(request);
+  if (!token) return json(401, { error: 'Authorization required.' });
+  if (!env.OPERATOR_KEY || !(await secretMatches(token, await sha256Hex(env.OPERATOR_KEY)))) {
+    return json(403, { error: 'Forbidden.' });
+  }
+  return null;
+}

@@ -7,7 +7,7 @@ import {
   type Env,
   json,
   readJson,
-  secretMatches,
+  requireOperator,
   sha256Hex,
 } from './shared.js';
 import { validateSiteData } from './validate.js';
@@ -175,15 +175,6 @@ export async function createProposal(
   return { ok: true, value: { proposalId, previewPath: `/p/${siteId}/${proposalId}`, summary } };
 }
 
-async function operatorAuth(request: Request, env: Env): Promise<Response | null> {
-  const token = bearerToken(request);
-  if (!token) return json(401, { error: 'Authorization required.' });
-  if (!env.OPERATOR_KEY || !(await secretMatches(token, await sha256Hex(env.OPERATOR_KEY)))) {
-    return json(403, { error: 'Forbidden.' });
-  }
-  return null;
-}
-
 async function siteAuth(request: Request, env: Env, site: StoredBizSite): Promise<Response | null> {
   const token = bearerToken(request);
   if (!token) return json(401, { error: 'Authorization required.' });
@@ -222,7 +213,7 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
 
   if (pathname === '/api/biz/sites') {
     if (request.method !== 'POST') return methodNotAllowed();
-    const denied = await operatorAuth(request, env);
+    const denied = await requireOperator(request, env);
     if (denied) return denied;
     const parsed = await readJson<{ data?: SiteData }>(request);
     if ('error' in parsed) return parsed.error;
@@ -261,7 +252,7 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
   const proposalsMatch = pathname.match(/^\/api\/biz\/sites\/([a-z0-9]{8})\/proposals$/);
   if (proposalsMatch) {
     if (request.method !== 'POST') return methodNotAllowed();
-    const denied = await operatorAuth(request, env);
+    const denied = await requireOperator(request, env);
     if (denied) return denied;
     const parsed = await readJson<{ candidate?: SiteData; note?: string }>(request);
     if ('error' in parsed) return parsed.error;
