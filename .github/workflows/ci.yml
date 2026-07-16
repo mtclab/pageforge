@@ -1,14 +1,11 @@
 name: ci
 
-# Actions-budget discipline: no push-triggered runs. PRs get one gated run
-# (superseded runs cancelled); production safety lives in deploy-production.yml,
-# which typechecks + tests before every deploy.
+# Actions-budget discipline: NO automatic runs (no push, no pull_request).
+# Gates run locally before push; production safety lives in
+# deploy-production.yml, which typechecks + tests before every deploy.
+# This workflow exists only for manual/dispatched verification.
 on:
-  pull_request:
-
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  workflow_dispatch:
 
 jobs:
   test:
