@@ -17,6 +17,7 @@ import {
   type ProspectStatus,
   PROSPECT_STATUSES,
   type Site,
+  type UpdateRequestStatus,
 } from './db.js';
 import {
   auditPage,
@@ -24,11 +25,13 @@ import {
   intakePage,
   loginPage,
   messagePage,
+  panelTokenPage,
   previewTokenPage,
   prospectDetailPage,
   prospectsPage,
   siteDetailPage,
   sitesPage,
+  updatesPage,
 } from './admin-html.js';
 import { emptyBusinessProfile, parseBusinessProfileForm } from './intake-form.js';
 import {
@@ -199,12 +202,14 @@ async function siteDetailResponse(
   error?: string,
   status = 200,
 ): Promise<Response> {
-  const [versions, proposals, photoCount, events, tokens, comments, qaRun, checklist, gate] = await Promise.all([
+  const [versions, proposals, photoCount, events, tokens, panelTokens, updateRequests, comments, qaRun, checklist, gate] = await Promise.all([
     cp.listSnapshots(site.id),
     cp.listOpenProposals(site.id),
     cp.photoCountForSite(site.id),
     cp.listAuditEventsForSite(site.publicId, 20),
     cp.listActiveTokens(site.id),
+    cp.listActivePanelTokens(site.id),
+    cp.listUpdateRequests(undefined, site.id),
     cp.listDraftComments(site.id),
     cp.latestQaRun(site.id),
     cp.listLaunchChecklist(site.id),
@@ -217,6 +222,8 @@ async function siteDetailResponse(
     photoCount,
     events,
     tokens,
+    panelTokens,
+    updateRequests: updateRequests.filter((entry) => entry.status !== 'suljettu'),
     comments,
     qaRun: qaRun ?? undefined,
     checklist,
@@ -273,6 +280,26 @@ export async function handleAdminRequest(request: Request, env: Env): Promise<Re
       cp.listAuditEvents({ limit: 20 }),
     ]);
     return html(dashboardPage(counts, events, csrf));
+  }
+
+  if (pathname === '/admin/updates') {
+    if (request.method !== 'GET') return methodNotAllowed(csrf);
+    const rawStatus = url.searchParams.get('status') ?? undefined;
+    if (rawStatus !== undefined && !['uusi', 'ehdotettu', 'suljettu'].includes(rawStatus)) {
+      return html(updatesPage(await cp.listUpdateRequests(), csrf, undefined, 'Tuntematon tilasuodatin.'), 400);
+    }
+    const status = rawStatus as UpdateRequestStatus | undefined;
+    return html(updatesPage(await cp.listUpdateRequests(status), csrf, status));
+  }
+
+  const updateCloseMatch = pathname.match(/^\/admin\/updates\/(\d+)\/close$/);
+  if (updateCloseMatch) {
+    if (request.method !== 'POST') return methodNotAllowed(csrf);
+    const closed = await cp.closeUpdateRequest(Number(updateCloseMatch[1]!), 'operator');
+    if (!closed) {
+      return html(updatesPage(await cp.listUpdateRequests(), csrf, undefined, 'Päivityspyyntöä ei löytynyt tai se on jo suljettu.'), 404);
+    }
+    return redirect('/admin/updates');
   }
 
   if (pathname === '/admin/prospects') {
@@ -480,6 +507,31 @@ export async function handleAdminRequest(request: Request, env: Env): Promise<Re
     });
     if (!revoked) return siteDetailResponse(cp, site, csrf, 'Esikatselutunnistetta ei löytynyt.', 404);
     return redirect(`/admin/sites/${site.publicId}`);
+  }
+
+  const panelTokenRevokeMatch = pathname.match(/^\/admin\/sites\/([^/]+)\/panel-tokens\/(\d+)\/revoke$/);
+  if (panelTokenRevokeMatch) {
+    if (request.method !== 'POST') return methodNotAllowed(csrf);
+    const site = await cp.getSiteByPublicId(panelTokenRevokeMatch[1]!);
+    if (!site) return html(messagePage('Sivustoa ei löytynyt', 'Tuntematon sivusto.', csrf), 404);
+    const revoked = await cp.revokePanelToken({
+      id: Number(panelTokenRevokeMatch[2]!),
+      site,
+      actor: 'operator',
+    });
+    if (!revoked) return siteDetailResponse(cp, site, csrf, 'Asiakaspaneelin tunnistetta ei löytynyt.', 404);
+    return redirect(`/admin/sites/${site.publicId}`);
+  }
+
+  const panelTokenCreateMatch = pathname.match(/^\/admin\/sites\/([^/]+)\/panel-tokens$/);
+  if (panelTokenCreateMatch) {
+    if (request.method !== 'POST') return methodNotAllowed(csrf);
+    const site = await cp.getSiteByPublicId(panelTokenCreateMatch[1]!);
+    if (!site) return html(messagePage('Sivustoa ei löytynyt', 'Tuntematon sivusto.', csrf), 404);
+    const token = randomPreviewToken();
+    await cp.createPanelToken({ tokenHash: await sha256Hex(token), site, actor: 'operator' });
+    const panelUrl = `${new URL(request.url).origin}/panel?t=${encodeURIComponent(token)}`;
+    return html(panelTokenPage(site, panelUrl, csrf));
   }
 
   const tokenCreateMatch = pathname.match(/^\/admin\/sites\/([^/]+)\/tokens$/);

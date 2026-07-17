@@ -8,6 +8,8 @@ import { handleMcpRequest } from './mcp.js';
 import { ControlPlane } from './db.js';
 import { type Env, JSON_HEADERS, MAX_BODY, json, sha256Hex } from './shared.js';
 import { validateSiteData } from './validate.js';
+import { handlePanelRequest } from './panel.js';
+import { type EmailMessage, handleEmailMessage } from './update-channels.js';
 
 export { validateSiteData } from './validate.js';
 export {
@@ -245,6 +247,7 @@ export default {
       || pathname.startsWith('/p/')
       || pathname.startsWith('/b/')
       || pathname.startsWith('/img/')
+      || pathname === '/panel'
       || pathname === '/admin'
       || pathname.startsWith('/admin/');
     if (mutationPath) {
@@ -257,6 +260,7 @@ export default {
         return handleAdminRequest(request, env);
       }
       if (pathname === '/api/mcp') return handleMcpRequest(request, env);
+      if (pathname === '/panel') return handlePanelRequest(request, env);
       return handleBizRequest(request, env);
     }
 
@@ -297,5 +301,9 @@ export default {
 
     // Everything else: static assets (the generator app itself)
     return env.ASSETS.fetch(request);
+  },
+  async email(message: EmailMessage, env: Env, _ctx?: unknown): Promise<void> {
+    if (env.MUTATION_API_ENABLED !== 'true' || !env.OPERATOR_KEY) return;
+    await handleEmailMessage(message, env);
   },
 };

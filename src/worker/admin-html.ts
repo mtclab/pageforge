@@ -11,6 +11,7 @@ import type {
   OpenProposal,
   LaunchChecklistRecord,
   PreviewToken,
+  PanelToken,
   Prospect,
   ProspectStatus,
   Site,
@@ -18,6 +19,8 @@ import type {
   SnapshotMeta,
   StatusCounts,
   QaRun,
+  UpdateRequest,
+  UpdateRequestStatus,
 } from './db.js';
 import { PROSPECT_STATUSES, SITE_STATUSES } from './db.js';
 import { LAUNCH_CHECKLIST_ITEMS } from './qa.js';
@@ -60,6 +63,7 @@ export function layout(title: string, content: string, csrf?: string): string {
          <a href="/admin">Dashboard</a>
          <a href="/admin/prospects">Prospektit</a>
          <a href="/admin/sites">Sivustot</a>
+         <a href="/admin/updates">Päivityspyynnöt</a>
          <a href="/admin/audit">Loki</a>
          <form action="/admin/logout" method="post">${formToken(csrf)}<button class="link" type="submit">Kirjaudu ulos</button></form>
        </nav>`;
@@ -112,7 +116,7 @@ export function dashboardPage(counts: StatusCounts, events: AuditEventRecord[], 
   const siteCards = SITE_STATUSES.map((status) => `<div class="card"><div>${badge(status)}</div><div class="number">${esc(String(counts.sites[status]))}</div></div>`).join('');
   return layout('Dashboard', `<h1>Dashboard</h1>
     <h2>Prospektit</h2><div class="grid">${prospectCards}</div>
-    <h2>Sivustot</h2><div class="grid">${siteCards}<div class="card"><div>Avoimet ehdotukset</div><div class="number">${esc(String(counts.openProposals))}</div></div></div>
+    <h2>Sivustot</h2><div class="grid">${siteCards}<div class="card"><div>Avoimet ehdotukset</div><div class="number">${esc(String(counts.openProposals))}</div></div><a class="card" href="/admin/updates"><div>Avoimet päivityspyynnöt</div><div class="number">${esc(String(counts.openUpdateRequests))}</div></a></div>
     <h2>Viimeisimmät tapahtumat</h2>${auditTable(events)}`, csrf);
 }
 
@@ -226,6 +230,24 @@ export function sitesPage(sites: SiteListItem[], csrf: string): string {
   return layout('Sivustot', `<h1>Sivustot</h1>${table}`, csrf);
 }
 
+export function updatesPage(
+  requests: UpdateRequest[],
+  csrf: string,
+  selected?: UpdateRequestStatus,
+  error?: string,
+): string {
+  const statuses: UpdateRequestStatus[] = ['uusi', 'ehdotettu', 'suljettu'];
+  const filters = [`<a${selected === undefined ? ' class="active"' : ''} href="/admin/updates">Kaikki</a>`, ...statuses.map((status) => `<a${selected === status ? ' class="active"' : ''} href="/admin/updates?status=${escAttr(status)}">${esc(status)}</a>`)].join('');
+  const rows = requests.map((entry) => {
+    const excerpt = entry.body.length > 180 ? `${entry.body.slice(0, 180)}…` : entry.body;
+    const close = entry.status === 'suljettu' ? '' : `<form action="/admin/updates/${escAttr(String(entry.id))}/close" method="post">${formToken(csrf)}<button class="danger" type="submit">Sulje</button></form>`;
+    return `<tr><td>${esc(String(entry.id))}</td><td>${formatTime(entry.createdAt)}</td><td><a href="/admin/sites/${escAttr(entry.sitePublicId)}">${esc(entry.siteName)}<br><span class="muted">${esc(entry.sitePublicId)}</span></a></td><td>${esc(entry.channel)}</td><td>${esc(entry.fromAddr ?? '—')}</td><td>${esc(entry.subject ?? '')}<br><span class="muted">${esc(excerpt)}</span></td><td>${badge(entry.status)}</td><td>${close}</td></tr>`;
+  }).join('');
+  const table = rows ? `<div class="table-wrap"><table><thead><tr><th>ID</th><th>Aika</th><th>Sivusto</th><th>Kanava</th><th>Lähettäjä</th><th>Sisältö</th><th>Tila</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>` : '<p class="muted">Ei päivityspyyntöjä.</p>';
+  const message = error === undefined ? '' : `<p class="notice error" role="alert">${esc(error)}</p>`;
+  return layout('Päivityspyynnöt', `<h1>Päivityspyynnöt</h1>${message}<div class="filters">${filters}</div>${table}`, csrf);
+}
+
 export function siteDetailPage(input: {
   site: Site;
   versions: SnapshotMeta[];
@@ -233,6 +255,8 @@ export function siteDetailPage(input: {
   photoCount: number;
   events: AuditEventRecord[];
   tokens: PreviewToken[];
+  panelTokens: PanelToken[];
+  updateRequests: UpdateRequest[];
   comments: DraftComment[];
   qaRun?: QaRun;
   checklist: LaunchChecklistRecord[];
@@ -241,7 +265,7 @@ export function siteDetailPage(input: {
   error?: string;
 }): string {
   const {
-    site, versions, proposals, photoCount, events, tokens, comments,
+    site, versions, proposals, photoCount, events, tokens, panelTokens, updateRequests, comments,
     qaRun, checklist, publishGateMessage, csrf, error,
   } = input;
   const message = error === undefined ? '' : `<p class="notice error" role="alert">${esc(error)}</p>`;
@@ -254,6 +278,10 @@ export function siteDetailPage(input: {
   const versionTable = versionRows ? `<div class="table-wrap"><table><thead><tr><th>n</th><th>Aika</th><th>Huomio</th><th></th></tr></thead><tbody>${versionRows}</tbody></table></div>` : '<p class="muted">Ei aiempia versioita.</p>';
   const tokenRows = tokens.map((token) => `<tr><td>${esc(token.label)}</td><td>${esc(token.proposalPublicId ?? 'Koko sivusto')}</td><td>${formatTime(token.expiresAt)}</td><td><form action="/admin/sites/${escAttr(site.publicId)}/tokens/${escAttr(String(token.id))}/revoke" method="post">${formToken(csrf)}<button class="danger" type="submit">Peru</button></form></td></tr>`).join('');
   const tokenTable = tokenRows ? `<div class="table-wrap"><table><thead><tr><th>Nimi</th><th>Rajaus</th><th>Vanhenee</th><th></th></tr></thead><tbody>${tokenRows}</tbody></table></div>` : '<p class="muted">Ei aktiivisia esikatselulinkkejä.</p>';
+  const panelTokenRows = panelTokens.map((token) => `<tr><td>${formatTime(token.createdAt)}</td><td>${formatTime(token.expiresAt)}</td><td><form action="/admin/sites/${escAttr(site.publicId)}/panel-tokens/${escAttr(String(token.id))}/revoke" method="post">${formToken(csrf)}<button class="danger" type="submit">Peru</button></form></td></tr>`).join('');
+  const panelTokenTable = panelTokenRows ? `<div class="table-wrap"><table><thead><tr><th>Luotu</th><th>Vanhenee</th><th></th></tr></thead><tbody>${panelTokenRows}</tbody></table></div>` : '<p class="muted">Ei aktiivisia asiakaspaneelilinkkejä.</p>';
+  const updateRows = updateRequests.map((entry) => `<tr><td><a href="/admin/updates">${esc(String(entry.id))}</a></td><td>${formatTime(entry.createdAt)}</td><td>${esc(entry.channel)}</td><td>${esc(entry.fromAddr ?? '—')}</td><td>${badge(entry.status)}</td><td>${esc(entry.subject ?? '')}<br><span class="muted">${esc(entry.body.length > 180 ? `${entry.body.slice(0, 180)}…` : entry.body)}</span></td></tr>`).join('');
+  const updateTable = updateRows ? `<div class="table-wrap"><table><thead><tr><th>ID</th><th>Aika</th><th>Kanava</th><th>Lähettäjä</th><th>Tila</th><th>Sisältö</th></tr></thead><tbody>${updateRows}</tbody></table></div>` : '<p class="muted">Ei avoimia päivityspyyntöjä.</p>';
   const proposalOptions = proposals.map((proposal) => `<option value="${escAttr(proposal.proposalId)}">${esc(proposal.proposalId)}</option>`).join('');
   const commentRows = comments.map((comment) => `<tr><td>${formatTime(comment.createdAt)}</td><td>${esc(comment.proposalPublicId ?? 'Koko sivusto')}</td><td>${esc(comment.author)}</td><td>${esc(comment.body)}</td></tr>`).join('');
   const commentTable = commentRows ? `<div class="table-wrap"><table><thead><tr><th>Aika</th><th>Ehdotus</th><th>Kirjoittaja</th><th>Kommentti</th></tr></thead><tbody>${commentRows}</tbody></table></div>` : '<p class="muted">Ei kommentteja.</p>';
@@ -273,15 +301,21 @@ export function siteDetailPage(input: {
     <h2>QA</h2><form action="/admin/sites/${escAttr(site.publicId)}/qa" method="post">${formToken(csrf)}<button type="submit">Aja tarkistukset</button></form>${qaTable}
     <h3>Julkaisun tarkistuslista</h3><div class="grid">${checklistHtml}</div>
     <h2>Avoimet ehdotukset</h2><div class="card">${proposalHtml}</div>
+    <h2>Avoimet päivityspyynnöt</h2>${updateTable}
     <h2>Versiot</h2>${versionTable}
     <h2>Esikatselulinkit</h2>${tokenTable}
     <h3>Uusi esikatselulinkki</h3><form class="card fields" action="/admin/sites/${escAttr(site.publicId)}/tokens" method="post">${formToken(csrf)}<label>Nimi *<input name="label" required maxlength="100"></label><label>Voimassa päivää *<input name="days" type="number" min="1" max="60" value="14" required></label><label>Ehdotus (valinnainen)<select name="proposal"><option value="">Koko sivusto</option>${proposalOptions}</select></label><div class="actions"><button type="submit">Luo linkki</button></div></form>
+    <h2>Asiakaspaneelilinkit</h2>${panelTokenTable}<form class="card" action="/admin/sites/${escAttr(site.publicId)}/panel-tokens" method="post">${formToken(csrf)}<button type="submit">Luo 30 päivän paneelilinkki</button></form>
     <h2>Kommentit</h2>${commentTable}
     <h2>Tapahtumat</h2>${auditTable(events)}`, csrf);
 }
 
 export function previewTokenPage(site: Site, previewUrl: string, csrf: string): string {
   return layout('Esikatselulinkki luotu', `<p><a href="/admin/sites/${escAttr(site.publicId)}">← Takaisin sivustolle</a></p><h1>Esikatselulinkki luotu</h1><p class="notice">Linkki näytetään vain tämän kerran. Kopioi se nyt.</p><p><a href="${escAttr(previewUrl)}">${esc(previewUrl)}</a></p>`, csrf);
+}
+
+export function panelTokenPage(site: Site, panelUrl: string, csrf: string): string {
+  return layout('Asiakaspaneelilinkki luotu', `<p><a href="/admin/sites/${escAttr(site.publicId)}">← Takaisin sivustolle</a></p><h1>Asiakaspaneelilinkki luotu</h1><p class="notice">Linkki näytetään vain tämän kerran. Kopioi se nyt.</p><p><a href="${escAttr(panelUrl)}">${esc(panelUrl)}</a></p>`, csrf);
 }
 
 export function auditPage(input: {

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { SiteData } from '../src/engine/types.js';
+import { ControlPlane } from '../src/worker/db.js';
 import worker from '../src/worker/index.js';
 import minimal from './fixtures/minimal.json';
 import { jsonRequest, workerEnv } from './worker-fixture.js';
@@ -43,7 +44,7 @@ describe('Mikoshi MCP endpoint', () => {
     return body.result;
   }
 
-  it('initializes and exposes exactly the three propose-only tools', async () => {
+  it('initializes and exposes the propose-only and update-request tools', async () => {
     const initialized = await worker.fetch(rpc('initialize', undefined, 1, operatorKey), env);
     expect(await initialized.json()).toMatchObject({
       jsonrpc: '2.0',
@@ -63,8 +64,10 @@ describe('Mikoshi MCP endpoint', () => {
       'get_site',
       'propose_update',
       'list_proposals',
+      'list_update_requests',
+      'get_update_request',
     ]);
-    expect(body.result.tools).toHaveLength(3);
+    expect(body.result.tools).toHaveLength(5);
     for (const tool of body.result.tools) {
       expect(tool.inputSchema).toBeTypeOf('object');
       expect(tool.description).toContain('human approval outside MCP');
@@ -104,6 +107,39 @@ describe('Mikoshi MCP endpoint', () => {
     const rest = await worker.fetch(jsonRequest(`/api/biz/sites/${id}`, 'GET', undefined, operatorKey), env);
     const restBody = await rest.json() as { openProposals: string[] };
     expect(restBody.openProposals).toEqual([proposal.proposalId]);
+  });
+
+  it('reads update requests and links a proposal to one', async () => {
+    const { id } = await createSite();
+    const cp = new ControlPlane(env.DB);
+    const site = (await cp.getSiteByPublicId(id))!;
+    const request = await cp.createUpdateRequest({
+      site,
+      channel: 'mcp',
+      fromAddr: 'owner@example.fi',
+      body: 'Vaihda iskulause',
+      actor: 'mcp',
+    });
+
+    const listed = await callTool('list_update_requests', { siteId: id, status: 'uusi' });
+    expect(JSON.parse(listed.content[0]!.text)).toEqual([
+      expect.objectContaining({ id: request.id, fromAddr: 'owner@example.fi', status: 'uusi' }),
+    ]);
+    const read = await callTool('get_update_request', { siteId: id, requestId: request.id });
+    expect(JSON.parse(read.content[0]!.text)).toMatchObject({ id: request.id, body: 'Vaihda iskulause' });
+
+    const candidate: SiteData = { ...base, name: 'MCP Site', tagline: 'Uusi iskulause' };
+    const proposed = await callTool('propose_update', {
+      siteId: id,
+      candidate,
+      updateRequestId: request.id,
+    });
+    expect(proposed.isError).toBeUndefined();
+    const proposalId = (JSON.parse(proposed.content[0]!.text) as { proposalId: string }).proposalId;
+    expect(await cp.getUpdateRequest(request.id)).toMatchObject({
+      status: 'ehdotettu',
+      proposalPublicId: proposalId,
+    });
   });
 
   it('does not expose or execute approval through MCP', async () => {

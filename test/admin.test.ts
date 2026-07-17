@@ -167,6 +167,43 @@ describe('operator console', () => {
     ]));
   });
 
+  it('renders and closes escaped update requests and manages one-time panel links', async () => {
+    await seedSite();
+    const site = (await cp.getSiteByPublicId('site0001'))!;
+    const hostile = '<img src=x onerror=alert(1)>';
+    const update = await cp.createUpdateRequest({
+      site,
+      channel: 'email',
+      fromAddr: hostile,
+      subject: hostile,
+      body: hostile,
+    });
+
+    const queue = await get('/admin/updates?status=uusi');
+    const queueHtml = await queue.text();
+    expect(queueHtml).toContain('&lt;img src=x onerror=alert(1)&gt;');
+    expect(queueHtml).not.toContain('<img src=x');
+    const detailHtml = await (await get('/admin/sites/site0001')).text();
+    expect(detailHtml).toContain('Avoimet päivityspyynnöt');
+    expect(detailHtml).toContain('&lt;img src=x onerror=alert(1)&gt;');
+    const dashboardHtml = await (await get('/admin')).text();
+    expect(dashboardHtml).toContain('Avoimet päivityspyynnöt');
+
+    const panelCreated = await post('/admin/sites/site0001/panel-tokens');
+    expect(panelCreated.status).toBe(200);
+    const panelCreatedHtml = await panelCreated.text();
+    const panelUrl = panelCreatedHtml.match(/https:\/\/example\.test\/panel\?t=([a-f0-9]{32})/)?.[0];
+    expect(panelUrl).toBeDefined();
+    const panelTokens = await cp.listActivePanelTokens(site.id);
+    expect(panelTokens).toHaveLength(1);
+    expect(panelCreatedHtml).not.toContain(panelTokens[0]!.tokenHash);
+    expect((await post(`/admin/sites/site0001/panel-tokens/${panelTokens[0]!.id}/revoke`)).status).toBe(303);
+    expect(await cp.listActivePanelTokens(site.id)).toHaveLength(0);
+
+    expect((await post(`/admin/updates/${update.id}/close`)).status).toBe(303);
+    expect((await cp.getUpdateRequest(update.id))?.status).toBe('suljettu');
+  });
+
   it('paginates and filters the audit log and reports dashboard counts', async () => {
     await cp.createProspect({ publicId: 'count001', name: 'Count me', status: 'arvioitu', actor: 'operator' });
     await seedSite('countsite');

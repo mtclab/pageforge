@@ -21,6 +21,7 @@ import {
 import { readSessionCookie, verifySessionCookie } from './session.js';
 import { publishGate, publishGateError } from './qa.js';
 import { validateSiteData } from './validate.js';
+import { handleEmailSimulator } from './update-channels.js';
 
 export interface ProposalInfo {
   proposalId: string;
@@ -158,6 +159,7 @@ export async function createProposal(
   candidate: SiteData,
   note: string | undefined,
   actor: AuditActor,
+  detail?: Record<string, unknown>,
 ): Promise<Operation<ProposalInfo>> {
   const cp = new ControlPlane(env.DB);
   const site = await cp.getSiteByPublicId(siteId);
@@ -178,6 +180,7 @@ export async function createProposal(
     candidate,
     summary,
     actor,
+    ...(detail === undefined ? {} : { detail }),
     ...(note === undefined ? {} : { note }),
   });
   const token = randomPreviewToken();
@@ -372,6 +375,8 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
   const url = new URL(request.url);
   const { pathname } = url;
   const cp = new ControlPlane(env.DB);
+
+  if (pathname === '/api/biz/email-ingress') return handleEmailSimulator(request, env);
 
   if (pathname === '/api/biz/sites') {
     if (request.method !== 'POST') return methodNotAllowed();

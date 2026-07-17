@@ -134,6 +134,32 @@ export interface PreviewToken {
   createdAt: number;
 }
 
+export type UpdateRequestChannel = 'email' | 'panel' | 'mcp';
+export type UpdateRequestStatus = 'uusi' | 'ehdotettu' | 'suljettu';
+
+export interface UpdateRequest {
+  id: number;
+  siteId: number;
+  sitePublicId: string;
+  siteName: string;
+  channel: UpdateRequestChannel;
+  fromAddr?: string;
+  subject?: string;
+  body: string;
+  status: UpdateRequestStatus;
+  proposalPublicId?: string;
+  createdAt: number;
+}
+
+export interface PanelToken {
+  id: number;
+  tokenHash: string;
+  siteId: number;
+  expiresAt: number;
+  revokedAt?: number;
+  createdAt: number;
+}
+
 export type CommentAuthor = 'operator' | 'customer';
 
 export interface DraftComment {
@@ -218,6 +244,7 @@ export interface StatusCounts {
   prospects: Record<ProspectStatus, number>;
   sites: Record<SiteStatus, number>;
   openProposals: number;
+  openUpdateRequests: number;
 }
 
 export interface AuditEventRecord extends AuditEvent {
@@ -333,6 +360,11 @@ export class ControlPlane {
     return row ? this.rowToSite(row) : null;
   }
 
+  async getSiteById(id: number): Promise<Site | null> {
+    const row = await this.db.prepare('SELECT * FROM sites WHERE id = ?').bind(id).first<SiteRow>();
+    return row ? this.rowToSite(row) : null;
+  }
+
   async getSiteByProspectId(prospectId: number): Promise<Site | null> {
     const row = await this.db
       .prepare('SELECT * FROM sites WHERE prospect_id = ?')
@@ -342,7 +374,7 @@ export class ControlPlane {
   }
 
   async countsByStatus(): Promise<StatusCounts> {
-    const [prospectRows, siteRows, proposalRow] = await Promise.all([
+    const [prospectRows, siteRows, proposalRow, updateRequestRow] = await Promise.all([
       this.db
         .prepare('SELECT status, COUNT(*) AS count FROM prospects GROUP BY status')
         .all<{ status: ProspectStatus; count: number }>(),
@@ -352,6 +384,9 @@ export class ControlPlane {
       this.db
         .prepare("SELECT COUNT(*) AS count FROM draft_versions WHERE kind = 'proposal' AND status = 'open'")
         .first<{ count: number }>(),
+      this.db
+        .prepare("SELECT COUNT(*) AS count FROM update_requests WHERE status != 'suljettu'")
+        .first<{ count: number }>(),
     ]);
     const prospects = Object.fromEntries(PROSPECT_STATUSES.map((status) => [status, 0])) as
       Record<ProspectStatus, number>;
@@ -359,7 +394,12 @@ export class ControlPlane {
       Record<SiteStatus, number>;
     for (const row of prospectRows.results) prospects[row.status] = row.count;
     for (const row of siteRows.results) sites[row.status] = row.count;
-    return { prospects, sites, openProposals: proposalRow?.count ?? 0 };
+    return {
+      prospects,
+      sites,
+      openProposals: proposalRow?.count ?? 0,
+      openUpdateRequests: updateRequestRow?.count ?? 0,
+    };
   }
 
   /** Site list and open-proposal totals in one JOIN query (no per-site reads). */
@@ -495,6 +535,7 @@ export class ControlPlane {
     summary: string[];
     note?: string;
     actor: AuditActor;
+    detail?: Record<string, unknown>;
   }): Promise<void> {
     const at = this.now();
     await this.db.batch([
@@ -516,9 +557,266 @@ export class ControlPlane {
         action: 'proposal.create',
         entity: 'proposal',
         entityId: input.publicId,
-        detail: { siteId: input.site.publicId, summary: input.summary },
+        detail: { siteId: input.site.publicId, summary: input.summary, ...input.detail },
       }),
     ]);
+  }
+
+  // --- update requests --------------------------------------------------
+
+  private rowToUpdateRequest(row: {
+    id: number;
+    site_id: number;
+    site_public_id: string;
+    site_data: string;
+    channel: UpdateRequestChannel;
+    from_addr: string | null;
+    subject: string | null;
+    body: string;
+    status: UpdateRequestStatus;
+    proposal_public_id: string | null;
+    created_at: number;
+  }): UpdateRequest {
+    const data = JSON.parse(row.site_data) as SiteData;
+    return {
+      id: row.id,
+      siteId: row.site_id,
+      sitePublicId: row.site_public_id,
+      siteName: data.name,
+      channel: row.channel,
+      ...(row.from_addr === null ? {} : { fromAddr: row.from_addr }),
+      ...(row.subject === null ? {} : { subject: row.subject }),
+      body: row.body,
+      status: row.status,
+      ...(row.proposal_public_id === null ? {} : { proposalPublicId: row.proposal_public_id }),
+      createdAt: row.created_at,
+    };
+  }
+
+  async createUpdateRequest(input: {
+    site: Site;
+    channel: UpdateRequestChannel;
+    fromAddr?: string;
+    subject?: string;
+    body: string;
+    actor?: AuditActor;
+  }): Promise<UpdateRequest> {
+    const at = this.now();
+    const results = await this.db.batch([
+      this.db
+        .prepare(
+          `INSERT INTO update_requests
+             (site_id, channel, from_addr, subject, body, created_at)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(
+          input.site.id,
+          input.channel,
+          input.fromAddr ?? null,
+          input.subject ?? null,
+          input.body,
+          at,
+        ),
+      this.db
+        .prepare(
+          `INSERT INTO audit_events (at, actor, action, entity, entity_id, detail)
+           VALUES (?, ?, 'update_request.create', 'update_request',
+                   CAST(last_insert_rowid() AS TEXT), ?)`,
+        )
+        .bind(
+          at,
+          input.actor ?? (input.channel === 'mcp' ? 'mcp' : 'system'),
+          JSON.stringify({ siteId: input.site.publicId, channel: input.channel }),
+        ),
+    ]);
+    return (await this.getUpdateRequest(results[0]!.meta.last_row_id!))!;
+  }
+
+  async listUpdateRequests(
+    status?: UpdateRequestStatus,
+    siteId?: number,
+  ): Promise<UpdateRequest[]> {
+    const where: string[] = [];
+    const values: unknown[] = [];
+    if (status !== undefined) {
+      where.push('u.status = ?');
+      values.push(status);
+    }
+    if (siteId !== undefined) {
+      where.push('u.site_id = ?');
+      values.push(siteId);
+    }
+    const { results } = await this.db
+      .prepare(
+        `SELECT u.*, s.public_id AS site_public_id, s.data AS site_data
+           FROM update_requests u
+           JOIN sites s ON s.id = u.site_id
+          ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
+          ORDER BY u.created_at DESC, u.id DESC`,
+      )
+      .bind(...values)
+      .all<Parameters<ControlPlane['rowToUpdateRequest']>[0]>();
+    return results.map((row) => this.rowToUpdateRequest(row));
+  }
+
+  async getUpdateRequest(id: number): Promise<UpdateRequest | null> {
+    const row = await this.db
+      .prepare(
+        `SELECT u.*, s.public_id AS site_public_id, s.data AS site_data
+           FROM update_requests u
+           JOIN sites s ON s.id = u.site_id
+          WHERE u.id = ?`,
+      )
+      .bind(id)
+      .first<Parameters<ControlPlane['rowToUpdateRequest']>[0]>();
+    return row ? this.rowToUpdateRequest(row) : null;
+  }
+
+  async linkUpdateRequestProposal(
+    id: number,
+    proposalPublicId: string,
+    actor: AuditActor = 'system',
+  ): Promise<boolean> {
+    const at = this.now();
+    const results = await this.db.batch([
+      this.db
+        .prepare(
+          `UPDATE update_requests
+              SET proposal_public_id = ?, status = 'ehdotettu'
+            WHERE id = ? AND status != 'suljettu'`,
+        )
+        .bind(proposalPublicId, id),
+      this.db
+        .prepare(
+          `INSERT INTO audit_events (at, actor, action, entity, entity_id, detail)
+           SELECT ?, ?, 'update_request.link', 'update_request', ?, ?
+            WHERE changes() > 0`,
+        )
+        .bind(at, actor, String(id), JSON.stringify({ proposalPublicId })),
+    ]);
+    return (results[0]!.meta.changes ?? 0) > 0;
+  }
+
+  async closeUpdateRequest(id: number, actor: AuditActor = 'operator'): Promise<boolean> {
+    const at = this.now();
+    const results = await this.db.batch([
+      this.db
+        .prepare("UPDATE update_requests SET status = 'suljettu' WHERE id = ? AND status != 'suljettu'")
+        .bind(id),
+      this.db
+        .prepare(
+          `INSERT INTO audit_events (at, actor, action, entity, entity_id, detail)
+           SELECT ?, ?, 'update_request.close', 'update_request', ?, NULL
+            WHERE changes() > 0`,
+        )
+        .bind(at, actor, String(id)),
+    ]);
+    return (results[0]!.meta.changes ?? 0) > 0;
+  }
+
+  async findSiteByContactEmail(email: string): Promise<Site | null> {
+    const row = await this.db
+      .prepare(
+        `SELECT s.*
+           FROM business_profiles bp
+           JOIN sites s ON s.prospect_id = bp.prospect_id
+          WHERE lower(trim(json_extract(bp.data, '$.contact.email'))) = lower(trim(?))
+          ORDER BY s.id ASC
+          LIMIT 1`,
+      )
+      .bind(email)
+      .first<SiteRow>();
+    return row ? this.rowToSite(row) : null;
+  }
+
+  // --- customer panel tokens ------------------------------------------
+
+  private rowToPanelToken(row: {
+    id: number;
+    token_hash: string;
+    site_id: number;
+    expires_at: number;
+    revoked_at: number | null;
+    created_at: number;
+  }): PanelToken {
+    return {
+      id: row.id,
+      tokenHash: row.token_hash,
+      siteId: row.site_id,
+      expiresAt: row.expires_at,
+      ...(row.revoked_at === null ? {} : { revokedAt: row.revoked_at }),
+      createdAt: row.created_at,
+    };
+  }
+
+  async createPanelToken(input: {
+    tokenHash: string;
+    site: Site;
+    expiresAt?: number;
+    actor?: AuditActor;
+  }): Promise<number> {
+    const at = this.now();
+    const expiresAt = input.expiresAt ?? at + 30 * 24 * 60 * 60 * 1000;
+    const results = await this.db.batch([
+      this.db
+        .prepare(
+          `INSERT INTO panel_tokens (token_hash, site_id, expires_at, created_at)
+           VALUES (?, ?, ?, ?)`,
+        )
+        .bind(input.tokenHash, input.site.id, expiresAt, at),
+      this.auditStatement(at, {
+        actor: input.actor ?? 'operator',
+        action: 'panel_token.create',
+        entity: 'site',
+        entityId: input.site.publicId,
+        detail: { expiresAt },
+      }),
+    ]);
+    return results[0]!.meta.last_row_id!;
+  }
+
+  async findPanelToken(tokenHash: string): Promise<PanelToken | null> {
+    const row = await this.db
+      .prepare('SELECT * FROM panel_tokens WHERE token_hash = ?')
+      .bind(tokenHash)
+      .first<Parameters<ControlPlane['rowToPanelToken']>[0]>();
+    return row ? this.rowToPanelToken(row) : null;
+  }
+
+  async listActivePanelTokens(siteId: number): Promise<PanelToken[]> {
+    const { results } = await this.db
+      .prepare(
+        `SELECT * FROM panel_tokens
+          WHERE site_id = ? AND revoked_at IS NULL AND expires_at > ?
+          ORDER BY created_at DESC, id DESC`,
+      )
+      .bind(siteId, this.now())
+      .all<Parameters<ControlPlane['rowToPanelToken']>[0]>();
+    return results.map((row) => this.rowToPanelToken(row));
+  }
+
+  async revokePanelToken(input: { id: number; site: Site; actor?: AuditActor }): Promise<boolean> {
+    const at = this.now();
+    const results = await this.db.batch([
+      this.db
+        .prepare(
+          `UPDATE panel_tokens SET revoked_at = ?
+            WHERE id = ? AND site_id = ? AND revoked_at IS NULL`,
+        )
+        .bind(at, input.id, input.site.id),
+      this.db
+        .prepare(
+          `INSERT INTO audit_events (at, actor, action, entity, entity_id, detail)
+           SELECT ?, ?, 'panel_token.revoke', 'site', ?, ? WHERE changes() > 0`,
+        )
+        .bind(
+          at,
+          input.actor ?? 'operator',
+          input.site.publicId,
+          JSON.stringify({ tokenId: input.id }),
+        ),
+    ]);
+    return (results[0]!.meta.changes ?? 0) > 0;
   }
 
   async getProposal(siteId: number, proposalPublicId: string): Promise<Proposal | null> {
