@@ -45,6 +45,7 @@ export function workerEnv(overrides: Partial<Env> = {}): Env {
     PHOTOS: new MemoryR2(),
     PUBLISH_ENABLED: 'false',
     MUTATION_API_ENABLED: 'true',
+    BIZ_INDEXING_ENABLED: 'false',
     OPERATOR_KEY: 'operator-secret',
     ...overrides,
   };

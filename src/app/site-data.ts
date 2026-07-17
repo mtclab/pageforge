@@ -3,7 +3,7 @@ import { THEMES } from '../themes/index.js';
 
 const IMAGE_BASE64_MAX = 1_100_000;
 const LINK_KINDS: LinkKind[] = [
-  'email', 'github', 'instagram', 'linkedin', 'youtube', 'facebook', 'x', 'website',
+  'email', 'github', 'instagram', 'linkedin', 'youtube', 'facebook', 'x', 'phone', 'website',
 ];
 
 type JsonObject = Record<string, unknown>;
@@ -158,6 +158,7 @@ export function decodeSiteMeta(value: unknown): SiteData['meta'] | null {
     || corners === null || shadow === null || density === null || headingStyle === null
     || heroAlign === null || photoSize === null || background === null) return null;
   if (value.autoDark !== undefined && typeof value.autoDark !== 'boolean') return null;
+  if (value.hideBranding !== undefined && typeof value.hideBranding !== 'boolean') return null;
 
   let accent: string | undefined;
   if (value.accent !== undefined) {
@@ -191,6 +192,7 @@ export function decodeSiteMeta(value: unknown): SiteData['meta'] | null {
     ...(photoSize === undefined ? {} : { photoSize }),
     ...(background === undefined ? {} : { background }),
     ...(value.autoDark === undefined ? {} : { autoDark: value.autoDark }),
+    ...(value.hideBranding === undefined ? {} : { hideBranding: value.hideBranding }),
     ...(customPalette === undefined ? {} : { customPalette }),
   };
 }

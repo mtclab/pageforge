@@ -1,4 +1,5 @@
 import { collectImages, type SiteData } from '../engine/types.js';
+import { TEL_URL_RE } from '../engine/escape.js';
 
 const MAX_IMAGE_B64 = 1_100_000;
 const DATA_URL_RE = /^data:image\/(?:jpeg|png);base64,([A-Za-z0-9+/=]+)$/;
@@ -29,6 +30,10 @@ export function validateSiteData(data: SiteData): string | null {
   for (const link of data.links) {
     if (typeof link?.label !== 'string' || typeof link?.url !== 'string') return 'bad link';
     if (link.label.length > 120 || link.url.length > 500) return 'link too long';
+    if (
+      (link.kind === 'phone' || /^\s*tel:/i.test(link.url))
+      && !TEL_URL_RE.test(link.url)
+    ) return 'bad telephone link';
   }
   if (!Array.isArray(data.sections) || data.sections.length > 20) return 'too many sections';
   for (const s of data.sections) {
@@ -139,6 +144,9 @@ export function validateSiteData(data: SiteData): string | null {
     if (m[1]!.length > MAX_IMAGE_B64) return 'an image is too large';
   }
   if (typeof data.meta?.themeId !== 'string') return 'missing theme';
+  if (data.meta.hideBranding !== undefined && typeof data.meta.hideBranding !== 'boolean') {
+    return 'bad branding preference';
+  }
   if (data.lang !== undefined && !/^[a-z]{2,3}(-[a-zA-Z0-9-]{1,10})?$/.test(data.lang)) {
     return 'bad language code';
   }

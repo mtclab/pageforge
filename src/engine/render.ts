@@ -161,6 +161,8 @@ export interface RenderOptions {
   baseUrl?: string;
   /** Hosted pages get nofollow on user links + a host footer line. */
   hosted?: boolean;
+  /** Business wrappers may promote the first phone link in the hero. */
+  heroCta?: boolean;
 }
 
 /**
@@ -211,7 +213,7 @@ export function renderSite(data: SiteData, theme: ThemePack, opts: RenderOptions
 `
     : '';
 
-  let body = `${renderHero(data)}
+  let body = `${renderHero(data, opts.heroCta)}
 ${sections.length ? `<main>\n${sections.join('\n')}\n</main>` : '<main></main>'}
 ${renderFooter(data, opts.hosted)}`;
 

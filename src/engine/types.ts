@@ -6,6 +6,7 @@ export type LinkKind =
   | 'youtube'
   | 'facebook'
   | 'x'
+  | 'phone'
   | 'website';
 
 export interface Link {
@@ -45,7 +46,7 @@ export type Section =
       title?: string;
       items: { name: string; desc?: string; price?: string }[];
     }
-  | { kind: 'notice'; text: string; until?: string }
+  | { kind: 'notice'; title?: string; text: string; until?: string }
   | { kind: 'location'; title?: string; address?: string; phone?: string; mapUrl?: string };
 
 export interface SiteData {
@@ -95,6 +96,8 @@ export interface SiteData {
     background?: 'dots' | 'grid' | 'lines' | 'wash-top' | 'wash-corner';
     /** Follow the visitor's dark mode using the theme's darkest palette. */
     autoDark?: boolean;
+    /** Paid business sites may suppress the Mikoshi footer credit. */
+    hideBranding?: boolean;
     /**
      * Fully custom colors (theme designer). Every pair is contrast-guarded
      * at render time, so an unreadable page cannot be produced.

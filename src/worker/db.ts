@@ -168,6 +168,11 @@ export interface SiteListItem extends Site {
   openProposalCount: number;
 }
 
+export interface PublishedSite {
+  publicId: string;
+  updatedAt: number;
+}
+
 export interface StatusCounts {
   prospects: Record<ProspectStatus, number>;
   sites: Record<SiteStatus, number>;
@@ -332,6 +337,18 @@ export class ControlPlane {
       ...this.rowToSite(row),
       openProposalCount: row.open_proposal_count,
     }));
+  }
+
+  /** Minimal public-site projection used by the business sitemap. */
+  async listPublishedSites(): Promise<PublishedSite[]> {
+    const { results } = await this.db
+      .prepare(
+        `SELECT public_id, updated_at FROM sites
+          WHERE status = 'published'
+          ORDER BY public_id ASC`,
+      )
+      .all<{ public_id: string; updated_at: number }>();
+    return results.map((row) => ({ publicId: row.public_id, updatedAt: row.updated_at }));
   }
 
   async listSnapshots(siteId: number): Promise<SnapshotMeta[]> {

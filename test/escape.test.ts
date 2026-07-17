@@ -12,10 +12,12 @@ describe('esc / escAttr', () => {
 });
 
 describe('safeUrl', () => {
-  it('keeps http/https/mailto', () => {
+  it('keeps http/https/mailto and valid telephone links', () => {
     expect(safeUrl('https://example.com/a?b=c')).toBe('https://example.com/a?b=c');
     expect(safeUrl('http://example.com')).toBe('http://example.com/');
     expect(safeUrl('mailto:a@b.com')).toBe('mailto:a@b.com');
+    expect(safeUrl('tel:+358 40 123 4567')).toBe('tel:+358 40 123 4567');
+    expect(safeUrl('tel:<script>')).toBeNull();
   });
   it('upgrades scheme-less input to https', () => {
     expect(safeUrl('example.com/page')).toBe('https://example.com/page');
@@ -68,6 +70,7 @@ describe('detectKind', () => {
     expect(detectKind('https://x.com/anna')).toBe('x');
     expect(detectKind('twitter.com/anna')).toBe('x');
     expect(detectKind('mailto:a@b.com')).toBe('email');
+    expect(detectKind('tel:+358401234567')).toBe('phone');
     expect(detectKind('https://mygithub.company.example')).toBe('website');
     expect(detectKind('notgithub.com.evil.example')).toBe('website');
   });

@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "name": "Korjaamo Rautio",
+  "lang": "fi",
+  "tagline": "Luotettava autohuolto ja korjaus saman katon alta.",
+  "links": [
+    { "label": "Soita korjaamolle", "url": "tel:050 765 4321", "kind": "phone" }
+  ],
+  "sections": [
+    {
+      "kind": "services",
+      "items": [
+        { "name": "Määräaikaishuolto", "desc": "Valmistajan huolto-ohjelman mukaan" },
+        { "name": "Jarruhuolto", "desc": "Tarkastus, osat ja asennus" },
+        { "name": "Vikadiagnostiikka", "price": "alkaen 69 €" }
+      ]
+    },
+    {
+      "kind": "contact",
+      "email": "huolto@korjaamorautio.fi",
+      "note": "Kerro viestissä auton rekisterinumero ja toivottu huoltoaika."
+    },
+    {
+      "kind": "location",
+      "address": "Teollisuustie 4\n90520 Oulu",
+      "phone": "050 765 4321",
+      "mapUrl": "https://maps.example.com/korjaamo-rautio"
+    }
+  ],
+  "business": { "phone": "050 765 4321", "address": "Teollisuustie 4, 90520 Oulu", "yTunnus": "2345678-9" },
+  "capabilities": { "services": true, "contact": true, "location": true },
+  "meta": { "themeId": "slate", "paletteId": "graphite", "fontId": "system" }
+}

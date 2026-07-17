@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "name": "Koivulan Palvelu",
+  "lang": "fi",
+  "tagline": "Paikallista apua pieniin arjen töihin.",
+  "links": [],
+  "sections": [],
+  "meta": { "themeId": "slate", "paletteId": "paper", "fontId": "system" }
+}

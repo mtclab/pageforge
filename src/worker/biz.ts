@@ -1,4 +1,5 @@
 import { renderSite } from '../engine/render.js';
+import { renderLocalBusinessJsonLd } from '../engine/jsonld.js';
 import type { SiteData } from '../engine/types.js';
 import { getTheme } from '../themes/index.js';
 import {
@@ -239,26 +240,33 @@ function methodNotAllowed(): Response {
 }
 
 /** Render the business page HTML. Draft adds the preview banner. */
-function bizHtml(data: SiteData, draft: boolean): string {
+export function bizHtml(data: SiteData, draft: boolean, noindex = true): string {
   const theme = getTheme(data.meta.themeId);
-  const rendered = renderSite(data, theme);
+  const rendered = renderSite(data, theme, { heroCta: true });
   let html = rendered.html
-    .replace('<head>', '<head>\n<meta name="robots" content="noindex">')
     .replace('<link rel="stylesheet" href="style.css">', `<style>\n${rendered.css}</style>`);
+  if (noindex) {
+    html = html.replace('<head>', '<head>\n<meta name="robots" content="noindex">');
+  }
+  const jsonLd = renderLocalBusinessJsonLd(data);
+  if (jsonLd) html = html.replace('</head>', `${jsonLd}\n</head>`);
   if (draft) {
     const banner = '<div style="position:fixed;z-index:9999;top:0;left:0;right:0;padding:.35rem 1rem;text-align:center;background:var(--accent);color:var(--accent-contrast);font:600 .875rem/1.4 sans-serif">Luonnos - esikatselu</div>';
     html = html.replace(/(<body[^>]*>)/, `$1\n${banner}`);
+  } else if (data.meta.hideBranding !== true) {
+    html = html.replace('</footer>', '<p class="mikoshi-credit">Sivut: Mikoshi</p>\n</footer>');
   }
   return html;
 }
 
-function bizPageResponse(html: string): Response {
+function bizPageResponse(html: string, noindex = true): Response {
+  const headers: Record<string, string> = {
+    'content-type': 'text/html; charset=utf-8',
+    'cache-control': 'no-store',
+  };
+  if (noindex) headers['x-robots-tag'] = 'noindex';
   return new Response(html, {
-    headers: {
-      'content-type': 'text/html; charset=utf-8',
-      'x-robots-tag': 'noindex',
-      'cache-control': 'no-store',
-    },
+    headers,
   });
 }
 
@@ -432,14 +440,15 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
     if (request.method !== 'GET') return methodNotAllowed();
     const site = await cp.getSiteByPublicId(publicMatch[1]!);
     if (!site) return new Response('Not found', { status: 404 });
+    const noindex = env.BIZ_INDEXING_ENABLED !== 'true' || site.status !== 'published';
     // KV render cache: keyed by version, which the promote/rollback path bumps
     // so stale entries fall out of use and expire on their own (7d TTL).
-    const cacheKey = `bizhtml:${site.publicId}:${site.currentVersion}`;
+    const cacheKey = `bizhtml:${site.publicId}:${site.currentVersion}:${noindex ? 'noindex' : 'index'}`;
     const cached = await env.SITES.get(cacheKey);
-    if (cached !== null) return bizPageResponse(cached);
-    const html = bizHtml(site.data, false);
+    if (cached !== null) return bizPageResponse(cached, noindex);
+    const html = bizHtml(site.data, false, noindex);
     await env.SITES.put(cacheKey, html, { expirationTtl: RENDER_CACHE_TTL });
-    return bizPageResponse(html);
+    return bizPageResponse(html, noindex);
   }
 
   return json(404, { error: 'Not found.' });

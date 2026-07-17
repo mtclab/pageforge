@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "name": "Kampaamo Hilla",
+  "lang": "fi",
+  "tagline": "Rauhallinen korttelikampaamo kaikenikäisille.",
+  "links": [
+    { "label": "Varaa puhelimitse", "url": "tel:+358 44 555 0190", "kind": "phone" },
+    { "label": "Instagram", "url": "https://instagram.com/kampaamohilla", "kind": "instagram" }
+  ],
+  "sections": [
+    {
+      "kind": "services",
+      "items": [
+        { "name": "Hiustenleikkaus", "desc": "Sisältää pesun ja viimeistelyn", "price": "alkaen 42 €" },
+        { "name": "Värjäys", "desc": "Hinta määräytyy hiusten pituuden mukaan", "price": "alkaen 95 €" }
+      ]
+    },
+    {
+      "kind": "hours",
+      "days": [
+        { "label": "Ma", "closed": true },
+        { "label": "Ti–Pe", "open": "09:00", "close": "17:00" },
+        { "label": "La", "open": "09:00", "close": "14:00" }
+      ]
+    },
+    {
+      "kind": "gallery",
+      "photos": [
+        { "src": "/img/1111111111111111111111111111111111111111111111111111111111111111" },
+        { "src": "/img/2222222222222222222222222222222222222222222222222222222222222222" }
+      ]
+    },
+    { "kind": "location", "address": "Kauppakatu 12, 40100 Jyväskylä" }
+  ],
+  "business": { "phone": "+358 44 555 0190", "address": "Kauppakatu 12, 40100 Jyväskylä" },
+  "capabilities": { "hours": true, "services": true, "gallery": true, "location": true },
+  "meta": { "themeId": "slate", "paletteId": "sage", "fontId": "system" }
+}

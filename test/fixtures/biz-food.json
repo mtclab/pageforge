@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "name": "Sataman Grillikioski",
+  "lang": "fi",
+  "tagline": "Burgerit ja grilliruoat tuoreena sataman kupeessa.",
+  "links": [
+    { "label": "Soita ja tilaa", "url": "tel:+358 40 123 4567", "kind": "phone" }
+  ],
+  "sections": [
+    {
+      "kind": "services",
+      "title": "Ruokalista",
+      "items": [
+        { "name": "Sataman burgeri", "desc": "Naudanlihapihvi, cheddar ja talon kastike", "price": "12,50 €" },
+        { "name": "Makkaraperunat", "desc": "Kotimainen grillimakkara ja rapeat perunat", "price": "9,50 €" },
+        { "name": "Kasvisburgeri", "price": "11,50 €" }
+      ]
+    },
+    {
+      "kind": "hours",
+      "days": [
+        { "label": "Ma–Pe", "open": "10:30", "close": "20:00" },
+        { "label": "La", "open": "11", "close": "20" },
+        { "label": "Su", "open": "12:00", "close": "18:00" }
+      ]
+    },
+    {
+      "kind": "location",
+      "address": "Rantakatu 8, 70100 Kuopio",
+      "phone": "+358 40 123 4567"
+    }
+  ],
+  "business": {
+    "phone": "+358 40 123 4567",
+    "address": "Rantakatu 8, 70100 Kuopio",
+    "yTunnus": "1234567-8"
+  },
+  "capabilities": { "hours": true, "services": true, "location": true },
+  "meta": { "themeId": "slate", "paletteId": "paper", "fontId": "system" }
+}

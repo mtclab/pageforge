@@ -6,6 +6,7 @@ export function detectKind(url: string): LinkKind {
   const normalized = safeUrl(url);
   if (!normalized) return 'website';
   if (normalized.startsWith('mailto:')) return 'email';
+  if (normalized.startsWith('tel:')) return 'phone';
   let host: string;
   try {
     host = new URL(normalized).hostname.replace(/^www\./, '');
@@ -36,6 +37,8 @@ const ICON_PATHS: Record<LinkKind, string> = {
   facebook:
     'M13.5 21v-8h2.7l.4-3h-3.1V8c0-.9.3-1.5 1.6-1.5h1.6V3.9c-.3 0-1.3-.1-2.4-.1-2.4 0-4 1.4-4 4.1v2.1H7.6v3h2.7v8h3.2z',
   x: 'M17.7 3h3l-6.6 7.6L22 21h-6.1l-4.8-6.3L5.6 21h-3l7.1-8.1L2 3h6.3l4.3 5.7L17.7 3zm-1.1 16.2h1.7L7.4 4.7H5.6l11 14.5z',
+  phone:
+    'M6.6 2h3.1l1.5 5-2.1 1.6a16.7 16.7 0 0 0 6.3 6.3l1.6-2.1 5 1.5v3.1c0 2.5-2.1 4.6-4.6 4.6C8.9 22 2 15.1 2 6.6 2 4.1 4.1 2 6.6 2z',
   website:
     'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm7.9 9h-3.4a15.6 15.6 0 0 0-1.2-5.7A8 8 0 0 1 19.9 11zM12 4.1c.9 1.1 2 3.3 2.4 6.9H9.6c.3-3.6 1.5-5.8 2.4-6.9zM8.7 5.3A15.6 15.6 0 0 0 7.5 11H4.1a8 8 0 0 1 4.6-5.7zM4.1 13h3.4c.1 2.2.6 4.1 1.2 5.7A8 8 0 0 1 4.1 13zm5.5 0h4.8c-.3 3.6-1.5 5.8-2.4 6.9-.9-1.1-2-3.3-2.4-6.9zm5.7 5.7c.6-1.6 1-3.5 1.2-5.7h3.4a8 8 0 0 1-4.6 5.7z',
 };

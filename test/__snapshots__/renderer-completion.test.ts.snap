@@ -1,0 +1,1310 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renderer completion > renders the appearance fixture through the engine and business wrapper 1`] = `
+{
+  "business": "<!doctype html>
+<html lang="fi">
+<head>
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kampaamo Hilla</title>
+<meta name="description" content="Rauhallinen korttelikampaamo kaikenikäisille.">
+<meta property="og:title" content="Kampaamo Hilla">
+<meta property="og:description" content="Rauhallinen korttelikampaamo kaikenikäisille.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<style>
+:root {
+  --bg: #f4f7f2;
+  --surface: #ffffff;
+  --text: #2a3129;
+  --muted: #5e675c;
+  --accent: #3d6b35;
+  --accent-contrast: #ffffff;
+  --font-body: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-heading: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --page-max: 42rem;
+  --text-factor: 1;
+  --photo-radius: 50%;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
+h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
+
+.page { max-width: var(--page-max); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; border-radius: var(--photo-radius); }
+
+.tagline { color: var(--muted); }
+
+.cta-call {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  padding: 0.7rem 1.15rem;
+  border-radius: var(--section-radius);
+  font-weight: 700;
+  text-decoration: none;
+}
+.cta-call:hover { text-decoration: underline; }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
+
+/* heading treatments (body class set only when the user overrides) */
+.heading-underline .section h2 {
+  display: inline-block;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 0.2rem;
+}
+.heading-highlight .section h2 {
+  display: inline-block;
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  padding: 0.08em 0.45em;
+  border-radius: 4px;
+}
+.heading-caps .section h2 {
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+/* hero alignment overrides */
+.hero-center .hero { text-align: center; }
+.hero-center .hero .photo { margin-left: auto; margin-right: auto; }
+.hero-center .hero .links { justify-content: center; }
+.hero-left .hero { text-align: left; }
+.hero-left .hero .photo { margin-left: 0; margin-right: 0; }
+.hero-left .hero .links { justify-content: flex-start; }
+
+/* photo size overrides (beats theme .hero .photo by specificity) */
+.photo-sz-s .hero .photo { width: 84px; height: 84px; }
+.photo-sz-l .hero .photo { width: 190px; height: 190px; }
+
+/* background treatments (one choice; replaces the theme's own bg image) */
+body.bg-dots {
+  background-image: radial-gradient(color-mix(in srgb, var(--text) 9%, transparent) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+body.bg-grid {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--text) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--text) 7%, transparent) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+body.bg-lines {
+  background-image: repeating-linear-gradient(
+    45deg,
+    color-mix(in srgb, var(--text) 5%, transparent) 0 1px,
+    transparent 1px 14px
+  );
+}
+body.bg-wash-top {
+  background-image: radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%);
+  background-attachment: fixed;
+}
+body.bg-wash-corner {
+  background-image: radial-gradient(90% 90% at 100% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 65%);
+  background-attachment: fixed;
+}
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.hours-list { display: grid; gap: 0.35rem; }
+.hours-row { display: grid; grid-template-columns: minmax(8rem, 1fr) auto; gap: 1rem; }
+.hours-row dd { text-align: right; }
+.hours-exceptions { margin-top: 0.5rem; }
+
+.services { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.service .desc { color: var(--muted); }
+.service-price { color: var(--accent); font-weight: 700; }
+
+.section-notice {
+  background: var(--surface);
+  border-left: 0.35rem solid var(--accent);
+  padding: calc(1rem * var(--density));
+  color: var(--text);
+}
+.notice-until { color: var(--muted); }
+.location-address { white-space: pre-line; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+.mikoshi-credit { color: var(--muted); font-size: 0.8rem; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: slate */
+.page {
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 4rem) 1.25rem 3rem;
+}
+.hero { text-align: center; padding-bottom: 2.5rem; border-bottom: 1px solid color-mix(in srgb, var(--muted) 35%, transparent); }
+.hero .photo { width: 128px; height: 128px; margin: 0 auto 1.25rem; }
+.hero h1 { letter-spacing: -0.01em; }
+.tagline { margin-top: 0.5rem; }
+.hero .links { justify-content: center; margin-top: 1.5rem; }
+.section h2 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.section { border-bottom: 1px solid color-mix(in srgb, var(--muted) 35%, transparent); padding-bottom: 2.5rem; }
+.section:last-child { border-bottom: none; }
+.chips li { border-color: color-mix(in srgb, var(--muted) 45%, transparent); }
+footer { text-align: center; }
+
+</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","name":"Kampaamo Hilla","description":"Rauhallinen korttelikampaamo kaikenikäisille.","telephone":"+358 44 555 0190","address":{"@type":"PostalAddress","streetAddress":"Kauppakatu 12","postalCode":"40100","addressLocality":"Jyväskylä"},"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Tuesday","Wednesday","Thursday","Friday"],"opens":"09:00","closes":"17:00"},{"@type":"OpeningHoursSpecification","dayOfWeek":"Saturday","opens":"09:00","closes":"14:00"}]}</script>
+</head>
+<body class="layout-centered-column photo-circle">
+<div class="page">
+<header class="hero">
+<h1>Kampaamo Hilla</h1>
+<p class="tagline">Rauhallinen korttelikampaamo kaikenikäisille.</p>
+<a class="cta-call" href="tel:+358 44 555 0190">Varaa puhelimitse</a>
+<nav class="links" aria-label="Links">
+<a href="tel:+358 44 555 0190"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 2h3.1l1.5 5-2.1 1.6a16.7 16.7 0 0 0 6.3 6.3l1.6-2.1 5 1.5v3.1c0 2.5-2.1 4.6-4.6 4.6C8.9 22 2 15.1 2 6.6 2 4.1 4.1 2 6.6 2z"/></svg><span>Varaa puhelimitse</span></a>
+<a href="https://instagram.com/kampaamohilla"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 7.5zm0 2A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5zM17.5 5.5a1 1 0 1 1-1 1 1 1 0 0 1 1-1z"/></svg><span>Instagram</span></a>
+</nav>
+</header>
+<main>
+<section class="section section-services" aria-labelledby="sec-1-h">
+<h2 id="sec-1-h">Palvelut</h2>
+<ul class="services">
+<li class="service"><h3>Hiustenleikkaus</h3>
+<p class="desc">Sisältää pesun ja viimeistelyn</p>
+<p class="service-price">alkaen 42 €</p></li>
+<li class="service"><h3>Värjäys</h3>
+<p class="desc">Hinta määräytyy hiusten pituuden mukaan</p>
+<p class="service-price">alkaen 95 €</p></li>
+</ul>
+</section>
+<section class="section section-hours" aria-labelledby="sec-2-h">
+<h2 id="sec-2-h">Aukioloajat</h2>
+<dl class="hours-list">
+<div class="hours-row"><dt>Ma</dt><dd>Suljettu</dd></div>
+<div class="hours-row"><dt>Ti–Pe</dt><dd>09:00–17:00</dd></div>
+<div class="hours-row"><dt>La</dt><dd>09:00–14:00</dd></div>
+</dl>
+</section>
+<section class="section section-gallery" aria-labelledby="sec-3-h">
+<h2 id="sec-3-h">Kuvat</h2>
+<ul class="gallery">
+<li><img src="/img/1111111111111111111111111111111111111111111111111111111111111111" alt="" loading="lazy"></li>
+<li><img src="/img/2222222222222222222222222222222222222222222222222222222222222222" alt="" loading="lazy"></li>
+</ul>
+</section>
+<section class="section section-location" aria-labelledby="sec-4-h">
+<h2 id="sec-4-h">Yhteystiedot</h2>
+<p class="location-address">Kauppakatu 12, 40100 Jyväskylä</p>
+<p><a href="tel:+358 44 555 0190">+358 44 555 0190</a></p>
+</section>
+</main>
+<footer>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p class="mikoshi-credit">Sivut: Mikoshi</p>
+</footer>
+</div>
+</body>
+</html>
+",
+  "rendered": "<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kampaamo Hilla</title>
+<meta name="description" content="Rauhallinen korttelikampaamo kaikenikäisille.">
+<meta property="og:title" content="Kampaamo Hilla">
+<meta property="og:description" content="Rauhallinen korttelikampaamo kaikenikäisille.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-centered-column photo-circle">
+<div class="page">
+<header class="hero">
+<h1>Kampaamo Hilla</h1>
+<p class="tagline">Rauhallinen korttelikampaamo kaikenikäisille.</p>
+<nav class="links" aria-label="Links">
+<a href="tel:+358 44 555 0190"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 2h3.1l1.5 5-2.1 1.6a16.7 16.7 0 0 0 6.3 6.3l1.6-2.1 5 1.5v3.1c0 2.5-2.1 4.6-4.6 4.6C8.9 22 2 15.1 2 6.6 2 4.1 4.1 2 6.6 2z"/></svg><span>Varaa puhelimitse</span></a>
+<a href="https://instagram.com/kampaamohilla"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 7.5zm0 2A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5zM17.5 5.5a1 1 0 1 1-1 1 1 1 0 0 1 1-1z"/></svg><span>Instagram</span></a>
+</nav>
+</header>
+<main>
+<section class="section section-services" aria-labelledby="sec-1-h">
+<h2 id="sec-1-h">Palvelut</h2>
+<ul class="services">
+<li class="service"><h3>Hiustenleikkaus</h3>
+<p class="desc">Sisältää pesun ja viimeistelyn</p>
+<p class="service-price">alkaen 42 €</p></li>
+<li class="service"><h3>Värjäys</h3>
+<p class="desc">Hinta määräytyy hiusten pituuden mukaan</p>
+<p class="service-price">alkaen 95 €</p></li>
+</ul>
+</section>
+<section class="section section-hours" aria-labelledby="sec-2-h">
+<h2 id="sec-2-h">Aukioloajat</h2>
+<dl class="hours-list">
+<div class="hours-row"><dt>Ma</dt><dd>Suljettu</dd></div>
+<div class="hours-row"><dt>Ti–Pe</dt><dd>09:00–17:00</dd></div>
+<div class="hours-row"><dt>La</dt><dd>09:00–14:00</dd></div>
+</dl>
+</section>
+<section class="section section-gallery" aria-labelledby="sec-3-h">
+<h2 id="sec-3-h">Kuvat</h2>
+<ul class="gallery">
+<li><img src="/img/1111111111111111111111111111111111111111111111111111111111111111" alt="" loading="lazy"></li>
+<li><img src="/img/2222222222222222222222222222222222222222222222222222222222222222" alt="" loading="lazy"></li>
+</ul>
+</section>
+<section class="section section-location" aria-labelledby="sec-4-h">
+<h2 id="sec-4-h">Yhteystiedot</h2>
+<p class="location-address">Kauppakatu 12, 40100 Jyväskylä</p>
+<p><a href="tel:+358 44 555 0190">+358 44 555 0190</a></p>
+</section>
+</main>
+<footer>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+",
+}
+`;
+
+exports[`renderer completion > renders the food fixture through the engine and business wrapper 1`] = `
+{
+  "business": "<!doctype html>
+<html lang="fi">
+<head>
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sataman Grillikioski</title>
+<meta name="description" content="Burgerit ja grilliruoat tuoreena sataman kupeessa.">
+<meta property="og:title" content="Sataman Grillikioski">
+<meta property="og:description" content="Burgerit ja grilliruoat tuoreena sataman kupeessa.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<style>
+:root {
+  --bg: #fafaf8;
+  --surface: #ffffff;
+  --text: #26282b;
+  --muted: #5f646b;
+  --accent: #3b5bdb;
+  --accent-contrast: #ffffff;
+  --font-body: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-heading: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --page-max: 42rem;
+  --text-factor: 1;
+  --photo-radius: 50%;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
+h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
+
+.page { max-width: var(--page-max); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; border-radius: var(--photo-radius); }
+
+.tagline { color: var(--muted); }
+
+.cta-call {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  padding: 0.7rem 1.15rem;
+  border-radius: var(--section-radius);
+  font-weight: 700;
+  text-decoration: none;
+}
+.cta-call:hover { text-decoration: underline; }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
+
+/* heading treatments (body class set only when the user overrides) */
+.heading-underline .section h2 {
+  display: inline-block;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 0.2rem;
+}
+.heading-highlight .section h2 {
+  display: inline-block;
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  padding: 0.08em 0.45em;
+  border-radius: 4px;
+}
+.heading-caps .section h2 {
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+/* hero alignment overrides */
+.hero-center .hero { text-align: center; }
+.hero-center .hero .photo { margin-left: auto; margin-right: auto; }
+.hero-center .hero .links { justify-content: center; }
+.hero-left .hero { text-align: left; }
+.hero-left .hero .photo { margin-left: 0; margin-right: 0; }
+.hero-left .hero .links { justify-content: flex-start; }
+
+/* photo size overrides (beats theme .hero .photo by specificity) */
+.photo-sz-s .hero .photo { width: 84px; height: 84px; }
+.photo-sz-l .hero .photo { width: 190px; height: 190px; }
+
+/* background treatments (one choice; replaces the theme's own bg image) */
+body.bg-dots {
+  background-image: radial-gradient(color-mix(in srgb, var(--text) 9%, transparent) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+body.bg-grid {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--text) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--text) 7%, transparent) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+body.bg-lines {
+  background-image: repeating-linear-gradient(
+    45deg,
+    color-mix(in srgb, var(--text) 5%, transparent) 0 1px,
+    transparent 1px 14px
+  );
+}
+body.bg-wash-top {
+  background-image: radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%);
+  background-attachment: fixed;
+}
+body.bg-wash-corner {
+  background-image: radial-gradient(90% 90% at 100% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 65%);
+  background-attachment: fixed;
+}
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.hours-list { display: grid; gap: 0.35rem; }
+.hours-row { display: grid; grid-template-columns: minmax(8rem, 1fr) auto; gap: 1rem; }
+.hours-row dd { text-align: right; }
+.hours-exceptions { margin-top: 0.5rem; }
+
+.services { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.service .desc { color: var(--muted); }
+.service-price { color: var(--accent); font-weight: 700; }
+
+.section-notice {
+  background: var(--surface);
+  border-left: 0.35rem solid var(--accent);
+  padding: calc(1rem * var(--density));
+  color: var(--text);
+}
+.notice-until { color: var(--muted); }
+.location-address { white-space: pre-line; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+.mikoshi-credit { color: var(--muted); font-size: 0.8rem; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: slate */
+.page {
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 4rem) 1.25rem 3rem;
+}
+.hero { text-align: center; padding-bottom: 2.5rem; border-bottom: 1px solid color-mix(in srgb, var(--muted) 35%, transparent); }
+.hero .photo { width: 128px; height: 128px; margin: 0 auto 1.25rem; }
+.hero h1 { letter-spacing: -0.01em; }
+.tagline { margin-top: 0.5rem; }
+.hero .links { justify-content: center; margin-top: 1.5rem; }
+.section h2 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.section { border-bottom: 1px solid color-mix(in srgb, var(--muted) 35%, transparent); padding-bottom: 2.5rem; }
+.section:last-child { border-bottom: none; }
+.chips li { border-color: color-mix(in srgb, var(--muted) 45%, transparent); }
+footer { text-align: center; }
+
+</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","name":"Sataman Grillikioski","description":"Burgerit ja grilliruoat tuoreena sataman kupeessa.","telephone":"+358 40 123 4567","address":{"@type":"PostalAddress","streetAddress":"Rantakatu 8","postalCode":"70100","addressLocality":"Kuopio"},"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"10:30","closes":"20:00"},{"@type":"OpeningHoursSpecification","dayOfWeek":"Saturday","opens":"11:00","closes":"20:00"},{"@type":"OpeningHoursSpecification","dayOfWeek":"Sunday","opens":"12:00","closes":"18:00"}]}</script>
+</head>
+<body class="layout-centered-column photo-circle">
+<div class="page">
+<header class="hero">
+<h1>Sataman Grillikioski</h1>
+<p class="tagline">Burgerit ja grilliruoat tuoreena sataman kupeessa.</p>
+<a class="cta-call" href="tel:+358 40 123 4567">Soita ja tilaa</a>
+<nav class="links" aria-label="Links">
+<a href="tel:+358 40 123 4567"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 2h3.1l1.5 5-2.1 1.6a16.7 16.7 0 0 0 6.3 6.3l1.6-2.1 5 1.5v3.1c0 2.5-2.1 4.6-4.6 4.6C8.9 22 2 15.1 2 6.6 2 4.1 4.1 2 6.6 2z"/></svg><span>Soita ja tilaa</span></a>
+</nav>
+</header>
+<main>
+<section class="section section-services" aria-labelledby="sec-1-h">
+<h2 id="sec-1-h">Ruokalista</h2>
+<ul class="services">
+<li class="service"><h3>Sataman burgeri</h3>
+<p class="desc">Naudanlihapihvi, cheddar ja talon kastike</p>
+<p class="service-price">12,50 €</p></li>
+<li class="service"><h3>Makkaraperunat</h3>
+<p class="desc">Kotimainen grillimakkara ja rapeat perunat</p>
+<p class="service-price">9,50 €</p></li>
+<li class="service"><h3>Kasvisburgeri</h3>
+<p class="service-price">11,50 €</p></li>
+</ul>
+</section>
+<section class="section section-hours" aria-labelledby="sec-2-h">
+<h2 id="sec-2-h">Aukioloajat</h2>
+<dl class="hours-list">
+<div class="hours-row"><dt>Ma–Pe</dt><dd>10:30–20:00</dd></div>
+<div class="hours-row"><dt>La</dt><dd>11–20</dd></div>
+<div class="hours-row"><dt>Su</dt><dd>12:00–18:00</dd></div>
+</dl>
+</section>
+<section class="section section-location" aria-labelledby="sec-3-h">
+<h2 id="sec-3-h">Yhteystiedot</h2>
+<p class="location-address">Rantakatu 8, 70100 Kuopio</p>
+<p><a href="tel:+358 40 123 4567">+358 40 123 4567</a></p>
+</section>
+</main>
+<footer>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p class="mikoshi-credit">Sivut: Mikoshi</p>
+</footer>
+</div>
+</body>
+</html>
+",
+  "rendered": "<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sataman Grillikioski</title>
+<meta name="description" content="Burgerit ja grilliruoat tuoreena sataman kupeessa.">
+<meta property="og:title" content="Sataman Grillikioski">
+<meta property="og:description" content="Burgerit ja grilliruoat tuoreena sataman kupeessa.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-centered-column photo-circle">
+<div class="page">
+<header class="hero">
+<h1>Sataman Grillikioski</h1>
+<p class="tagline">Burgerit ja grilliruoat tuoreena sataman kupeessa.</p>
+<nav class="links" aria-label="Links">
+<a href="tel:+358 40 123 4567"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 2h3.1l1.5 5-2.1 1.6a16.7 16.7 0 0 0 6.3 6.3l1.6-2.1 5 1.5v3.1c0 2.5-2.1 4.6-4.6 4.6C8.9 22 2 15.1 2 6.6 2 4.1 4.1 2 6.6 2z"/></svg><span>Soita ja tilaa</span></a>
+</nav>
+</header>
+<main>
+<section class="section section-services" aria-labelledby="sec-1-h">
+<h2 id="sec-1-h">Ruokalista</h2>
+<ul class="services">
+<li class="service"><h3>Sataman burgeri</h3>
+<p class="desc">Naudanlihapihvi, cheddar ja talon kastike</p>
+<p class="service-price">12,50 €</p></li>
+<li class="service"><h3>Makkaraperunat</h3>
+<p class="desc">Kotimainen grillimakkara ja rapeat perunat</p>
+<p class="service-price">9,50 €</p></li>
+<li class="service"><h3>Kasvisburgeri</h3>
+<p class="service-price">11,50 €</p></li>
+</ul>
+</section>
+<section class="section section-hours" aria-labelledby="sec-2-h">
+<h2 id="sec-2-h">Aukioloajat</h2>
+<dl class="hours-list">
+<div class="hours-row"><dt>Ma–Pe</dt><dd>10:30–20:00</dd></div>
+<div class="hours-row"><dt>La</dt><dd>11–20</dd></div>
+<div class="hours-row"><dt>Su</dt><dd>12:00–18:00</dd></div>
+</dl>
+</section>
+<section class="section section-location" aria-labelledby="sec-3-h">
+<h2 id="sec-3-h">Yhteystiedot</h2>
+<p class="location-address">Rantakatu 8, 70100 Kuopio</p>
+<p><a href="tel:+358 40 123 4567">+358 40 123 4567</a></p>
+</section>
+</main>
+<footer>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+",
+}
+`;
+
+exports[`renderer completion > renders the general fixture through the engine and business wrapper 1`] = `
+{
+  "business": "<!doctype html>
+<html lang="fi">
+<head>
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Koivulan Palvelu</title>
+<meta name="description" content="Paikallista apua pieniin arjen töihin.">
+<meta property="og:title" content="Koivulan Palvelu">
+<meta property="og:description" content="Paikallista apua pieniin arjen töihin.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<style>
+:root {
+  --bg: #fafaf8;
+  --surface: #ffffff;
+  --text: #26282b;
+  --muted: #5f646b;
+  --accent: #3b5bdb;
+  --accent-contrast: #ffffff;
+  --font-body: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-heading: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --page-max: 42rem;
+  --text-factor: 1;
+  --photo-radius: 50%;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
+h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
+
+.page { max-width: var(--page-max); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; border-radius: var(--photo-radius); }
+
+.tagline { color: var(--muted); }
+
+.cta-call {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  padding: 0.7rem 1.15rem;
+  border-radius: var(--section-radius);
+  font-weight: 700;
+  text-decoration: none;
+}
+.cta-call:hover { text-decoration: underline; }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
+
+/* heading treatments (body class set only when the user overrides) */
+.heading-underline .section h2 {
+  display: inline-block;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 0.2rem;
+}
+.heading-highlight .section h2 {
+  display: inline-block;
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  padding: 0.08em 0.45em;
+  border-radius: 4px;
+}
+.heading-caps .section h2 {
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+/* hero alignment overrides */
+.hero-center .hero { text-align: center; }
+.hero-center .hero .photo { margin-left: auto; margin-right: auto; }
+.hero-center .hero .links { justify-content: center; }
+.hero-left .hero { text-align: left; }
+.hero-left .hero .photo { margin-left: 0; margin-right: 0; }
+.hero-left .hero .links { justify-content: flex-start; }
+
+/* photo size overrides (beats theme .hero .photo by specificity) */
+.photo-sz-s .hero .photo { width: 84px; height: 84px; }
+.photo-sz-l .hero .photo { width: 190px; height: 190px; }
+
+/* background treatments (one choice; replaces the theme's own bg image) */
+body.bg-dots {
+  background-image: radial-gradient(color-mix(in srgb, var(--text) 9%, transparent) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+body.bg-grid {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--text) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--text) 7%, transparent) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+body.bg-lines {
+  background-image: repeating-linear-gradient(
+    45deg,
+    color-mix(in srgb, var(--text) 5%, transparent) 0 1px,
+    transparent 1px 14px
+  );
+}
+body.bg-wash-top {
+  background-image: radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%);
+  background-attachment: fixed;
+}
+body.bg-wash-corner {
+  background-image: radial-gradient(90% 90% at 100% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 65%);
+  background-attachment: fixed;
+}
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.hours-list { display: grid; gap: 0.35rem; }
+.hours-row { display: grid; grid-template-columns: minmax(8rem, 1fr) auto; gap: 1rem; }
+.hours-row dd { text-align: right; }
+.hours-exceptions { margin-top: 0.5rem; }
+
+.services { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.service .desc { color: var(--muted); }
+.service-price { color: var(--accent); font-weight: 700; }
+
+.section-notice {
+  background: var(--surface);
+  border-left: 0.35rem solid var(--accent);
+  padding: calc(1rem * var(--density));
+  color: var(--text);
+}
+.notice-until { color: var(--muted); }
+.location-address { white-space: pre-line; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+.mikoshi-credit { color: var(--muted); font-size: 0.8rem; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: slate */
+.page {
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 4rem) 1.25rem 3rem;
+}
+.hero { text-align: center; padding-bottom: 2.5rem; border-bottom: 1px solid color-mix(in srgb, var(--muted) 35%, transparent); }
+.hero .photo { width: 128px; height: 128px; margin: 0 auto 1.25rem; }
+.hero h1 { letter-spacing: -0.01em; }
+.tagline { margin-top: 0.5rem; }
+.hero .links { justify-content: center; margin-top: 1.5rem; }
+.section h2 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.section { border-bottom: 1px solid color-mix(in srgb, var(--muted) 35%, transparent); padding-bottom: 2.5rem; }
+.section:last-child { border-bottom: none; }
+.chips li { border-color: color-mix(in srgb, var(--muted) 45%, transparent); }
+footer { text-align: center; }
+
+</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","name":"Koivulan Palvelu","description":"Paikallista apua pieniin arjen töihin."}</script>
+</head>
+<body class="layout-centered-column photo-circle">
+<div class="page">
+<header class="hero">
+<h1>Koivulan Palvelu</h1>
+<p class="tagline">Paikallista apua pieniin arjen töihin.</p>
+</header>
+<main></main>
+<footer>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p class="mikoshi-credit">Sivut: Mikoshi</p>
+</footer>
+</div>
+</body>
+</html>
+",
+  "rendered": "<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Koivulan Palvelu</title>
+<meta name="description" content="Paikallista apua pieniin arjen töihin.">
+<meta property="og:title" content="Koivulan Palvelu">
+<meta property="og:description" content="Paikallista apua pieniin arjen töihin.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-centered-column photo-circle">
+<div class="page">
+<header class="hero">
+<h1>Koivulan Palvelu</h1>
+<p class="tagline">Paikallista apua pieniin arjen töihin.</p>
+</header>
+<main></main>
+<footer>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+</div>
+</body>
+</html>
+",
+}
+`;
+
+exports[`renderer completion > renders the repair fixture through the engine and business wrapper 1`] = `
+{
+  "business": "<!doctype html>
+<html lang="fi">
+<head>
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Korjaamo Rautio</title>
+<meta name="description" content="Luotettava autohuolto ja korjaus saman katon alta.">
+<meta property="og:title" content="Korjaamo Rautio">
+<meta property="og:description" content="Luotettava autohuolto ja korjaus saman katon alta.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<style>
+:root {
+  --bg: #17191c;
+  --surface: #212429;
+  --text: #e8eaed;
+  --muted: #9aa0a8;
+  --accent: #8ab4f8;
+  --accent-contrast: #0d1117;
+  --font-body: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-heading: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --page-max: 42rem;
+  --text-factor: 1;
+  --photo-radius: 50%;
+  --density: 1;
+  --section-radius: 12px;
+  --section-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
+h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
+
+.page { max-width: var(--page-max); }
+p, li { overflow-wrap: break-word; }
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.hero .photo { object-fit: cover; border-radius: var(--photo-radius); }
+
+.tagline { color: var(--muted); }
+
+.cta-call {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  padding: 0.7rem 1.15rem;
+  border-radius: var(--section-radius);
+  font-weight: 700;
+  text-decoration: none;
+}
+.cta-call:hover { text-decoration: underline; }
+
+.links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.links .icon { width: 1.1em; height: 1.1em; flex: none; fill: currentColor; }
+
+.section { margin-top: calc(2.5rem * var(--density)); }
+/* user-picked section surfaces (body class set only when the user overrides the theme's own) */
+.surface-card .section, .surface-tinted .section, .surface-bordered .section {
+  background: var(--surface);
+  border: none;
+  padding: calc(1.4rem * var(--density));
+  border-radius: var(--section-radius);
+  box-shadow: var(--section-shadow);
+}
+.surface-tinted .section { background: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.surface-bordered .section { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); box-shadow: none; }
+.surface-flat .section {
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-bottom: none;
+}
+
+/* heading treatments (body class set only when the user overrides) */
+.heading-underline .section h2 {
+  display: inline-block;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 0.2rem;
+}
+.heading-highlight .section h2 {
+  display: inline-block;
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  padding: 0.08em 0.45em;
+  border-radius: 4px;
+}
+.heading-caps .section h2 {
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+/* hero alignment overrides */
+.hero-center .hero { text-align: center; }
+.hero-center .hero .photo { margin-left: auto; margin-right: auto; }
+.hero-center .hero .links { justify-content: center; }
+.hero-left .hero { text-align: left; }
+.hero-left .hero .photo { margin-left: 0; margin-right: 0; }
+.hero-left .hero .links { justify-content: flex-start; }
+
+/* photo size overrides (beats theme .hero .photo by specificity) */
+.photo-sz-s .hero .photo { width: 84px; height: 84px; }
+.photo-sz-l .hero .photo { width: 190px; height: 190px; }
+
+/* background treatments (one choice; replaces the theme's own bg image) */
+body.bg-dots {
+  background-image: radial-gradient(color-mix(in srgb, var(--text) 9%, transparent) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+body.bg-grid {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--text) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--text) 7%, transparent) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+body.bg-lines {
+  background-image: repeating-linear-gradient(
+    45deg,
+    color-mix(in srgb, var(--text) 5%, transparent) 0 1px,
+    transparent 1px 14px
+  );
+}
+body.bg-wash-top {
+  background-image: radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%);
+  background-attachment: fixed;
+}
+body.bg-wash-corner {
+  background-image: radial-gradient(90% 90% at 100% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 65%);
+  background-attachment: fixed;
+}
+.section h2 { margin-bottom: 0.8rem; }
+.section p + p { margin-top: 0.8rem; }
+
+.projects { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.project .desc { color: var(--muted); }
+
+.hours-list { display: grid; gap: 0.35rem; }
+.hours-row { display: grid; grid-template-columns: minmax(8rem, 1fr) auto; gap: 1rem; }
+.hours-row dd { text-align: right; }
+.hours-exceptions { margin-top: 0.5rem; }
+
+.services { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.service .desc { color: var(--muted); }
+.service-price { color: var(--accent); font-weight: 700; }
+
+.section-notice {
+  background: var(--surface);
+  border-left: 0.35rem solid var(--accent);
+  padding: calc(1rem * var(--density));
+  color: var(--text);
+}
+.notice-until { color: var(--muted); }
+.location-address { white-space: pre-line; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; }
+.chips li {
+  background: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+.gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer a { color: inherit; }
+.mikoshi-credit { color: var(--muted); font-size: 0.8rem; }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .links a { text-decoration: none; color: #000; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* theme: slate */
+.page {
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 4rem) 1.25rem 3rem;
+}
+.hero { text-align: center; padding-bottom: 2.5rem; border-bottom: 1px solid color-mix(in srgb, var(--muted) 35%, transparent); }
+.hero .photo { width: 128px; height: 128px; margin: 0 auto 1.25rem; }
+.hero h1 { letter-spacing: -0.01em; }
+.tagline { margin-top: 0.5rem; }
+.hero .links { justify-content: center; margin-top: 1.5rem; }
+.section h2 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.section { border-bottom: 1px solid color-mix(in srgb, var(--muted) 35%, transparent); padding-bottom: 2.5rem; }
+.section:last-child { border-bottom: none; }
+.chips li { border-color: color-mix(in srgb, var(--muted) 45%, transparent); }
+footer { text-align: center; }
+
+</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","name":"Korjaamo Rautio","description":"Luotettava autohuolto ja korjaus saman katon alta.","telephone":"050 765 4321","address":{"@type":"PostalAddress","streetAddress":"Teollisuustie 4","postalCode":"90520","addressLocality":"Oulu"}}</script>
+</head>
+<body class="layout-centered-column photo-circle">
+<div class="page">
+<header class="hero">
+<h1>Korjaamo Rautio</h1>
+<p class="tagline">Luotettava autohuolto ja korjaus saman katon alta.</p>
+<a class="cta-call" href="tel:050 765 4321">Soita korjaamolle</a>
+<nav class="links" aria-label="Links">
+<a href="tel:050 765 4321"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 2h3.1l1.5 5-2.1 1.6a16.7 16.7 0 0 0 6.3 6.3l1.6-2.1 5 1.5v3.1c0 2.5-2.1 4.6-4.6 4.6C8.9 22 2 15.1 2 6.6 2 4.1 4.1 2 6.6 2z"/></svg><span>Soita korjaamolle</span></a>
+</nav>
+</header>
+<main>
+<section class="section section-services" aria-labelledby="sec-1-h">
+<h2 id="sec-1-h">Palvelut</h2>
+<ul class="services">
+<li class="service"><h3>Määräaikaishuolto</h3>
+<p class="desc">Valmistajan huolto-ohjelman mukaan</p></li>
+<li class="service"><h3>Jarruhuolto</h3>
+<p class="desc">Tarkastus, osat ja asennus</p></li>
+<li class="service"><h3>Vikadiagnostiikka</h3>
+<p class="service-price">alkaen 69 €</p></li>
+</ul>
+</section>
+<section class="section section-contact" aria-labelledby="sec-2-h">
+<h2 id="sec-2-h">Ota yhteyttä</h2>
+<p><a href="#" data-email-a="mailto:huolto@korja" data-email-b="amorautio.fi"><span>Email me</span></a></p>
+<p>Kerro viestissä auton rekisterinumero ja toivottu huoltoaika.</p>
+</section>
+<section class="section section-location" aria-labelledby="sec-3-h">
+<h2 id="sec-3-h">Yhteystiedot</h2>
+<p class="location-address">Teollisuustie 4
+90520 Oulu</p>
+<p><a href="tel:050 765 4321">050 765 4321</a></p>
+<p><a href="https://maps.example.com/korjaamo-rautio">Kartta</a></p>
+</section>
+</main>
+<footer>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p class="mikoshi-credit">Sivut: Mikoshi</p>
+</footer>
+<script>
+document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
+  link.addEventListener('click', function (event) {
+    event.preventDefault();
+    window.location.href = link.dataset.emailA + link.dataset.emailB;
+  });
+});
+</script>
+</div>
+</body>
+</html>
+",
+  "rendered": "<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Korjaamo Rautio</title>
+<meta name="description" content="Luotettava autohuolto ja korjaus saman katon alta.">
+<meta property="og:title" content="Korjaamo Rautio">
+<meta property="og:description" content="Luotettava autohuolto ja korjaus saman katon alta.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-centered-column photo-circle">
+<div class="page">
+<header class="hero">
+<h1>Korjaamo Rautio</h1>
+<p class="tagline">Luotettava autohuolto ja korjaus saman katon alta.</p>
+<nav class="links" aria-label="Links">
+<a href="tel:050 765 4321"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 2h3.1l1.5 5-2.1 1.6a16.7 16.7 0 0 0 6.3 6.3l1.6-2.1 5 1.5v3.1c0 2.5-2.1 4.6-4.6 4.6C8.9 22 2 15.1 2 6.6 2 4.1 4.1 2 6.6 2z"/></svg><span>Soita korjaamolle</span></a>
+</nav>
+</header>
+<main>
+<section class="section section-services" aria-labelledby="sec-1-h">
+<h2 id="sec-1-h">Palvelut</h2>
+<ul class="services">
+<li class="service"><h3>Määräaikaishuolto</h3>
+<p class="desc">Valmistajan huolto-ohjelman mukaan</p></li>
+<li class="service"><h3>Jarruhuolto</h3>
+<p class="desc">Tarkastus, osat ja asennus</p></li>
+<li class="service"><h3>Vikadiagnostiikka</h3>
+<p class="service-price">alkaen 69 €</p></li>
+</ul>
+</section>
+<section class="section section-contact" aria-labelledby="sec-2-h">
+<h2 id="sec-2-h">Ota yhteyttä</h2>
+<p><a href="#" data-email-a="mailto:huolto@korja" data-email-b="amorautio.fi"><span>Email me</span></a></p>
+<p>Kerro viestissä auton rekisterinumero ja toivottu huoltoaika.</p>
+</section>
+<section class="section section-location" aria-labelledby="sec-3-h">
+<h2 id="sec-3-h">Yhteystiedot</h2>
+<p class="location-address">Teollisuustie 4
+90520 Oulu</p>
+<p><a href="tel:050 765 4321">050 765 4321</a></p>
+<p><a href="https://maps.example.com/korjaamo-rautio">Kartta</a></p>
+</section>
+</main>
+<footer>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+</footer>
+<script>
+document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
+  link.addEventListener('click', function (event) {
+    event.preventDefault();
+    window.location.href = link.dataset.emailA + link.dataset.emailB;
+  });
+});
+</script>
+</div>
+</body>
+</html>
+",
+}
+`;

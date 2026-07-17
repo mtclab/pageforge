@@ -194,7 +194,7 @@ export function intakePage(input: {
     return `<h2>${esc(title)}</h2><div class="table-wrap"><table><thead><tr><th>Nimi</th><th>Hinta</th><th>Kuvaus</th><th>Lähde</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   };
   const photoRows = Array.from({ length: BUSINESS_PROFILE_LIMITS.photos }, (_, index) => `<tr><td><input aria-label="Kuvapolku ${index + 1}" name="photos_${index}_src" value="${escAttr(profile.photos[index]?.src ?? '')}" placeholder="/img/sha256"></td><td>${sourceSelect(`photos_${index}_source`, sourceFor(profile, `photos.${index}.src`))}</td></tr>`).join('');
-  const linkKinds = ['', 'website', 'instagram', 'facebook', 'linkedin', 'youtube', 'github', 'x', 'email'];
+  const linkKinds = ['', 'website', 'phone', 'instagram', 'facebook', 'linkedin', 'youtube', 'github', 'x', 'email'];
   const linkRows = Array.from({ length: BUSINESS_PROFILE_LIMITS.links }, (_, index) => {
     const link = profile.links[index];
     return `<tr><td><input aria-label="Linkin nimi ${index + 1}" name="links_${index}_label" value="${escAttr(link?.label ?? '')}"></td><td><input aria-label="Linkin URL ${index + 1}" name="links_${index}_url" type="url" value="${escAttr(link?.url ?? '')}" placeholder="https://"></td><td><select aria-label="Linkin tyyppi ${index + 1}" name="links_${index}_kind">${linkKinds.map((kind) => `<option value="${escAttr(kind)}"${kind === (link?.kind ?? '') ? ' selected' : ''}>${esc(kind || '—')}</option>`).join('')}</select></td><td>${sourceSelect(`links_${index}_source`, sourceFor(profile, `links.${index}.label`))}</td></tr>`;

@@ -11,7 +11,7 @@ import type { Prospect } from './db.js';
 const SOURCES: readonly ProvenanceSource[] = ['prh', 'places', 'owner', 'operator'];
 const COPY_SOURCES: readonly ProvenanceSource[] = ['owner', 'operator'];
 const LINK_KINDS: readonly LinkKind[] = [
-  'email', 'github', 'instagram', 'linkedin', 'youtube', 'facebook', 'x', 'website',
+  'email', 'github', 'instagram', 'linkedin', 'youtube', 'facebook', 'x', 'phone', 'website',
 ];
 
 function formString(form: FormData, name: string): string | undefined {

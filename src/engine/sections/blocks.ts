@@ -1,29 +1,7 @@
 import { esc, escAttr, safeUrl, textToHtml } from '../escape.js';
 import { obfuscatedEmailLink } from '../links.js';
+import { businessLabels } from '../localization.js';
 import { galleryPath, type Section, type SiteData } from '../types.js';
-
-const BUSINESS_LABELS = {
-  fi: {
-    hours: 'Aukioloajat',
-    services: 'Palvelut',
-    location: 'Yhteystiedot',
-    closed: 'Suljettu',
-    map: 'Kartta',
-    exceptions: 'Poikkeusaukiolot',
-  },
-  en: {
-    hours: 'Hours',
-    services: 'Services',
-    location: 'Contact',
-    closed: 'Closed',
-    map: 'Map',
-    exceptions: 'Exceptions',
-  },
-} as const;
-
-function businessLabels(lang?: string): typeof BUSINESS_LABELS.fi | typeof BUSINESS_LABELS.en {
-  return lang?.startsWith('fi') ? BUSINESS_LABELS.fi : BUSINESS_LABELS.en;
-}
 
 /**
  * All <main> section renderers. Each returns '' when the section has no
@@ -43,17 +21,17 @@ export function renderSection(
     case 'hobbies':
       return renderHobbies(section, idx);
     case 'contact':
-      return renderContact(section, idx);
+      return renderContact(section, idx, lang);
     case 'custom':
       return renderCustom(section, idx);
     case 'gallery':
-      return renderGallery(section, idx);
+      return renderGallery(section, idx, lang);
     case 'hours':
       return renderHours(section, idx, lang);
     case 'services':
       return renderServices(section, idx, lang);
     case 'notice':
-      return renderNotice(section);
+      return renderNotice(section, idx, lang);
     case 'location':
       return renderLocation(section, idx, lang, business);
   }
@@ -93,7 +71,7 @@ function renderHobbies(s: Extract<Section, { kind: 'hobbies' }>, idx: number): s
   return wrap('hobbies', idx, s.title?.trim() || 'Things I love', `<ul class="chips">\n${items.join('\n')}\n</ul>`);
 }
 
-function renderContact(s: Extract<Section, { kind: 'contact' }>, idx: number): string {
+function renderContact(s: Extract<Section, { kind: 'contact' }>, idx: number, lang?: string): string {
   const parts: string[] = [];
   if (s.email?.trim()) {
     const email = s.email.trim();
@@ -103,10 +81,10 @@ function renderContact(s: Extract<Section, { kind: 'contact' }>, idx: number): s
   }
   if (s.note?.trim()) parts.push(textToHtml(s.note));
   if (!parts.length) return '';
-  return wrap('contact', idx, 'Get in touch', parts.join('\n'));
+  return wrap('contact', idx, businessLabels(lang).contact, parts.join('\n'));
 }
 
-function renderGallery(s: Extract<Section, { kind: 'gallery' }>, idx: number): string {
+function renderGallery(s: Extract<Section, { kind: 'gallery' }>, idx: number, lang?: string): string {
   const items = s.photos.map(
     (photo, j) => {
       const src = 'src' in photo ? escAttr(photo.src) : galleryPath(idx, j);
@@ -114,7 +92,7 @@ function renderGallery(s: Extract<Section, { kind: 'gallery' }>, idx: number): s
     },
   );
   if (!items.length) return '';
-  return wrap('gallery', idx, s.title?.trim() || 'Photos', `<ul class="gallery">\n${items.join('\n')}\n</ul>`);
+  return wrap('gallery', idx, s.title?.trim() || businessLabels(lang).gallery, `<ul class="gallery">\n${items.join('\n')}\n</ul>`);
 }
 
 function renderCustom(s: Extract<Section, { kind: 'custom' }>, idx: number): string {
@@ -173,11 +151,15 @@ function renderServices(s: Extract<Section, { kind: 'services' }>, idx: number, 
   );
 }
 
-function renderNotice(s: Extract<Section, { kind: 'notice' }>): string {
+function renderNotice(s: Extract<Section, { kind: 'notice' }>, idx: number, lang?: string): string {
   const text = s.text.trim();
   if (!text) return '';
   const until = s.until?.trim() ? ` <span class="notice-until">${esc(s.until.trim())}</span>` : '';
-  return `<section class="section section-notice" role="status"><p>${esc(text)}${until}</p></section>`;
+  const id = `sec-${idx}-h`;
+  return `<section class="section section-notice" role="status" aria-labelledby="${id}">
+<h2 id="${id}">${esc(s.title?.trim() || businessLabels(lang).notice)}</h2>
+<p>${esc(text)}${until}</p>
+</section>`;
 }
 
 function renderLocation(

@@ -50,6 +50,7 @@ export interface Env {
   PHOTOS: R2Bucket;
   PUBLISH_ENABLED?: string;
   MUTATION_API_ENABLED?: string;
+  BIZ_INDEXING_ENABLED?: string;
   OPERATOR_KEY?: string;
   BUILD_COMMIT?: string;
   BUILD_TIME?: string;

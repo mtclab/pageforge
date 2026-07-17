@@ -5,6 +5,7 @@ import { getTheme } from '../themes/index.js';
 import { adminNotFound, handleAdminRequest } from './admin.js';
 import { handleBizRequest } from './biz.js';
 import { handleMcpRequest } from './mcp.js';
+import { ControlPlane } from './db.js';
 import { type Env, JSON_HEADERS, MAX_BODY, json, sha256Hex } from './shared.js';
 import { validateSiteData } from './validate.js';
 
@@ -22,6 +23,37 @@ export {
 } from './business-profile.js';
 export { compose, themeFamilyForTheme } from './composer.js';
 export { structureProfileFor, verticalGroupFor } from './structure-profiles.js';
+
+const ROBOTS_DISABLED = `User-agent: *
+Allow: /
+Disallow: /b/
+Disallow: /p/
+Disallow: /admin
+
+Sitemap: https://pageforge.mtclab.net/sitemap.xml`;
+
+function robotsTxt(origin: string, enabled: boolean): string {
+  if (!enabled) return ROBOTS_DISABLED;
+  return `User-agent: *\nAllow: /b/\nDisallow: /p/\nDisallow: /admin\nSitemap: ${origin}/biz-sitemap.xml`;
+}
+
+function xmlEscape(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&apos;');
+}
+
+async function bizSitemap(origin: string, env: Env): Promise<string> {
+  const sites = await new ControlPlane(env.DB).listPublishedSites();
+  const urls = sites.map((site) => {
+    const lastmod = new Date(site.updatedAt).toISOString().slice(0, 10);
+    return `<url><loc>${xmlEscape(`${origin}/b/${site.publicId}`)}</loc><lastmod>${lastmod}</lastmod></url>`;
+  });
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>`;
+}
 
 /**
  * Hosted publish (beta). Everything else on this worker is static assets;
@@ -183,6 +215,21 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const { pathname } = url;
+
+    if (pathname === '/robots.txt') {
+      if (request.method !== 'GET') return new Response('Method not allowed', { status: 405 });
+      return new Response(robotsTxt(url.origin, env.BIZ_INDEXING_ENABLED === 'true'), {
+        headers: { 'content-type': 'text/plain; charset=utf-8' },
+      });
+    }
+
+    if (pathname === '/biz-sitemap.xml') {
+      if (request.method !== 'GET') return new Response('Method not allowed', { status: 405 });
+      if (env.BIZ_INDEXING_ENABLED !== 'true') return new Response('Not found', { status: 404 });
+      return new Response(await bizSitemap(url.origin, env), {
+        headers: { 'content-type': 'application/xml; charset=utf-8' },
+      });
+    }
 
     // Public build stamp: what commit is live + when it deployed. Populated by
     // the deploy workflow; falls back to "dev" for local `wrangler dev`.

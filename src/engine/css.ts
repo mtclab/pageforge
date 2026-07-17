@@ -42,6 +42,17 @@ a:hover { text-decoration-thickness: 2px; }
 
 .tagline { color: var(--muted); }
 
+.cta-call {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  padding: 0.7rem 1.15rem;
+  border-radius: var(--section-radius);
+  font-weight: 700;
+  text-decoration: none;
+}
+.cta-call:hover { text-decoration: underline; }
+
 .links { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
 .links a {
   display: inline-flex;
@@ -169,6 +180,7 @@ body.bg-wash-corner {
 
 footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
 footer a { color: inherit; }
+.mikoshi-credit { color: var(--muted); font-size: 0.8rem; }
 
 @media print {
   body { background: #fff; color: #000; }

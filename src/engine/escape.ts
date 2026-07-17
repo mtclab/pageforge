@@ -14,11 +14,13 @@ export function escAttr(s: string): string {
 /**
  * Normalize and validate a user-supplied URL.
  * Scheme-less input gets https:// prepended. Only http, https and mailto
- * survive; anything else returns null and the caller renders plain text.
+ * and valid tel links survive; anything else returns null and the caller
+ * renders plain text.
  */
 export function safeUrl(raw: string): string | null {
   const trimmed = raw.trim();
   if (!trimmed) return null;
+  if (TEL_URL_RE.test(trimmed)) return trimmed;
   const withScheme = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed)
     ? trimmed
     : `https://${trimmed}`;
@@ -33,6 +35,8 @@ export function safeUrl(raw: string): string | null {
   }
   return url.href;
 }
+
+export const TEL_URL_RE = /^tel:\+?[0-9 ()-]{5,20}$/;
 
 /**
  * Every character as a numeric HTML entity. Renders identically but keeps

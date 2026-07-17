@@ -1,4 +1,5 @@
 import type { Section, SiteData } from '../engine/types.js';
+import { BUSINESS_LABELS } from '../engine/localization.js';
 import { THEMES } from '../themes/index.js';
 import type { BusinessProfile } from './business-profile.js';
 import { structureProfileFor, type StructureSectionKind } from './structure-profiles.js';
@@ -46,11 +47,11 @@ function sectionFor(kind: StructureSectionKind, profile: BusinessProfile): Secti
       return profile.services.length ? { kind: 'services', items: profile.services } : null;
     case 'menu':
       return profile.menu.length
-        ? { kind: 'services', title: 'Ruokalista', items: profile.menu }
+        ? { kind: 'services', title: BUSINESS_LABELS.fi.menu, items: profile.menu }
         : null;
     case 'gallery':
       return profile.photos.length
-        ? { kind: 'gallery', title: 'Kuvat', photos: profile.photos }
+        ? { kind: 'gallery', title: BUSINESS_LABELS.fi.gallery, photos: profile.photos }
         : null;
     case 'location': {
       const address = addressText(profile);
