@@ -89,7 +89,11 @@ describe('Mikoshi MCP endpoint', () => {
       previewPath: string;
       summary: string[];
     };
-    expect(proposal.previewPath).toBe(`/p/${id}/${proposal.proposalId}`);
+    const previewUrl = new URL(proposal.previewPath, 'https://example.test');
+    expect(previewUrl.pathname).toBe(`/p/${id}/${proposal.proposalId}`);
+    expect(previewUrl.searchParams.get('t')).toMatch(/^[a-f0-9]{32}$/);
+    expect((await worker.fetch(new Request(previewUrl.origin + previewUrl.pathname), env)).status).toBe(404);
+    expect((await worker.fetch(new Request(previewUrl), env)).status).toBe(200);
     expect(proposal.summary).toContain('name changed');
 
     const listed = await callTool('list_proposals', { siteId: id });

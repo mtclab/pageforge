@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { SiteData } from '../src/engine/types.js';
 import worker from '../src/worker/index.js';
 import { ControlPlane } from '../src/worker/db.js';
+import { signSessionCookie } from '../src/worker/session.js';
 import minimal from './fixtures/minimal.json';
 import { workerEnv } from './worker-fixture.js';
 
@@ -55,7 +56,10 @@ describe('business indexing', () => {
     expect(draft.headers.get('x-robots-tag')).toBe('noindex');
     expect(await draft.text()).toContain('<meta name="robots" content="noindex">');
 
-    const preview = await worker.fetch(new Request('https://example.test/p/publish1/current'), env);
+    const session = await signSessionCookie('operator-secret');
+    const preview = await worker.fetch(new Request('https://example.test/p/publish1/current', {
+      headers: { cookie: `pf_admin=${session.value}` },
+    }), env);
     expect(preview.headers.get('x-robots-tag')).toBe('noindex');
     const previewHtml = await preview.text();
     expect(previewHtml).toContain('<meta name="robots" content="noindex">');

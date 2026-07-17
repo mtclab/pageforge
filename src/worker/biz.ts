@@ -1,5 +1,6 @@
 import { renderSite } from '../engine/render.js';
 import { renderLocalBusinessJsonLd } from '../engine/jsonld.js';
+import { escAttr } from '../engine/escape.js';
 import type { SiteData } from '../engine/types.js';
 import { getTheme } from '../themes/index.js';
 import {
@@ -17,6 +18,7 @@ import {
   requireOperator,
   sha256Hex,
 } from './shared.js';
+import { readSessionCookie, verifySessionCookie } from './session.js';
 import { validateSiteData } from './validate.js';
 
 export interface ProposalInfo {
@@ -30,6 +32,7 @@ export interface SiteView {
   versions: { n: number; at: number; note?: string }[];
   openProposals: string[];
   status: Site['status'];
+  publishedVersion?: number;
 }
 
 export type Operation<T> = { ok: true; value: T } | { ok: false; status: number; error: string };
@@ -38,6 +41,7 @@ const ID_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyz';
 const PROPOSALS_PER_DAY = 50;
 const RENDER_CACHE_TTL = 7 * 24 * 60 * 60;
 const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
+const PREVIEW_TOKEN_TTL = 14 * 24 * 60 * 60 * 1000;
 const PHOTO_TYPES = new Map<string, true>([
   ['image/jpeg', true],
   ['image/png', true],
@@ -47,6 +51,11 @@ const PHOTO_TYPES = new Map<string, true>([
 function randomId(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(8));
   return [...bytes].map((byte) => ID_ALPHABET[byte % ID_ALPHABET.length]).join('');
+}
+
+export function randomPreviewToken(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  return [...bytes].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
 async function unusedSiteId(cp: ControlPlane): Promise<string> {
@@ -121,6 +130,7 @@ export async function siteView(env: Env, site: Site): Promise<SiteView> {
     versions: snapshots.map(({ n, at, note }) => ({ n, at, ...(note === undefined ? {} : { note }) })),
     openProposals: openProposals.map(({ proposalId }) => proposalId),
     status: site.status,
+    ...(site.publishedVersion === undefined ? {} : { publishedVersion: site.publishedVersion }),
   };
 }
 
@@ -169,7 +179,19 @@ export async function createProposal(
     actor,
     ...(note === undefined ? {} : { note }),
   });
-  return { ok: true, value: { proposalId, previewPath: `/p/${siteId}/${proposalId}`, summary } };
+  const token = randomPreviewToken();
+  await cp.createPreviewToken({
+    tokenHash: await sha256Hex(token),
+    site,
+    proposalPublicId: proposalId,
+    label: 'auto',
+    expiresAt: Date.now() + PREVIEW_TOKEN_TTL,
+    actor,
+  });
+  return {
+    ok: true,
+    value: { proposalId, previewPath: `/p/${siteId}/${proposalId}?t=${token}`, summary },
+  };
 }
 
 /** Shared proposal decision used by both the JSON API and operator console. */
@@ -223,6 +245,22 @@ export async function rollbackSiteVersion(
     : { ok: true, value: version };
 }
 
+export async function publishSiteVersion(
+  cp: ControlPlane,
+  site: Site,
+  n: number,
+  actor: Extract<AuditActor, 'operator' | 'approval-key'>,
+): Promise<Operation<number>> {
+  if (!Number.isInteger(n) || n < 0) {
+    return { ok: false, status: 400, error: 'Invalid version.' };
+  }
+  if (n !== site.currentVersion && !(await cp.getSnapshot(site.id, n))) {
+    return { ok: false, status: 400, error: 'Version not found.' };
+  }
+  await cp.publishSiteVersion(site, n, actor);
+  return { ok: true, value: n };
+}
+
 type SiteAuth = { actor: Extract<AuditActor, 'operator' | 'approval-key'> };
 
 async function siteAuth(request: Request, env: Env, site: Site): Promise<SiteAuth | Response> {
@@ -240,7 +278,12 @@ function methodNotAllowed(): Response {
 }
 
 /** Render the business page HTML. Draft adds the preview banner. */
-export function bizHtml(data: SiteData, draft: boolean, noindex = true): string {
+export function bizHtml(
+  data: SiteData,
+  draft: boolean,
+  noindex = true,
+  comment?: { action: string; token: string },
+): string {
   const theme = getTheme(data.meta.themeId);
   const rendered = renderSite(data, theme, { heroCta: true });
   let html = rendered.html
@@ -252,11 +295,46 @@ export function bizHtml(data: SiteData, draft: boolean, noindex = true): string 
   if (jsonLd) html = html.replace('</head>', `${jsonLd}\n</head>`);
   if (draft) {
     const banner = '<div style="position:fixed;z-index:9999;top:0;left:0;right:0;padding:.35rem 1rem;text-align:center;background:var(--accent);color:var(--accent-contrast);font:600 .875rem/1.4 sans-serif">Luonnos - esikatselu</div>';
-    html = html.replace(/(<body[^>]*>)/, `$1\n${banner}`);
+    const feedback = comment === undefined ? '' : `<form action="${escAttr(comment.action)}" method="post" style="position:relative;z-index:9998;margin:2.5rem auto 1rem;max-width:40rem;padding:1rem;background:#fff;color:#111;border:1px solid #bbb;font:400 1rem/1.4 sans-serif"><input type="hidden" name="t" value="${escAttr(comment.token)}"><label style="display:grid;gap:.4rem;font-weight:600">Kommentti<textarea name="body" required maxlength="2000" style="min-height:6rem;padding:.5rem"></textarea></label><button type="submit" style="margin-top:.6rem;padding:.45rem .8rem">Lähetä kommentti</button></form>`;
+    html = html.replace(/(<body[^>]*>)/, `$1\n${banner}${feedback}`);
   } else if (data.meta.hideBranding !== true) {
     html = html.replace('</footer>', '<p class="mikoshi-credit">Sivut: Mikoshi</p>\n</footer>');
   }
   return html;
+}
+
+type PreviewAccess = { viaToken: boolean; token: string };
+
+async function previewAccess(
+  request: Request,
+  env: Env,
+  cp: ControlPlane,
+  site: Site,
+  proposalPublicId?: string,
+): Promise<PreviewAccess | null> {
+  const token = new URL(request.url).searchParams.get('t') ?? '';
+  if (token) {
+    const record = await cp.findPreviewToken(await sha256Hex(token));
+    if (
+      record
+      && record.siteId === site.id
+      && record.revokedAt === undefined
+      && record.expiresAt > Date.now()
+      && (record.proposalPublicId === undefined || record.proposalPublicId === proposalPublicId)
+    ) {
+      return { viaToken: true, token };
+    }
+  }
+  const session = await verifySessionCookie(
+    readSessionCookie(request),
+    env.OPERATOR_KEY ?? '',
+  );
+  return session === null ? null : { viaToken: false, token };
+}
+
+function previewCommentAction(siteId: string, proposalId: string, token: string): string {
+  const base = `/p/${siteId}/${proposalId}/comments`;
+  return token ? `${base}?t=${encodeURIComponent(token)}` : base;
 }
 
 function bizPageResponse(html: string, noindex = true): Response {
@@ -281,7 +359,8 @@ function photoContentType(request: Request): string | null {
 }
 
 export async function handleBizRequest(request: Request, env: Env): Promise<Response> {
-  const pathname = new URL(request.url).pathname;
+  const url = new URL(request.url);
+  const { pathname } = url;
   const cp = new ControlPlane(env.DB);
 
   if (pathname === '/api/biz/sites') {
@@ -370,6 +449,27 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
       : json(result.status, { error: result.error });
   }
 
+  const publishMatch = pathname.match(/^\/api\/biz\/sites\/([a-z0-9]{8})\/(publish|unpublish)$/);
+  if (publishMatch) {
+    if (request.method !== 'POST') return methodNotAllowed();
+    const [, siteId, action] = publishMatch;
+    const site = await cp.getSiteByPublicId(siteId!);
+    if (!site) return json(404, { error: 'Site not found.' });
+    const auth = await siteAuth(request, env, site);
+    if (auth instanceof Response) return auth;
+    if (action === 'unpublish') {
+      await cp.unpublishSite(site, auth.actor);
+      return json(200, { ok: true });
+    }
+    const parsed = await readJson<{ n?: number }>(request);
+    if ('error' in parsed) return parsed.error;
+    const n = parsed.value.n ?? site.currentVersion;
+    const result = await publishSiteVersion(cp, site, n, auth.actor);
+    return result.ok
+      ? json(200, { ok: true, version: result.value })
+      : json(result.status, { error: result.error });
+  }
+
   const photosMatch = pathname.match(/^\/api\/biz\/sites\/([a-z0-9]{8})\/photos$/);
   if (photosMatch) {
     if (request.method !== 'POST') return methodNotAllowed();
@@ -417,12 +517,60 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
     });
   }
 
+  const commentMatch = pathname.match(
+    /^\/p\/([a-z0-9]{8})\/(current|[a-z0-9]{8})\/comments$/,
+  );
+  if (commentMatch) {
+    if (request.method !== 'POST') return methodNotAllowed();
+    const [, siteId, rawProposalId] = commentMatch;
+    const site = await cp.getSiteByPublicId(siteId!);
+    if (!site) return new Response('Not found', { status: 404 });
+    const proposalId = rawProposalId === 'current' ? undefined : rawProposalId;
+    if (proposalId !== undefined) {
+      const proposal = await cp.getProposal(site.id, proposalId!);
+      if (!proposal || proposal.status !== 'open') {
+        return new Response('Not found', { status: 404 });
+      }
+    }
+    const access = await previewAccess(request, env, cp, site, proposalId);
+    if (!access) return new Response('Not found', { status: 404 });
+    let form: FormData;
+    try {
+      form = await request.formData();
+    } catch {
+      return new Response('Bad request', { status: 400 });
+    }
+    const submittedToken = form.get('t');
+    if (typeof submittedToken !== 'string' || !constantTimeEqual(submittedToken, access.token)) {
+      return new Response('Not found', { status: 404 });
+    }
+    const rawBody = form.get('body');
+    const body = typeof rawBody === 'string' ? rawBody.trim() : '';
+    if (body.length < 1 || body.length > 2000) {
+      return new Response('Comment must be 1-2000 characters.', { status: 400 });
+    }
+    const created = await cp.createDraftComment({
+      site,
+      ...(proposalId === undefined ? {} : { proposalPublicId: proposalId }),
+      author: access.viaToken ? 'customer' : 'operator',
+      body,
+    });
+    if (!created) return new Response('Too many comments.', { status: 429 });
+    const location = `/p/${siteId}/${rawProposalId}${access.token ? `?t=${encodeURIComponent(access.token)}` : ''}`;
+    return new Response(null, { status: 303, headers: { location } });
+  }
+
   const currentPreviewMatch = pathname.match(/^\/p\/([a-z0-9]{8})\/current$/);
   if (currentPreviewMatch) {
     if (request.method !== 'GET') return methodNotAllowed();
     const site = await cp.getSiteByPublicId(currentPreviewMatch[1]!);
     if (!site) return new Response('Not found', { status: 404 });
-    return bizPageResponse(bizHtml(site.data, true));
+    const access = await previewAccess(request, env, cp, site);
+    if (!access) return new Response('Not found', { status: 404 });
+    return bizPageResponse(bizHtml(site.data, true, true, {
+      action: previewCommentAction(site.publicId, 'current', access.token),
+      token: access.token,
+    }));
   }
 
   const previewMatch = pathname.match(/^\/p\/([a-z0-9]{8})\/([a-z0-9]{8})$/);
@@ -430,9 +578,14 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
     if (request.method !== 'GET') return methodNotAllowed();
     const site = await cp.getSiteByPublicId(previewMatch[1]!);
     if (!site) return new Response('Not found', { status: 404 });
+    const access = await previewAccess(request, env, cp, site, previewMatch[2]!);
+    if (!access) return new Response('Not found', { status: 404 });
     const proposal = await cp.getProposal(site.id, previewMatch[2]!);
     if (!proposal || proposal.status !== 'open') return new Response('Not found', { status: 404 });
-    return bizPageResponse(bizHtml(proposal.candidate, true));
+    return bizPageResponse(bizHtml(proposal.candidate, true, true, {
+      action: previewCommentAction(site.publicId, proposal.publicId, access.token),
+      token: access.token,
+    }));
   }
 
   const publicMatch = pathname.match(/^\/b\/([a-z0-9]{8})$/);
@@ -441,12 +594,25 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
     const site = await cp.getSiteByPublicId(publicMatch[1]!);
     if (!site) return new Response('Not found', { status: 404 });
     const noindex = env.BIZ_INDEXING_ENABLED !== 'true' || site.status !== 'published';
-    // KV render cache: keyed by version, which the promote/rollback path bumps
-    // so stale entries fall out of use and expire on their own (7d TTL).
-    const cacheKey = `bizhtml:${site.publicId}:${site.currentVersion}:${noindex ? 'noindex' : 'index'}`;
+    let data = site.data;
+    if (site.publishedVersion !== undefined) {
+      const snapshot = await cp.getSnapshot(site.id, site.publishedVersion);
+      if (snapshot) {
+        data = snapshot.data;
+      } else {
+        console.error(
+          `published version ${site.publishedVersion} missing for site ${site.publicId}; serving current`,
+        );
+      }
+    }
+    // Publishing changes the pointer without changing currentVersion, so the
+    // exact published pointer (or "live" current data) is part of the key.
+    // noindex is baked into the cached HTML meta, so a BIZ_INDEXING_ENABLED
+    // flip must miss the cache too.
+    const cacheKey = `bizhtml:${site.publicId}:${site.currentVersion}:${site.publishedVersion ?? 'live'}:${noindex ? 'noindex' : 'index'}`;
     const cached = await env.SITES.get(cacheKey);
     if (cached !== null) return bizPageResponse(cached, noindex);
-    const html = bizHtml(site.data, false, noindex);
+    const html = bizHtml(data, false, noindex);
     await env.SITES.put(cacheKey, html, { expirationTtl: RENDER_CACHE_TTL });
     return bizPageResponse(html, noindex);
   }

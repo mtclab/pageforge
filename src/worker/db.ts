@@ -43,6 +43,7 @@ export interface SiteRow {
   prospect_id: number | null;
   approval_key_hash: string;
   current_version: number;
+  published_version: number | null;
   data: string;
   status: SiteStatus;
   created_at: number;
@@ -66,6 +67,7 @@ export interface Site {
   prospectId?: number;
   approvalKeyHash: string;
   currentVersion: number;
+  publishedVersion?: number;
   data: SiteData;
   status: SiteStatus;
   createdAt: number;
@@ -102,6 +104,28 @@ export interface PhotoMeta {
   r2Key: string;
   contentType: string;
   bytes: number;
+}
+
+export interface PreviewToken {
+  id: number;
+  tokenHash: string;
+  siteId: number;
+  proposalPublicId?: string;
+  label: string;
+  expiresAt: number;
+  revokedAt?: number;
+  createdAt: number;
+}
+
+export type CommentAuthor = 'operator' | 'customer';
+
+export interface DraftComment {
+  id: number;
+  siteId: number;
+  proposalPublicId?: string;
+  author: CommentAuthor;
+  body: string;
+  createdAt: number;
 }
 
 export type ProspectStatus =
@@ -242,6 +266,7 @@ export class ControlPlane {
       ...(row.prospect_id === null ? {} : { prospectId: row.prospect_id }),
       approvalKeyHash: row.approval_key_hash,
       currentVersion: row.current_version,
+      ...(row.published_version == null ? {} : { publishedVersion: row.published_version }),
       data: JSON.parse(row.data) as SiteData,
       status: row.status,
       createdAt: row.created_at,
@@ -367,7 +392,7 @@ export class ControlPlane {
     }));
   }
 
-  private async getSnapshot(siteId: number, n: number): Promise<Snapshot | null> {
+  async getSnapshot(siteId: number, n: number): Promise<Snapshot | null> {
     const row = await this.db
       .prepare(
         `SELECT n, data, created_at, note FROM draft_versions
@@ -407,7 +432,9 @@ export class ControlPlane {
         .bind(site.id, newN, JSON.stringify(site.data), opts.note ?? null, at),
       this.db
         .prepare(
-          `UPDATE sites SET data = ?, current_version = ?, status = 'published', updated_at = ?
+          `UPDATE sites SET data = ?, current_version = ?,
+                    status = CASE WHEN published_version IS NULL THEN 'approved' ELSE 'published' END,
+                    updated_at = ?
              WHERE id = ?`,
         )
         .bind(JSON.stringify(newData), newN, at, site.id),
@@ -555,6 +582,237 @@ export class ControlPlane {
     const target = await this.getSnapshot(site.id, n);
     if (!target) return null;
     return this.promote(site, target.data, audit);
+  }
+
+  // --- preview tokens ---------------------------------------------------
+
+  private rowToPreviewToken(row: {
+    id: number;
+    token_hash: string;
+    site_id: number;
+    proposal_public_id: string | null;
+    label: string;
+    expires_at: number;
+    revoked_at: number | null;
+    created_at: number;
+  }): PreviewToken {
+    return {
+      id: row.id,
+      tokenHash: row.token_hash,
+      siteId: row.site_id,
+      ...(row.proposal_public_id === null ? {} : { proposalPublicId: row.proposal_public_id }),
+      label: row.label,
+      expiresAt: row.expires_at,
+      ...(row.revoked_at === null ? {} : { revokedAt: row.revoked_at }),
+      createdAt: row.created_at,
+    };
+  }
+
+  async createPreviewToken(input: {
+    tokenHash: string;
+    site: Site;
+    proposalPublicId?: string;
+    label: string;
+    expiresAt: number;
+    actor: AuditActor;
+  }): Promise<number> {
+    const at = this.now();
+    const results = await this.db.batch([
+      this.db
+        .prepare(
+          `INSERT INTO preview_tokens
+             (token_hash, site_id, proposal_public_id, label, expires_at, created_at)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(
+          input.tokenHash,
+          input.site.id,
+          input.proposalPublicId ?? null,
+          input.label,
+          input.expiresAt,
+          at,
+        ),
+      this.auditStatement(at, {
+        actor: input.actor,
+        action: 'token.create',
+        entity: 'site',
+        entityId: input.site.publicId,
+        detail: {
+          label: input.label,
+          proposal: input.proposalPublicId ?? null,
+          expiresAt: input.expiresAt,
+        },
+      }),
+    ]);
+    return results[0]!.meta.last_row_id!;
+  }
+
+  async findPreviewToken(tokenHash: string): Promise<PreviewToken | null> {
+    const row = await this.db
+      .prepare('SELECT * FROM preview_tokens WHERE token_hash = ?')
+      .bind(tokenHash)
+      .first<{
+        id: number;
+        token_hash: string;
+        site_id: number;
+        proposal_public_id: string | null;
+        label: string;
+        expires_at: number;
+        revoked_at: number | null;
+        created_at: number;
+      }>();
+    return row ? this.rowToPreviewToken(row) : null;
+  }
+
+  async revokePreviewToken(input: {
+    id: number;
+    site: Site;
+    actor: AuditActor;
+  }): Promise<boolean> {
+    const at = this.now();
+    const results = await this.db.batch([
+      this.db
+        .prepare(
+          `UPDATE preview_tokens SET revoked_at = ?
+             WHERE id = ? AND site_id = ? AND revoked_at IS NULL`,
+        )
+        .bind(at, input.id, input.site.id),
+      this.db
+        .prepare(
+          `INSERT INTO audit_events (at, actor, action, entity, entity_id, detail)
+           SELECT ?, ?, 'token.revoke', 'site', ?, ? WHERE changes() > 0`,
+        )
+        .bind(at, input.actor, input.site.publicId, JSON.stringify({ tokenId: input.id })),
+    ]);
+    return (results[0]!.meta.changes ?? 0) > 0;
+  }
+
+  async listActiveTokens(siteId: number): Promise<PreviewToken[]> {
+    const { results } = await this.db
+      .prepare(
+        `SELECT * FROM preview_tokens
+          WHERE site_id = ? AND revoked_at IS NULL AND expires_at > ?
+          ORDER BY created_at DESC, id DESC`,
+      )
+      .bind(siteId, this.now())
+      .all<{
+        id: number;
+        token_hash: string;
+        site_id: number;
+        proposal_public_id: string | null;
+        label: string;
+        expires_at: number;
+        revoked_at: number | null;
+        created_at: number;
+      }>();
+    return results.map((row) => this.rowToPreviewToken(row));
+  }
+
+  // --- comments ---------------------------------------------------------
+
+  async createDraftComment(input: {
+    site: Site;
+    proposalPublicId?: string;
+    author: CommentAuthor;
+    body: string;
+  }): Promise<boolean> {
+    const at = this.now();
+    const scope = input.proposalPublicId ?? null;
+    const results = await this.db.batch([
+      this.db
+        .prepare(
+          `INSERT INTO draft_comments
+             (site_id, proposal_public_id, author, body, created_at)
+           SELECT ?, ?, ?, ?, ?
+            WHERE (SELECT COUNT(*) FROM draft_comments
+                    WHERE site_id = ? AND proposal_public_id IS ?) < 20`,
+        )
+        .bind(input.site.id, scope, input.author, input.body, at, input.site.id, scope),
+      this.db
+        .prepare(
+          `INSERT INTO audit_events (at, actor, action, entity, entity_id, detail)
+           SELECT ?, ?, 'comment.create', 'proposal', ?, ? WHERE changes() > 0`,
+        )
+        .bind(
+          at,
+          input.author === 'customer' ? 'system' : 'operator',
+          input.proposalPublicId ?? input.site.publicId,
+          JSON.stringify({ proposal: input.proposalPublicId ?? null, author: input.author }),
+        ),
+    ]);
+    return (results[0]!.meta.changes ?? 0) > 0;
+  }
+
+  async listDraftComments(siteId: number): Promise<DraftComment[]> {
+    const { results } = await this.db
+      .prepare(
+        `SELECT id, site_id, proposal_public_id, author, body, created_at
+           FROM draft_comments WHERE site_id = ?
+           ORDER BY created_at DESC, id DESC`,
+      )
+      .bind(siteId)
+      .all<{
+        id: number;
+        site_id: number;
+        proposal_public_id: string | null;
+        author: CommentAuthor;
+        body: string;
+        created_at: number;
+      }>();
+    return results.map((row) => ({
+      id: row.id,
+      siteId: row.site_id,
+      ...(row.proposal_public_id === null ? {} : { proposalPublicId: row.proposal_public_id }),
+      author: row.author,
+      body: row.body,
+      createdAt: row.created_at,
+    }));
+  }
+
+  // --- publishing -------------------------------------------------------
+
+  async publishSiteVersion(
+    site: Site,
+    n: number,
+    actor: Extract<AuditActor, 'operator' | 'approval-key'>,
+  ): Promise<void> {
+    const at = this.now();
+    await this.db.batch([
+      this.db
+        .prepare(
+          `UPDATE sites SET published_version = ?, status = 'published', updated_at = ?
+             WHERE id = ?`,
+        )
+        .bind(n, at, site.id),
+      this.auditStatement(at, {
+        actor,
+        action: 'site.publish',
+        entity: 'site',
+        entityId: site.publicId,
+        detail: { n },
+      }),
+    ]);
+  }
+
+  async unpublishSite(
+    site: Site,
+    actor: Extract<AuditActor, 'operator' | 'approval-key'>,
+  ): Promise<void> {
+    const at = this.now();
+    await this.db.batch([
+      this.db
+        .prepare(
+          `UPDATE sites SET published_version = NULL, status = 'approved', updated_at = ?
+             WHERE id = ?`,
+        )
+        .bind(at, site.id),
+      this.auditStatement(at, {
+        actor,
+        action: 'site.unpublish',
+        entity: 'site',
+        entityId: site.publicId,
+      }),
+    ]);
   }
 
   // --- photos ------------------------------------------------------------

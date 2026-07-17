@@ -56,7 +56,10 @@ describe('business mutation API', () => {
       ],
     };
     const proposal = await propose(id, candidate, 'Customer-approved wording');
-    expect(proposal.previewPath).toBe(`/p/${id}/${proposal.proposalId}`);
+    const previewUrl = new URL(proposal.previewPath, 'https://example.test');
+    expect(previewUrl.pathname).toBe(`/p/${id}/${proposal.proposalId}`);
+    expect(previewUrl.searchParams.get('t')).toMatch(/^[a-f0-9]{32}$/);
+    expect((await worker.fetch(new Request(previewUrl.origin + previewUrl.pathname), env)).status).toBe(404);
     expect(proposal.summary).toContain('name changed');
     expect(proposal.summary).toContain('tagline changed');
     expect(proposal.summary).toContain('sections/services added');

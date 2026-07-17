@@ -1,5 +1,7 @@
 import {
   applyProposalDecision,
+  publishSiteVersion,
+  randomPreviewToken,
   rollbackSiteVersion,
   summarizeChanges,
 } from './biz.js';
@@ -21,6 +23,7 @@ import {
   intakePage,
   loginPage,
   messagePage,
+  previewTokenPage,
   prospectDetailPage,
   prospectsPage,
   siteDetailPage,
@@ -189,11 +192,13 @@ async function siteDetailResponse(
   error?: string,
   status = 200,
 ): Promise<Response> {
-  const [versions, proposals, photoCount, events] = await Promise.all([
+  const [versions, proposals, photoCount, events, tokens, comments] = await Promise.all([
     cp.listSnapshots(site.id),
     cp.listOpenProposals(site.id),
     cp.photoCountForSite(site.id),
     cp.listAuditEventsForSite(site.publicId, 20),
+    cp.listActiveTokens(site.id),
+    cp.listDraftComments(site.id),
   ]);
   return html(siteDetailPage({
     site,
@@ -201,6 +206,8 @@ async function siteDetailResponse(
     proposals,
     photoCount,
     events,
+    tokens,
+    comments,
     csrf,
     ...(error === undefined ? {} : { error }),
   }), status);
@@ -420,6 +427,70 @@ export async function handleAdminRequest(request: Request, env: Env): Promise<Re
     const to = Number(formString(form!, 'to'));
     if (!Number.isInteger(to)) return siteDetailResponse(cp, site, csrf, 'Virheellinen versio.', 400);
     const result = await rollbackSiteVersion(cp, site, to, 'operator');
+    if (!result.ok) return siteDetailResponse(cp, site, csrf, result.error, result.status);
+    return redirect(`/admin/sites/${site.publicId}`);
+  }
+
+  const tokenRevokeMatch = pathname.match(/^\/admin\/sites\/([^/]+)\/tokens\/(\d+)\/revoke$/);
+  if (tokenRevokeMatch) {
+    if (request.method !== 'POST') return methodNotAllowed(csrf);
+    const site = await cp.getSiteByPublicId(tokenRevokeMatch[1]!);
+    if (!site) return html(messagePage('Sivustoa ei löytynyt', 'Tuntematon sivusto.', csrf), 404);
+    const revoked = await cp.revokePreviewToken({
+      id: Number(tokenRevokeMatch[2]!),
+      site,
+      actor: 'operator',
+    });
+    if (!revoked) return siteDetailResponse(cp, site, csrf, 'Esikatselutunnistetta ei löytynyt.', 404);
+    return redirect(`/admin/sites/${site.publicId}`);
+  }
+
+  const tokenCreateMatch = pathname.match(/^\/admin\/sites\/([^/]+)\/tokens$/);
+  if (tokenCreateMatch) {
+    if (request.method !== 'POST') return methodNotAllowed(csrf);
+    const site = await cp.getSiteByPublicId(tokenCreateMatch[1]!);
+    if (!site) return html(messagePage('Sivustoa ei löytynyt', 'Tuntematon sivusto.', csrf), 404);
+    const label = formString(form!, 'label')?.trim() ?? '';
+    const days = Number(formString(form!, 'days'));
+    const proposalPublicId = optionalFormString(form!, 'proposal');
+    if (!label || label.length > 100) {
+      return siteDetailResponse(cp, site, csrf, 'Nimen pitää olla 1–100 merkkiä.', 400);
+    }
+    if (!Number.isInteger(days) || days < 1 || days > 60) {
+      return siteDetailResponse(cp, site, csrf, 'Voimassaolon pitää olla 1–60 päivää.', 400);
+    }
+    if (proposalPublicId !== undefined) {
+      const proposal = await cp.getProposal(site.id, proposalPublicId);
+      if (!proposal || proposal.status !== 'open') {
+        return siteDetailResponse(cp, site, csrf, 'Avoimen ehdotuksen tunniste on virheellinen.', 400);
+      }
+    }
+    const token = randomPreviewToken();
+    await cp.createPreviewToken({
+      tokenHash: await sha256Hex(token),
+      site,
+      ...(proposalPublicId === undefined ? {} : { proposalPublicId }),
+      label,
+      expiresAt: Date.now() + days * 24 * 60 * 60 * 1000,
+      actor: 'operator',
+    });
+    const target = proposalPublicId ?? 'current';
+    const previewUrl = `${new URL(request.url).origin}/p/${site.publicId}/${target}?t=${token}`;
+    return html(previewTokenPage(site, previewUrl, csrf));
+  }
+
+  const publishMatch = pathname.match(/^\/admin\/sites\/([^/]+)\/(publish|unpublish)$/);
+  if (publishMatch) {
+    if (request.method !== 'POST') return methodNotAllowed(csrf);
+    const site = await cp.getSiteByPublicId(publishMatch[1]!);
+    if (!site) return html(messagePage('Sivustoa ei löytynyt', 'Tuntematon sivusto.', csrf), 404);
+    if (publishMatch[2] === 'unpublish') {
+      await cp.unpublishSite(site, 'operator');
+      return redirect(`/admin/sites/${site.publicId}`);
+    }
+    const rawN = optionalFormString(form!, 'n');
+    const n = rawN === undefined ? site.currentVersion : Number(rawN);
+    const result = await publishSiteVersion(cp, site, n, 'operator');
     if (!result.ok) return siteDetailResponse(cp, site, csrf, result.error, result.status);
     return redirect(`/admin/sites/${site.publicId}`);
   }

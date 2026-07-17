@@ -18,7 +18,7 @@ describe('operator sessions', () => {
     const session = await signSessionCookie(key, now);
     expect(session.expiry).toBe(Math.floor(now / 1000) + SESSION_TTL_SECONDS);
     expect(await verifySessionCookie(session.value, key, now)).toBe(session.expiry);
-    expect(setSessionCookie(session.value, session.expiry)).toContain('HttpOnly; Secure; SameSite=Strict; Path=/admin');
+    expect(setSessionCookie(session.value, session.expiry)).toContain('HttpOnly; Secure; SameSite=Strict; Path=/');
   });
 
   it('rejects expired, malformed, tampered, and wrong-key sessions', async () => {
@@ -45,6 +45,6 @@ describe('operator sessions', () => {
     });
     expect(readSessionCookie(request)).toBe('123.signature');
     expect(clearSessionCookie()).toContain('Max-Age=0');
-    expect(clearSessionCookie()).toContain('Path=/admin');
+    expect(clearSessionCookie()).toContain('Path=/');
   });
 });

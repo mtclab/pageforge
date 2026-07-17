@@ -65,11 +65,11 @@ export function readSessionCookie(request: Request): string | null {
 }
 
 export function setSessionCookie(value: string, expiry: number): string {
-  return `${ADMIN_COOKIE}=${value}; Expires=${new Date(expiry * 1000).toUTCString()}; Max-Age=${SESSION_TTL_SECONDS}; HttpOnly; Secure; SameSite=Strict; Path=/admin`;
+  return `${ADMIN_COOKIE}=${value}; Expires=${new Date(expiry * 1000).toUTCString()}; Max-Age=${SESSION_TTL_SECONDS}; HttpOnly; Secure; SameSite=Strict; Path=/`;
 }
 
 export function clearSessionCookie(): string {
-  return `${ADMIN_COOKIE}=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0; HttpOnly; Secure; SameSite=Strict; Path=/admin`;
+  return `${ADMIN_COOKIE}=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0; HttpOnly; Secure; SameSite=Strict; Path=/`;
 }
 
 /** CSRF is bound to the signed session's expiry-hour bucket and the same rotated key. */

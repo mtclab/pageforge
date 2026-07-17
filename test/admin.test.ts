@@ -77,7 +77,7 @@ describe('operator console', () => {
     expect(setCookie).toContain('HttpOnly');
     expect(setCookie).toContain('Secure');
     expect(setCookie).toContain('SameSite=Strict');
-    expect(setCookie).toContain('Path=/admin');
+    expect(setCookie).toContain('Path=/');
 
     const missing = await get('/admin', '');
     expect(missing.status).toBe(303);
