@@ -8,6 +8,8 @@ import type {
   AuditEventRecord,
   BillingEvent,
   BusinessProfileRecord,
+  Claim,
+  ClaimStatus,
   DeletionLogRecord,
   DraftComment,
   OpenProposal,
@@ -28,7 +30,7 @@ import type {
   UpdateRequest,
   UpdateRequestStatus,
 } from './db.js';
-import { ORDER_STATUSES, PROSPECT_STATUSES, SITE_STATUSES } from './db.js';
+import { CLAIM_STATUSES, ORDER_STATUSES, PROSPECT_STATUSES, SITE_STATUSES } from './db.js';
 import { LAUNCH_CHECKLIST_ITEMS } from './qa.js';
 import { PROVISIONING_STEPS } from './provisioning.js';
 
@@ -82,6 +84,7 @@ export function layout(title: string, content: string, csrf?: string): string {
          <a href="/admin">Dashboard</a>
          <a href="/admin/prospects">Prospektit</a>
          <a href="/admin/sites">Sivustot</a>
+         <a href="/admin/claims">Varaukset</a>
          <a href="/admin/provisioning">Provisiointi</a>
          <a href="/admin/updates">Päivityspyynnöt</a>
          <a href="/admin/audit">Loki</a>
@@ -139,7 +142,7 @@ export function dashboardPage(counts: StatusCounts, events: AuditEventRecord[], 
   return layout('Dashboard', `<h1>Dashboard</h1>
     <h2>Prospektit</h2><div class="grid">${prospectCards}</div>
     <h2>Sivustot</h2><div class="grid">${siteCards}<div class="card"><div>Avoimet ehdotukset</div><div class="number">${esc(String(counts.openProposals))}</div></div><a class="card" href="/admin/updates"><div>Avoimet päivityspyynnöt</div><div class="number">${esc(String(counts.openUpdateRequests))}</div></a></div>
-    <h2>Tilaukset</h2><div class="grid">${orderCards}</div>
+    <h2>Tilaukset</h2><div class="grid">${orderCards}<a class="card" href="/admin/claims?status=uusi"><div>Avoimet varaukset</div><div class="number">${esc(String(counts.openClaims))}</div></a></div>
     <h2>Viimeisimmät tapahtumat</h2>${auditTable(events)}`, csrf);
 }
 
@@ -253,6 +256,24 @@ export function sitesPage(sites: SiteListItem[], csrf: string): string {
   return layout('Sivustot', `<h1>Sivustot</h1>${table}`, csrf);
 }
 
+export function claimsPage(
+  claims: Claim[],
+  csrf: string,
+  selected?: ClaimStatus,
+  error?: string,
+): string {
+  const filters = [
+    `<a${selected === undefined ? ' class="active"' : ''} href="/admin/claims">Kaikki</a>`,
+    ...CLAIM_STATUSES.map((status) => `<a${selected === status ? ' class="active"' : ''} href="/admin/claims?status=${escAttr(status)}">${esc(status)}</a>`),
+  ].join('');
+  const rows = claims.map((claim) => `<tr><td>${esc(String(claim.id))}</td><td>${formatTime(claim.createdAt)}</td><td><a href="/admin/sites/${escAttr(claim.sitePublicId)}">${esc(claim.siteName)}<br><span class="muted">${esc(claim.sitePublicId)}</span></a></td><td>${esc(claim.name)}<br><a href="mailto:${escAttr(claim.email)}">${esc(claim.email)}</a><br>${esc(claim.phone ?? '—')}</td><td>${esc(claim.domainWish ?? '—')}</td><td>${esc(claim.message ?? '')}</td><td>${badge(claim.status)}</td><td>${claim.orderPublicId === undefined ? '—' : `${esc(claim.orderPublicId)}<br>${claim.orderStatus === undefined ? '' : orderBadge(claim.orderStatus)}`}</td></tr>`).join('');
+  const table = rows
+    ? `<div class="table-wrap"><table><thead><tr><th>ID</th><th>Luotu</th><th>Sivusto</th><th>Yhteystiedot</th><th>Verkkotunnus</th><th>Viesti</th><th>Tila</th><th>Tilaus</th></tr></thead><tbody>${rows}</tbody></table></div>`
+    : '<p class="muted">Ei varauksia.</p>';
+  const message = error === undefined ? '' : `<p class="notice error" role="alert">${esc(error)}</p>`;
+  return layout('Varaukset', `<h1>Varaukset</h1>${message}<div class="filters">${filters}</div>${table}`, csrf);
+}
+
 export function updatesPage(
   requests: UpdateRequest[],
   csrf: string,
@@ -285,6 +306,7 @@ export function siteDetailPage(input: {
   checklist: LaunchChecklistRecord[];
   publishGateMessage: string;
   order?: Order;
+  claim?: Claim;
   billingEvents: BillingEvent[];
   provisioningRun?: ProvisioningRun;
   provisioningSteps: ProvisioningStep[];
@@ -294,7 +316,7 @@ export function siteDetailPage(input: {
 }): string {
   const {
     site, versions, proposals, photoCount, events, tokens, panelTokens, updateRequests, comments,
-    qaRun, checklist, publishGateMessage, order, billingEvents,
+    qaRun, checklist, publishGateMessage, order, claim, billingEvents,
     provisioningRun, provisioningSteps, renewals, csrf, error,
   } = input;
   const message = error === undefined ? '' : `<p class="notice error" role="alert">${esc(error)}</p>`;
@@ -322,6 +344,9 @@ export function siteDetailPage(input: {
     ? `<div class="table-wrap"><table><thead><tr><th>Aika</th><th>Tyyppi</th><th>Raakatapahtuma</th></tr></thead><tbody>${billingRows}</tbody></table></div>`
     : '<p class="muted">Ei laskutustapahtumia.</p>';
   const orderBlock = `${orderDetails}<form action="/admin/sites/${escAttr(site.publicId)}/order" method="post">${formToken(csrf)}<button type="submit">Luo tilaus</button></form><h3>Laskutustapahtumat</h3>${billingTable}`;
+  const claimBlock = claim === undefined
+    ? '<p class="muted">Ei varausta.</p>'
+    : `<dl class="definition"><dt>Tila</dt><dd>${badge(claim.status)}</dd><dt>Nimi</dt><dd>${esc(claim.name)}</dd><dt>Sähköposti</dt><dd>${esc(claim.email)}</dd><dt>Puhelin</dt><dd>${esc(claim.phone ?? '—')}</dd><dt>Verkkotunnustoive</dt><dd>${esc(claim.domainWish ?? '—')}</dd><dt>Viesti</dt><dd>${esc(claim.message ?? '—')}</dd><dt>Luotu</dt><dd>${formatTime(claim.createdAt)}</dd></dl>`;
   const provisioningRows = provisioningSteps.map((step) => {
     const definition = PROVISIONING_STEP_LABELS[step.step] ?? step.step;
     const controls = provisioningRun?.status !== 'kaynnissa' ? '' : `<div class="actions">
@@ -357,6 +382,7 @@ export function siteDetailPage(input: {
     : `<form class="card stack" action="/admin/sites/${escAttr(site.publicId)}/archive" method="post">${formToken(csrf)}<h3>Arkistoi</h3><label><span><input name="confirm" type="checkbox" value="true" required> Vahvistan arkistoinnin ja asiakaslinkkien sulkemisen</span></label><div><button class="danger" type="submit">Arkistoi</button></div></form>`;
   return layout(site.data.name, `<p><a href="/admin/sites">← Sivustot</a></p><h1>${esc(site.data.name)}</h1>${message}
     <dl class="definition"><dt>ID</dt><dd>${esc(site.publicId)}</dd><dt>Kuvaus</dt><dd>${esc(site.data.tagline ?? '—')}</dd><dt>Tila</dt><dd>${badge(site.status)}</dd><dt>Nykyinen versio</dt><dd>${esc(String(site.currentVersion))}</dd><dt>Julkaistu versio</dt><dd>${esc(site.publishedVersion === undefined ? '—' : String(site.publishedVersion))}</dd><dt>Kuvia</dt><dd>${esc(String(photoCount))}</dd><dt>Nykyisen esikatselu</dt><dd><a href="/p/${escAttr(site.publicId)}/current">/p/${esc(site.publicId)}/current</a></dd><dt>Luovutus</dt><dd><a href="/admin/sites/${escAttr(site.publicId)}/transfer">Siirron tarkistuslista</a> · <a href="/api/biz/sites/${escAttr(site.publicId)}/export">Export ZIP</a></dd></dl>${publishControls}
+    <h2>Varaus</h2>${claimBlock}
     <h2>Tilaus</h2>${orderBlock}
     <h2>Provisiointi</h2>${provisioningHeader}${provisioningTable}<h3>Uusinnat</h3>${renewalTable}
     <h2>QA</h2><form action="/admin/sites/${escAttr(site.publicId)}/qa" method="post">${formToken(csrf)}<button type="submit">Aja tarkistukset</button></form>${qaTable}

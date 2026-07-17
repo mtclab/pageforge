@@ -207,6 +207,46 @@ interface OrderRow {
   updated_at: number;
 }
 
+export type ClaimStatus = 'uusi' | 'maksettu' | 'peruttu';
+
+export const CLAIM_STATUSES: readonly ClaimStatus[] = ['uusi', 'maksettu', 'peruttu'];
+
+export interface Claim {
+  id: number;
+  siteId: number;
+  sitePublicId: string;
+  siteName: string;
+  orderId?: number;
+  orderPublicId?: string;
+  orderStatus?: OrderStatus;
+  name: string;
+  email: string;
+  phone?: string;
+  domainWish?: string;
+  message?: string;
+  status: ClaimStatus;
+  createdAt: number;
+  updatedAt: number;
+}
+
+interface ClaimRow {
+  id: number;
+  site_id: number;
+  order_id: number | null;
+  name: string;
+  email: string;
+  phone: string | null;
+  domain_wish: string | null;
+  message: string | null;
+  status: ClaimStatus;
+  created_at: number;
+  updated_at: number;
+  site_public_id: string;
+  site_data: string;
+  order_public_id: string | null;
+  order_status: OrderStatus | null;
+}
+
 export type ProvisioningRunStatus = 'kaynnissa' | 'valmis' | 'keskeytetty';
 export type ProvisioningStepStatus = 'odottaa' | 'tehty' | 'ohitettu' | 'epaonnistui';
 export type RenewalKind = 'domain' | 'postilaatikko';
@@ -375,6 +415,7 @@ export interface StatusCounts {
   sites: Record<SiteStatus, number>;
   openProposals: number;
   openUpdateRequests: number;
+  openClaims: number;
   orders: Record<OrderStatus, number>;
 }
 
@@ -549,7 +590,7 @@ export class ControlPlane {
   }
 
   async countsByStatus(): Promise<StatusCounts> {
-    const [prospectRows, siteRows, openProposals, openUpdateRequests, orderRows] = await Promise.all([
+    const [prospectRows, siteRows, openProposals, openUpdateRequests, openClaims, orderRows] = await Promise.all([
       this.db
         .prepare('SELECT status, COUNT(*) AS count FROM prospects GROUP BY status')
         .all<{ status: ProspectStatus; count: number }>(),
@@ -561,6 +602,7 @@ export class ControlPlane {
         this.now() - PROPOSAL_TTL_MS,
       ),
       this.count("SELECT COUNT(*) AS count FROM update_requests WHERE status != 'suljettu'"),
+      this.count("SELECT COUNT(*) AS count FROM claims WHERE status = 'uusi'"),
       this.db
         .prepare('SELECT status, COUNT(*) AS count FROM orders GROUP BY status')
         .all<{ status: OrderStatus; count: number }>(),
@@ -579,6 +621,7 @@ export class ControlPlane {
       sites,
       openProposals,
       openUpdateRequests,
+      openClaims,
       orders,
     };
   }
@@ -1406,6 +1449,169 @@ export class ControlPlane {
     ]);
   }
 
+  // --- claims -----------------------------------------------------------
+
+  private rowToClaim(row: ClaimRow): Claim {
+    const siteData = JSON.parse(row.site_data) as SiteData;
+    return {
+      id: row.id,
+      siteId: row.site_id,
+      sitePublicId: row.site_public_id,
+      siteName: siteData.name,
+      ...(row.order_id === null ? {} : { orderId: row.order_id }),
+      ...(row.order_public_id === null ? {} : { orderPublicId: row.order_public_id }),
+      ...(row.order_status === null ? {} : { orderStatus: row.order_status }),
+      name: row.name,
+      email: row.email,
+      ...(row.phone === null ? {} : { phone: row.phone }),
+      ...(row.domain_wish === null ? {} : { domainWish: row.domain_wish }),
+      ...(row.message === null ? {} : { message: row.message }),
+      status: row.status,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  }
+
+  private claimSelect(where: string): string {
+    return `SELECT c.*, s.public_id AS site_public_id, s.data AS site_data,
+                   o.public_id AS order_public_id, o.status AS order_status
+              FROM claims c
+              JOIN sites s ON s.id = c.site_id
+              LEFT JOIN orders o ON o.id = c.order_id
+             ${where}`;
+  }
+
+  async createClaim(input: {
+    site: Site;
+    name: string;
+    email: string;
+    phone?: string;
+    domainWish?: string;
+    message?: string;
+  }): Promise<Claim> {
+    const at = this.now();
+    const detail = JSON.stringify({ siteId: input.site.publicId, channel: 'claim' });
+    const results = await this.db.batch([
+      this.db
+        .prepare(
+          `INSERT INTO claims
+             (site_id, name, email, phone, domain_wish, message, status, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, 'uusi', ?, ?)`,
+        )
+        .bind(
+          input.site.id,
+          input.name,
+          input.email,
+          input.phone ?? null,
+          input.domainWish ?? null,
+          input.message ?? null,
+          at,
+          at,
+        ),
+      this.db
+        .prepare(
+          `INSERT INTO audit_events (at, actor, action, entity, entity_id, detail)
+           VALUES (?, 'system', 'claim.create', 'claim', CAST(last_insert_rowid() AS TEXT), ?)`,
+        )
+        .bind(at, detail),
+    ]);
+    const id = results[0]?.meta.last_row_id;
+    if (id === undefined) throw new Error('claim insert did not return an id');
+    return {
+      id,
+      siteId: input.site.id,
+      sitePublicId: input.site.publicId,
+      siteName: input.site.data.name,
+      name: input.name,
+      email: input.email,
+      ...(input.phone === undefined ? {} : { phone: input.phone }),
+      ...(input.domainWish === undefined ? {} : { domainWish: input.domainWish }),
+      ...(input.message === undefined ? {} : { message: input.message }),
+      status: 'uusi',
+      createdAt: at,
+      updatedAt: at,
+    };
+  }
+
+  async getClaimByOrderId(orderId: number): Promise<Claim | null> {
+    const row = await this.db
+      .prepare(`${this.claimSelect('WHERE c.order_id = ?')} ORDER BY c.id DESC LIMIT 1`)
+      .bind(orderId)
+      .first<ClaimRow>();
+    return row ? this.rowToClaim(row) : null;
+  }
+
+  async listClaims(status?: ClaimStatus): Promise<Claim[]> {
+    const statement = status
+      ? this.db
+          .prepare(`${this.claimSelect('WHERE c.status = ?')} ORDER BY c.created_at DESC, c.id DESC`)
+          .bind(status)
+      : this.db.prepare(`${this.claimSelect('')} ORDER BY c.created_at DESC, c.id DESC`);
+    const { results } = await statement.all<ClaimRow>();
+    return results.map((row) => this.rowToClaim(row));
+  }
+
+  async latestClaimForSite(siteId: number): Promise<Claim | null> {
+    const row = await this.db
+      .prepare(`${this.claimSelect('WHERE c.site_id = ?')} ORDER BY c.created_at DESC, c.id DESC LIMIT 1`)
+      .bind(siteId)
+      .first<ClaimRow>();
+    return row ? this.rowToClaim(row) : null;
+  }
+
+  async siteClaimEligible(site: Site): Promise<boolean> {
+    if (site.status === 'published' || site.status === 'archived') return false;
+    const row = await this.db
+      .prepare(
+        `SELECT
+           EXISTS(SELECT 1 FROM claims WHERE site_id = ? AND status IN ('uusi', 'maksettu'))
+             AS has_claim,
+           EXISTS(SELECT 1 FROM orders WHERE site_id = ? AND status = 'maksettu')
+             AS has_paid_order`,
+      )
+      .bind(site.id, site.id)
+      .first<{ has_claim: number; has_paid_order: number }>();
+    return row?.has_claim === 0 && row.has_paid_order === 0;
+  }
+
+  async linkClaimOrder(claim: Claim, order: Order): Promise<void> {
+    const at = this.now();
+    await this.db.batch([
+      this.db
+        .prepare('UPDATE claims SET order_id = ?, updated_at = ? WHERE id = ?')
+        .bind(order.id, at, claim.id),
+      this.auditStatement(at, {
+        actor: 'system',
+        action: 'claim.order',
+        entity: 'claim',
+        entityId: String(claim.id),
+        detail: { orderId: order.publicId },
+      }),
+    ]);
+  }
+
+  async setClaimStatus(
+    claim: Claim,
+    status: Exclude<ClaimStatus, 'uusi'>,
+  ): Promise<void> {
+    const at = this.now();
+    await this.db.batch([
+      this.db
+        .prepare('UPDATE claims SET status = ?, updated_at = ? WHERE id = ?')
+        .bind(status, at, claim.id),
+      this.auditStatement(at, {
+        actor: 'system',
+        action: status === 'maksettu' ? 'claim.paid' : 'claim.cancel',
+        entity: 'claim',
+        entityId: String(claim.id),
+        detail: {
+          status,
+          ...(claim.orderPublicId === undefined ? {} : { orderId: claim.orderPublicId }),
+        },
+      }),
+    ]);
+  }
+
   // --- orders and billing ----------------------------------------------
 
   private rowToOrder(row: OrderRow): Order {
@@ -1432,7 +1638,8 @@ export class ControlPlane {
     provider: string;
     amountBuildCents: number;
     amountMonthlyCents: number;
-    actor: Extract<AuditActor, 'operator' | 'approval-key'>;
+    actor: Extract<AuditActor, 'operator' | 'approval-key' | 'system'>;
+    detail?: Record<string, unknown>;
   }): Promise<Order> {
     const at = this.now();
     const results = await this.db.batch([
@@ -1457,7 +1664,11 @@ export class ControlPlane {
         action: 'order.create',
         entity: 'order',
         entityId: input.publicId,
-        detail: { siteId: input.site.publicId, provider: input.provider },
+        detail: {
+          siteId: input.site.publicId,
+          provider: input.provider,
+          ...input.detail,
+        },
       }),
     ]);
     const id = results[0]?.meta.last_row_id;
@@ -1554,6 +1765,7 @@ export class ControlPlane {
 
   async recordBillingEvent(input: {
     order?: Order;
+    claim?: Claim;
     type: string;
     payload: string;
     status?: Exclude<OrderStatus, 'luotu'>;
@@ -1584,6 +1796,20 @@ export class ControlPlane {
           detail: { status: input.status, event: input.type },
         }),
       );
+      if (input.claim && (input.status === 'maksettu' || input.status === 'peruttu')) {
+        statements.push(
+          this.db
+            .prepare('UPDATE claims SET status = ?, updated_at = ? WHERE id = ?')
+            .bind(input.status, at, input.claim.id),
+          this.auditStatement(at, {
+            actor: 'system',
+            action: input.status === 'maksettu' ? 'claim.paid' : 'claim.cancel',
+            entity: 'claim',
+            entityId: String(input.claim.id),
+            detail: { status: input.status, orderId: input.order.publicId },
+          }),
+        );
+      }
     }
     await this.db.batch(statements);
   }
@@ -1987,7 +2213,7 @@ export class ControlPlane {
     const profileWhere = site.prospectId === undefined ? 'WHERE 0' : 'WHERE prospect_id = ?';
     const profileValues = site.prospectId === undefined ? [] : [site.prospectId];
     const [photoKeys, photos, profiles, updates, comments, qaRuns, checklist, previewTokens,
-      panelTokens, provisioningSteps, provisioningRuns, renewals, versions, orders] = await Promise.all([
+      panelTokens, provisioningSteps, provisioningRuns, renewals, versions, orders, claims] = await Promise.all([
       this.listExclusivePhotoKeysForSite(site.id),
       this.count('SELECT COUNT(*) AS count FROM photos WHERE site_id = ?', site.id),
       this.count(`SELECT COUNT(*) AS count FROM business_profiles ${profileWhere}`, ...profileValues),
@@ -2002,6 +2228,7 @@ export class ControlPlane {
       this.count('SELECT COUNT(*) AS count FROM renewals WHERE site_id = ?', site.id),
       this.count('SELECT COUNT(*) AS count FROM draft_versions WHERE site_id = ?', site.id),
       this.count('SELECT COUNT(*) AS count FROM orders WHERE site_id = ?', site.id),
+      this.count('SELECT COUNT(*) AS count FROM claims WHERE site_id = ?', site.id),
     ]);
     if (photoKeys.length && deletePhotoObjects) await deletePhotoObjects(photoKeys);
     const counts = {
@@ -2017,6 +2244,7 @@ export class ControlPlane {
       provisioningRuns,
       renewals,
       draftVersions: versions,
+      claims,
       ordersRetained: orders,
       sites: 1,
     };
@@ -2036,6 +2264,7 @@ export class ControlPlane {
         renewals,
       }],
       ['draft_versions_deleted', { count: versions }],
+      ['claims_deleted', { count: claims }],
       ['orders_retained', { count: orders }],
       ['site_deleted', { count: 1 }],
     ];
@@ -2051,6 +2280,7 @@ export class ControlPlane {
       this.db.prepare('DELETE FROM provisioning_steps WHERE run_id IN (SELECT id FROM provisioning_runs WHERE site_id = ?)').bind(site.id),
       this.db.prepare('DELETE FROM provisioning_runs WHERE site_id = ?').bind(site.id),
       this.db.prepare('DELETE FROM renewals WHERE site_id = ?').bind(site.id),
+      this.db.prepare('DELETE FROM claims WHERE site_id = ?').bind(site.id),
       ...logs.map(([item, detail]) => this.deletionStatement(at, site, item, actor, detail)),
       this.auditStatement(at, {
         actor,
@@ -2308,6 +2538,14 @@ export class ControlPlane {
     const row = await this.db
       .prepare('SELECT * FROM prospects WHERE public_id = ?')
       .bind(publicId)
+      .first<Record<string, unknown>>();
+    return row ? this.rowToProspect(row) : null;
+  }
+
+  async getProspectById(id: number): Promise<Prospect | null> {
+    const row = await this.db
+      .prepare('SELECT * FROM prospects WHERE id = ?')
+      .bind(id)
       .first<Record<string, unknown>>();
     return row ? this.rowToProspect(row) : null;
   }

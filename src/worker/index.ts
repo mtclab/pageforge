@@ -248,6 +248,7 @@ export default {
       || pathname === '/api/billing/webhook'
       || pathname.startsWith('/mock-checkout/')
       || pathname.startsWith('/order/')
+      || pathname.startsWith('/claim/')
       || pathname.startsWith('/p/')
       || pathname.startsWith('/b/')
       || pathname.startsWith('/img/')

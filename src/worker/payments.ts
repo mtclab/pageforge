@@ -248,7 +248,8 @@ export async function createOrderCheckout(
   site: Site,
   origin: string,
   publicId: string,
-  actor: Extract<AuditActor, 'operator' | 'approval-key'>,
+  actor: Extract<AuditActor, 'operator' | 'approval-key' | 'system'>,
+  detail?: Record<string, unknown>,
 ): Promise<{ order: Order; redirectUrl: string }> {
   if (await cp.openOrderForSite(site.id)) throw new OpenOrderError();
   const provider = paymentProvider(env);
@@ -262,6 +263,7 @@ export async function createOrderCheckout(
       amountBuildCents: prices.buildCents,
       amountMonthlyCents: prices.monthlyCents,
       actor,
+      ...(detail === undefined ? {} : { detail }),
     });
   } catch (error) {
     // The partial unique index is the final race-safe guard behind the read above.

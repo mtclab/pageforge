@@ -63,8 +63,12 @@ async function webhook(request: Request, env: Env): Promise<Response> {
   const cp = new ControlPlane(env.DB);
   const order = event.orderRef ? await cp.getOrderByPublicId(event.orderRef) : null;
   const status = paymentStatusForEvent(event.type);
+  const claim = order && (status === 'maksettu' || status === 'peruttu')
+    ? await cp.getClaimByOrderId(order.id)
+    : null;
   await cp.recordBillingEvent({
     ...(order === null ? {} : { order }),
+    ...(claim === null ? {} : { claim }),
     type: event.type,
     payload: event.raw,
     ...(order && status ? { status } : {}),
@@ -81,11 +85,19 @@ export async function handleBillingRequest(request: Request, env: Env): Promise<
     if (request.method !== 'GET') return new Response('Method not allowed', { status: 405 });
     return mockCheckout(mockMatch[1]!, env);
   }
-  const resultMatch = pathname.match(/^\/order\/[a-z0-9]{8}\/(kiitos|peruttu)$/);
+  const resultMatch = pathname.match(/^\/order\/([a-z0-9]{8})\/(kiitos|peruttu)$/);
   if (resultMatch) {
     if (request.method !== 'GET') return new Response('Method not allowed', { status: 405 });
-    return resultMatch[1] === 'kiitos'
-      ? page('Kiitos tilauksesta', '<p>Maksun tila päivittyy automaattisesti.</p>')
+    const cp = new ControlPlane(env.DB);
+    const order = await cp.getOrderByPublicId(resultMatch[1]!);
+    const claim = order ? await cp.getClaimByOrderId(order.id) : null;
+    return resultMatch[2] === 'kiitos'
+      ? page(
+          'Kiitos tilauksesta',
+          claim
+            ? '<p>Kiitos! Otamme yhteyttä ja julkaisemme sivun pian.</p>'
+            : '<p>Maksun tila päivittyy automaattisesti.</p>',
+        )
       : page('Tilaus peruutettu', '<p>Maksua ei suoritettu.</p>');
   }
   return new Response('Not found', { status: 404 });

@@ -4,7 +4,7 @@ The mutation API is a staging-only surface for Finnish small-business card sites
 
 ## Environment and authentication
 
-Both of these conditions must be true before any `/api/biz/*`, `/api/mcp`, `/api/billing/*`, `/p/*`, `/b/*`, `/img/*`, `/panel`, `/admin*`, `/mock-checkout/*`, or `/order/*` route opens:
+Both of these conditions must be true before any `/api/biz/*`, `/api/mcp`, `/api/billing/*`, `/p/*`, `/b/*`, `/img/*`, `/claim/*`, `/panel`, `/admin*`, `/mock-checkout/*`, or `/order/*` route opens:
 
 - `MUTATION_API_ENABLED=true`
 - `OPERATOR_KEY` is set
@@ -16,6 +16,7 @@ Auth surfaces:
 - **Operator**: `Authorization: Bearer <OPERATOR_KEY>` on the API; on the console a stateless HMAC session cookie (login at `/admin/login`, 12h, rotation of `OPERATOR_KEY` revokes all sessions; CSRF token on every mutating form).
 - **Approval key**: creating a site returns a per-site approval key once; only its SHA-256 hash is stored. It can read the site, approve/reject proposals, roll back, and publish (gated - see below).
 - **Preview tokens**: `/p/*` requires `?t=<token>` (hash-only storage, expiry, revocable, optionally proposal-scoped; auto-issued for 14 days on every proposal) or an operator session. Bare preview URLs 404.
+- **Claim access**: `/claim/:siteId?t=<token>` accepts the same site-scoped or proposal-scoped preview tokens (or an operator session). POST forms double-submit the token and are limited to five attempts per site per UTC day.
 - **Panel tokens**: `/panel?t=<token>` magic links (30 days, revocable) let the customer submit capability-scoped update proposals. The panel can never approve or publish.
 
 ## REST endpoints (main surface)
@@ -36,6 +37,8 @@ Auth surfaces:
 | POST | `/api/billing/webhook` | Signature | Provider webhooks (HMAC-verified, drives order state) |
 | GET | `/p/:id/:pid` | Token or operator session | Proposal preview, draft banner, noindex, comment form |
 | POST | `/p/:id/:pid/comments` | Token double-submit | Customer feedback (20/proposal cap) |
+| GET | `/claim/:id?t=:token` | Preview token or operator session | Show the 249 € + 19 €/kk claim form, or the reserved state |
+| POST | `/claim/:id?t=:token` | Preview token double-submit or operator session | Validate contact/domain details, create the claim and order, and redirect to checkout |
 | GET | `/b/:id` | Public (when flag on) | Published pointer for sites in published state; every unpublished or archived site returns 404 |
 | GET/POST | `/panel` | Panel token | Capability-scoped customer update form -> staged proposal |
 
@@ -53,10 +56,10 @@ moves the published pointer - re-publish (through the QA gate) to ship it.
 
 `/admin` (session + CSRF): dashboard counts, prospect kanban with enforced FI
 status transitions, intake forms, compose (3 deterministic variants), site
-detail (proposals, versions, publish/rollback, QA runs + launch checklist,
+detail (claims, proposals, versions, publish/rollback, QA runs + launch checklist,
 preview/panel tokens, comments, order, provisioning steps with evidence,
 archive/restore/delete), `/admin/updates` queue, `/admin/provisioning`,
-`/admin/audit`, `/admin/deletions`. Every state change appends an audit row.
+`/admin/claims` (filterable claim queue), `/admin/audit`, `/admin/deletions`. Every state change appends an audit row.
 
 ## MCP
 

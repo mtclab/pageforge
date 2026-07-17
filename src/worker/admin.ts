@@ -14,6 +14,8 @@ import {
 import { compose } from './composer.js';
 import {
   ControlPlane,
+  type ClaimStatus,
+  CLAIM_STATUSES,
   type Prospect,
   type ProspectStatus,
   PROSPECT_STATUSES,
@@ -27,6 +29,7 @@ import {
 } from './payments.js';
 import {
   auditPage,
+  claimsPage,
   dashboardPage,
   deletionsPage,
   intakePage,
@@ -75,43 +78,17 @@ import {
   transitionProvisioningStep,
 } from './provisioning.js';
 import { validateSiteData } from './validate.js';
+import {
+  PROSPECT_TRANSITIONS,
+  validateProspectTransition,
+} from './prospect-status.js';
+
+export { PROSPECT_TRANSITIONS, validateProspectTransition } from './prospect-status.js';
 
 const ADMIN_HEADERS = {
   'cache-control': 'no-store',
   'x-robots-tag': 'noindex',
 };
-
-export const PROSPECT_TRANSITIONS: Readonly<Record<ProspectStatus, readonly ProspectStatus[]>> = {
-  loytynyt: ['arvioitu', 'hylatty'],
-  arvioitu: ['luonnos', 'hylatty'],
-  luonnos: ['yhteydenotto', 'hylatty'],
-  yhteydenotto: ['vastasi', 'hylatty'],
-  vastasi: ['myyty', 'hylatty'],
-  myyty: ['julkaistu'],
-  julkaistu: ['yllapidossa'],
-  yllapidossa: [],
-  hylatty: ['arvioitu'],
-};
-
-/** The single validation point for every console prospect state change. */
-export function validateProspectTransition(
-  current: ProspectStatus,
-  target: string,
-  statusReason?: string,
-): { status: ProspectStatus; statusReason?: string } | { error: string } {
-  if (!PROSPECT_STATUSES.includes(target as ProspectStatus)) {
-    return { error: 'Tuntematon prospektin tila.' };
-  }
-  const status = target as ProspectStatus;
-  if (!PROSPECT_TRANSITIONS[current].includes(status)) {
-    return { error: `Siirtymä ${current} → ${status} ei ole sallittu.` };
-  }
-  const reason = statusReason?.trim();
-  if (status === 'hylatty' && !reason) {
-    return { error: 'Hylkäyksen syy vaaditaan.' };
-  }
-  return { status, ...(reason ? { statusReason: reason } : {}) };
-}
 
 function html(body: string, status = 200, extraHeaders?: HeadersInit): Response {
   const headers = new Headers(extraHeaders);
@@ -207,7 +184,7 @@ async function siteDetailResponse(
   error?: string,
   status = 200,
 ): Promise<Response> {
-  const [versions, proposals, photoCount, events, tokens, panelTokens, updateRequests, comments, qaRun, checklist, order, billingEvents, provisioningRun, renewals] = await Promise.all([
+  const [versions, proposals, photoCount, events, tokens, panelTokens, updateRequests, comments, qaRun, checklist, order, claim, billingEvents, provisioningRun, renewals] = await Promise.all([
     cp.listSnapshots(site.id),
     cp.listOpenProposals(site.id),
     cp.photoCountForSite(site.id),
@@ -219,6 +196,7 @@ async function siteDetailResponse(
     cp.latestQaRun(site.id),
     cp.listLaunchChecklist(site.id),
     cp.latestOrderForSite(site.id),
+    cp.latestClaimForSite(site.id),
     cp.listBillingEventsForSite(site.id, 20),
     cp.latestProvisioningRunForSite(site.id),
     cp.listRenewalsForSite(site.id),
@@ -244,6 +222,7 @@ async function siteDetailResponse(
     checklist,
     publishGateMessage: publishGateError(gate),
     order: order ?? undefined,
+    claim: claim ?? undefined,
     billingEvents,
     provisioningRun: provisioningRun ?? undefined,
     provisioningSteps,
@@ -310,6 +289,16 @@ export async function handleAdminRequest(request: Request, env: Env): Promise<Re
     }
     const status = rawStatus as UpdateRequestStatus | undefined;
     return html(updatesPage(await cp.listUpdateRequests(status), csrf, status));
+  }
+
+  if (pathname === '/admin/claims') {
+    if (request.method !== 'GET') return methodNotAllowed(csrf);
+    const rawStatus = url.searchParams.get('status') ?? undefined;
+    if (rawStatus !== undefined && !CLAIM_STATUSES.includes(rawStatus as ClaimStatus)) {
+      return html(claimsPage(await cp.listClaims(), csrf, undefined, 'Tuntematon tilasuodatin.'), 400);
+    }
+    const status = rawStatus as ClaimStatus | undefined;
+    return html(claimsPage(await cp.listClaims(status), csrf, status));
   }
 
   if (pathname === '/admin/provisioning') {

@@ -1,7 +1,7 @@
 import { renderFavicon } from '../engine/favicon.js';
 import { effectivePalette, renderSite, resolveFont } from '../engine/render.js';
 import { renderLocalBusinessJsonLd } from '../engine/jsonld.js';
-import { escAttr } from '../engine/escape.js';
+import { esc, escAttr } from '../engine/escape.js';
 import {
   collectImages,
   FAVICON_PATH,
@@ -11,6 +11,7 @@ import {
 import { getTheme } from '../themes/index.js';
 import {
   type AuditActor,
+  type Claim,
   ControlPlane,
   type OpenProposal,
   type Site,
@@ -31,8 +32,11 @@ import { publishGate, publishGateError } from './qa.js';
 import {
   createOrderCheckout,
   OpenOrderError,
+  paymentPrices,
   unusedOrderId,
 } from './payments.js';
+import { DOMAIN_RE } from './provisioning.js';
+import { advanceProspectToResponded } from './prospect-status.js';
 import { validateSiteData } from './validate.js';
 import { handleEmailSimulator } from './update-channels.js';
 import { buildStoreZip } from './store-zip.js';
@@ -58,6 +62,8 @@ const PANEL_PROPOSALS_PER_DAY = 20;
 const RENDER_CACHE_TTL = 7 * 24 * 60 * 60;
 const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
 const PREVIEW_TOKEN_TTL = 14 * 24 * 60 * 60 * 1000;
+const CLAIMS_PER_DAY = 5;
+const CLAIM_EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,255}\.[^\s@]{2,}$/;
 const PHOTO_TYPES = new Map<string, true>([
   ['image/jpeg', true],
   ['image/png', true],
@@ -348,6 +354,7 @@ export function bizHtml(
   noindex = true,
   comment?: { action: string; token: string },
   suppressBranding = false,
+  claim?: { siteId: string; token: string },
 ): string {
   const theme = getTheme(data.meta.themeId);
   const rendered = renderSite(data, theme, { heroCta: true });
@@ -366,8 +373,9 @@ export function bizHtml(
   html = html.replace('<footer>\n<p></p>\n</footer>', '');
   if (draft) {
     const banner = '<div style="position:fixed;z-index:9999;top:0;left:0;right:0;padding:.35rem 1rem;text-align:center;background:var(--accent);color:var(--accent-contrast);font:600 .875rem/1.4 sans-serif">Luonnos - esikatselu</div>';
-    const feedback = comment === undefined ? '' : `<form action="${escAttr(comment.action)}" method="post" style="position:relative;z-index:9998;margin:2.5rem auto 1rem;max-width:40rem;padding:1rem;background:#fff;color:#111;border:1px solid #bbb;font:400 1rem/1.4 sans-serif"><input type="hidden" name="t" value="${escAttr(comment.token)}"><label style="display:grid;gap:.4rem;font-weight:600">Kommentti<textarea name="body" required maxlength="2000" style="min-height:6rem;padding:.5rem"></textarea></label><button type="submit" style="margin-top:.6rem;padding:.45rem .8rem">Lähetä kommentti</button></form>`;
-    html = html.replace(/(<body[^>]*>)/, `$1\n${banner}${feedback}`);
+    const claimBlock = claim === undefined ? '' : `<aside style="position:relative;z-index:9998;margin:2.5rem auto 1rem;max-width:44rem;padding:1rem;text-align:center;background:#fff;color:#111;border:2px solid var(--accent);font:400 1rem/1.4 sans-serif"><a href="/claim/${escAttr(claim.siteId)}${claim.token ? `?t=${escAttr(encodeURIComponent(claim.token))}` : ''}" style="display:inline-block;padding:.75rem 1rem;border-radius:.35rem;background:var(--accent);color:var(--accent-contrast);font-weight:700;text-decoration:none">Ota tämä sivu käyttöön - 249 € + 19 €/kk</a><p style="margin:.65rem 0 0">Katso ensin, maksa vasta sitten.</p></aside>`;
+    const feedback = comment === undefined ? '' : `<form action="${escAttr(comment.action)}" method="post" style="position:relative;z-index:9998;margin:${claim === undefined ? '2.5rem' : '1rem'} auto 1rem;max-width:40rem;padding:1rem;background:#fff;color:#111;border:1px solid #bbb;font:400 1rem/1.4 sans-serif"><input type="hidden" name="t" value="${escAttr(comment.token)}"><label style="display:grid;gap:.4rem;font-weight:600">Kommentti<textarea name="body" required maxlength="2000" style="min-height:6rem;padding:.5rem"></textarea></label><button type="submit" style="margin-top:.6rem;padding:.45rem .8rem">Lähetä kommentti</button></form>`;
+    html = html.replace(/(<body[^>]*>)/, `$1\n${banner}${claimBlock}${feedback}`);
   }
   return html;
 }
@@ -447,6 +455,7 @@ async function previewAccess(
   cp: ControlPlane,
   site: Site,
   proposalPublicId?: string,
+  allowAnyProposal = false,
 ): Promise<PreviewAccess | null> {
   const token = new URL(request.url).searchParams.get('t') ?? '';
   if (token) {
@@ -456,7 +465,9 @@ async function previewAccess(
       && record.siteId === site.id
       && record.revokedAt === undefined
       && record.expiresAt > Date.now()
-      && (record.proposalPublicId === undefined || record.proposalPublicId === proposalPublicId)
+      && (allowAnyProposal
+        || record.proposalPublicId === undefined
+        || record.proposalPublicId === proposalPublicId)
     ) {
       return { viaToken: true, token };
     }
@@ -489,10 +500,194 @@ function photoContentType(request: Request): string | null {
   return PHOTO_TYPES.has(raw) ? raw : null;
 }
 
+interface ClaimFormValues {
+  name: string;
+  email: string;
+  phone: string;
+  domainWish: string;
+  message: string;
+}
+
+const EMPTY_CLAIM_FORM: ClaimFormValues = {
+  name: '',
+  email: '',
+  phone: '',
+  domainWish: '',
+  message: '',
+};
+
+function claimPage(title: string, body: string): Response {
+  return new Response(`<!doctype html>
+<html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>${esc(title)}</title>
+<style>:root{font-family:system-ui,sans-serif;line-height:1.5;color:#172033;background:#f5f7fa}body{margin:0}main{max-width:42rem;margin:2rem auto;padding:1.25rem}section{padding:1.25rem;border:1px solid #d8dee8;border-radius:.6rem;background:#fff}form{display:grid;gap:.9rem}label{display:grid;gap:.3rem;font-weight:650}input,textarea,button{box-sizing:border-box;width:100%;padding:.65rem;font:inherit}textarea{min-height:7rem}button{border:0;border-radius:.35rem;background:#174ea6;color:#fff;font-weight:700;cursor:pointer}.price{font-size:1.35rem;font-weight:750}.notice{padding:.75rem;background:#fff1d6;border:1px solid #e1b85b}.error{background:#fde8e8;border-color:#d78888;color:#791f1f}.small{font-size:.9rem;color:#5d6878}</style></head><body><main>${body}</main></body></html>`, {
+    headers: {
+      'content-type': 'text/html; charset=utf-8',
+      'cache-control': 'no-store',
+      'x-robots-tag': 'noindex',
+    },
+  });
+}
+
+function claimFormPage(
+  site: Site,
+  token: string,
+  prices: { buildCents: number; monthlyCents: number },
+  values: ClaimFormValues = EMPTY_CLAIM_FORM,
+  error?: string,
+): Response {
+  const price = `${prices.buildCents / 100} € + ${prices.monthlyCents / 100} €/kk`;
+  const action = `/claim/${site.publicId}${token ? `?t=${encodeURIComponent(token)}` : ''}`;
+  const errorHtml = error === undefined
+    ? ''
+    : `<p class="notice error" role="alert">${esc(error)}</p>`;
+  return claimPage(
+    `Ota ${site.data.name} käyttöön`,
+    `<section><h1>Ota ${esc(site.data.name)} käyttöön</h1><p class="price">${esc(price)}</p><p>Katso ensin, maksa vasta sitten.</p>${errorHtml}
+    <form action="${escAttr(action)}" method="post"><input type="hidden" name="t" value="${escAttr(token)}">
+      <label>Nimi *<input name="name" required maxlength="200" autocomplete="name" value="${escAttr(values.name)}"></label>
+      <label>Sähköposti *<input name="email" type="email" required maxlength="322" autocomplete="email" value="${escAttr(values.email)}"></label>
+      <label>Puhelin<input name="phone" type="tel" maxlength="100" autocomplete="tel" value="${escAttr(values.phone)}"></label>
+      <label>Toivottu verkkotunnus<input name="domain_wish" maxlength="72" pattern="${escAttr(DOMAIN_RE.source)}" placeholder="yritys.fi" value="${escAttr(values.domainWish)}"></label>
+      <label>Viesti<textarea name="message" maxlength="2000">${esc(values.message)}</textarea></label>
+      <button type="submit">Siirry testimaksuun</button>
+    </form><p class="small">Testiympäristö: maksua ei veloiteta.</p></section>`,
+  );
+}
+
+function claimReservedPage(site: Site): Response {
+  return claimPage(
+    'Sivu on jo varattu',
+    `<section><h1>${esc(site.data.name)}</h1><p class="notice">Tämä sivu on jo varattu / tilattu.</p></section>`,
+  );
+}
+
+function claimFormValues(form: FormData): ClaimFormValues {
+  const value = (name: string): string => {
+    const entry = form.get(name);
+    return typeof entry === 'string' ? entry.trim() : '';
+  };
+  return {
+    name: value('name'),
+    email: value('email'),
+    phone: value('phone'),
+    domainWish: value('domain_wish'),
+    message: value('message'),
+  };
+}
+
+function validateClaimForm(values: ClaimFormValues): string | null {
+  if (!values.name || values.name.length > 200) return 'Nimen pitää olla 1–200 merkkiä.';
+  if (values.email.length > 322 || !CLAIM_EMAIL_RE.test(values.email)) {
+    return 'Anna kelvollinen sähköpostiosoite.';
+  }
+  if (values.phone.length > 100) return 'Puhelinnumero on liian pitkä.';
+  if (values.domainWish && !DOMAIN_RE.test(values.domainWish)) {
+    return 'Virheellinen verkkotunnus.';
+  }
+  if (values.message.length > 2000) return 'Viesti on liian pitkä.';
+  return null;
+}
+
+async function claimRateLimit(env: Env, siteId: string): Promise<boolean> {
+  const day = new Date().toISOString().slice(0, 10);
+  const key = `claimrl:${siteId}:${day}`;
+  const count = Number((await env.SITES.get(key)) ?? '0');
+  if (count >= CLAIMS_PER_DAY) return false;
+  await env.SITES.put(key, String(count + 1), { expirationTtl: 90_000 });
+  return true;
+}
+
 export async function handleBizRequest(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   const { pathname } = url;
   const cp = new ControlPlane(env.DB);
+
+  const claimMatch = pathname.match(/^\/claim\/([a-z0-9]{8})$/);
+  if (claimMatch) {
+    if (request.method !== 'GET' && request.method !== 'POST') return methodNotAllowed();
+    const site = await cp.getSiteByPublicId(claimMatch[1]!);
+    if (!site) return new Response('Not found', { status: 404 });
+    const access = await previewAccess(request, env, cp, site, undefined, true);
+    if (!access) return new Response('Not found', { status: 404 });
+    if (request.method === 'GET') {
+      return (await cp.siteClaimEligible(site))
+        ? claimFormPage(site, access.token, paymentPrices(env))
+        : claimReservedPage(site);
+    }
+
+    let form: FormData;
+    try {
+      form = await request.formData();
+    } catch {
+      return new Response('Bad request', { status: 400 });
+    }
+    const submittedToken = form.get('t');
+    if (typeof submittedToken !== 'string' || !constantTimeEqual(submittedToken, access.token)) {
+      return new Response('Not found', { status: 404 });
+    }
+    const immutable = siteMutable(site);
+    if (immutable || !(await cp.siteClaimEligible(site))) {
+      const response = claimReservedPage(site);
+      return new Response(response.body, { status: 409, headers: response.headers });
+    }
+    const values = claimFormValues(form);
+    const invalid = validateClaimForm(values);
+    if (invalid) {
+      const response = claimFormPage(site, access.token, paymentPrices(env), values, invalid);
+      return new Response(response.body, { status: 400, headers: response.headers });
+    }
+    if (!(await claimRateLimit(env, site.publicId))) {
+      const response = claimFormPage(
+        site,
+        access.token,
+        paymentPrices(env),
+        values,
+        'Liian monta yritystä tänään. Yritä huomenna uudelleen.',
+      );
+      return new Response(response.body, { status: 429, headers: response.headers });
+    }
+
+    let claim: Claim;
+    try {
+      claim = await cp.createClaim({
+        site,
+        name: values.name,
+        email: values.email,
+        ...(values.phone ? { phone: values.phone } : {}),
+        ...(values.domainWish ? { domainWish: values.domainWish } : {}),
+        ...(values.message ? { message: values.message } : {}),
+      });
+    } catch (error) {
+      if (!(await cp.siteClaimEligible(site))) {
+        const response = claimReservedPage(site);
+        return new Response(response.body, { status: 409, headers: response.headers });
+      }
+      throw error;
+    }
+    if (site.prospectId !== undefined) {
+      const prospect = await cp.getProspectById(site.prospectId);
+      if (prospect) await advanceProspectToResponded(cp, prospect);
+    }
+    try {
+      const checkout = await createOrderCheckout(
+        cp,
+        env,
+        site,
+        url.origin,
+        await unusedOrderId(cp),
+        'system',
+        { channel: 'claim' },
+      );
+      await cp.linkClaimOrder(claim, checkout.order);
+      return new Response(null, { status: 303, headers: { location: checkout.redirectUrl } });
+    } catch (error) {
+      if (error instanceof OpenOrderError) {
+        const response = claimReservedPage(site);
+        return new Response(response.body, { status: 409, headers: response.headers });
+      }
+      throw error;
+    }
+  }
 
   if (pathname === '/api/biz/email-ingress') return handleEmailSimulator(request, env);
 
@@ -771,10 +966,13 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
     if (!site) return new Response('Not found', { status: 404 });
     const access = await previewAccess(request, env, cp, site);
     if (!access) return new Response('Not found', { status: 404 });
+    const claim = await cp.siteClaimEligible(site)
+      ? { siteId: site.publicId, token: access.token }
+      : undefined;
     return bizPageResponse(bizHtml(site.data, true, true, {
       action: previewCommentAction(site.publicId, 'current', access.token),
       token: access.token,
-    }));
+    }, false, claim));
   }
 
   const previewMatch = pathname.match(/^\/p\/([a-z0-9]{8})\/([a-z0-9]{8})$/);
@@ -786,10 +984,13 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
     if (!access) return new Response('Not found', { status: 404 });
     const proposal = await cp.getProposal(site.id, previewMatch[2]!);
     if (!proposal || proposal.status !== 'open') return new Response('Not found', { status: 404 });
+    const claim = await cp.siteClaimEligible(site)
+      ? { siteId: site.publicId, token: access.token }
+      : undefined;
     return bizPageResponse(bizHtml(proposal.candidate, true, true, {
       action: previewCommentAction(site.publicId, proposal.publicId, access.token),
       token: access.token,
-    }));
+    }, false, claim));
   }
 
   const publicMatch = pathname.match(/^\/b\/([a-z0-9]{8})$/);
