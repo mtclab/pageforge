@@ -29,7 +29,7 @@ export function renderPhotoField(ctx: StepCtx): HTMLElement {
 
   if (data.photo) {
     const img = el('img', { class: 'photo-thumb', alt: 'Your chosen photo' });
-    img.src = data.photo.dataUrl;
+    img.src = 'dataUrl' in data.photo ? data.photo.dataUrl : data.photo.src;
     const remove = el('button', { type: 'button', class: 'chip', text: 'Remove photo' });
     remove.addEventListener('click', () => {
       delete data.photo;

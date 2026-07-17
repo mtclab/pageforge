@@ -182,7 +182,8 @@ export default {
     const mutationPath = pathname === '/api/mcp'
       || pathname.startsWith('/api/biz/')
       || pathname.startsWith('/p/')
-      || pathname.startsWith('/b/');
+      || pathname.startsWith('/b/')
+      || pathname.startsWith('/img/');
     if (mutationPath) {
       if (env.MUTATION_API_ENABLED !== 'true' || !env.OPERATOR_KEY) {
         return new Response('Not found', { status: 404 });

@@ -1,5 +1,5 @@
 import type { SiteData } from '../engine/types.js';
-import { createProposal, getBizSite, listOpenProposals } from './biz.js';
+import { createProposal, getBizSite, listOpenProposals, siteView } from './biz.js';
 import { type Env, json, readJson, requireOperator } from './shared.js';
 
 interface RpcRequest {
@@ -82,12 +82,7 @@ async function callTool(env: Env, params: unknown): Promise<ReturnType<typeof to
   if (name === 'get_site') {
     const site = await getBizSite(env, siteId);
     if (!site) return toolContent('Site not found.', true);
-    const proposals = await listOpenProposals(env, siteId);
-    return toolContent({
-      data: site.data,
-      versions: site.versions.map(({ n, at, note }) => ({ n, at, ...(note === undefined ? {} : { note }) })),
-      openProposals: proposals.map(({ proposalId }) => proposalId),
-    });
+    return toolContent(await siteView(env, site));
   }
 
   if (name === 'propose_update') {
@@ -96,6 +91,7 @@ async function callTool(env: Env, params: unknown): Promise<ReturnType<typeof to
       siteId,
       args.candidate as SiteData,
       args.note as string | undefined,
+      'mcp',
     );
     return result.ok ? toolContent(result.value) : toolContent(result.error, true);
   }
@@ -103,7 +99,9 @@ async function callTool(env: Env, params: unknown): Promise<ReturnType<typeof to
   if (name === 'list_proposals') {
     const site = await getBizSite(env, siteId);
     if (!site) return toolContent('Site not found.', true);
-    return toolContent(await listOpenProposals(env, siteId));
+    return toolContent(
+      (await listOpenProposals(env, siteId)).map(({ proposalId, summary, at }) => ({ proposalId, summary, at })),
+    );
   }
 
   // Approval, rejection, rollback, and publishing deliberately remain outside MCP.

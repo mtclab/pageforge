@@ -108,8 +108,10 @@ function renderContact(s: Extract<Section, { kind: 'contact' }>, idx: number): s
 
 function renderGallery(s: Extract<Section, { kind: 'gallery' }>, idx: number): string {
   const items = s.photos.map(
-    (_, j) =>
-      `<li><img src="${galleryPath(idx, j)}" alt="" loading="lazy"></li>`,
+    (photo, j) => {
+      const src = 'src' in photo ? escAttr(photo.src) : galleryPath(idx, j);
+      return `<li><img src="${src}" alt="" loading="lazy"></li>`;
+    },
   );
   if (!items.length) return '';
   return wrap('gallery', idx, s.title?.trim() || 'Photos', `<ul class="gallery">\n${items.join('\n')}\n</ul>`);

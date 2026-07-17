@@ -13,8 +13,23 @@ MUTATION_API_ENABLED = "false"
 [assets]
 directory = "dist"
 binding = "ASSETS"
-run_worker_first = ["/api/*", "/s/*", "/p/*", "/b/*"]
+run_worker_first = ["/api/*", "/s/*", "/p/*", "/b/*", "/img/*"]
 
 [[kv_namespaces]]
 binding = "SITES"
 id = "b00a7b60e9db4f33848a53acb6499420"
+
+# Mikoshi control plane (staging only). D1 is the source of truth for business
+# sites; R2 holds business photos. Both surfaces stay behind MUTATION_API_ENABLED.
+# PLACEHOLDER ids - provision the real D1 database + R2 bucket and replace these
+# ids before this config is ever promoted to main (= production deploy). Local
+# dev ignores the id: `wrangler d1 migrations apply pageforge-mikoshi --local`
+# and `wrangler dev` emulation key off the binding name, not the id.
+[[d1_databases]]
+binding = "DB"
+database_name = "pageforge-mikoshi"
+database_id = "00000000-0000-0000-0000-000000000000"
+
+[[r2_buckets]]
+binding = "PHOTOS"
+bucket_name = "pageforge-mikoshi-photos"

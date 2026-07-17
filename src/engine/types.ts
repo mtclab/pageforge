@@ -15,6 +15,14 @@ export interface Link {
   kind?: LinkKind;
 }
 
+/**
+ * A photo reference. The personal-site app always produces an inline
+ * `{ dataUrl }` (bundled into the zip / served from KV). The mikoshi business
+ * control plane instead stores photos in R2 and references them by
+ * `{ src: "/img/<sha256>" }`; the renderer emits either verbatim (escaped).
+ */
+export type PhotoRef = { dataUrl: string } | { src: string };
+
 export type Section =
   | { kind: 'about'; text: string }
   | {
@@ -25,7 +33,7 @@ export type Section =
   | { kind: 'hobbies'; title?: string; items: string[] }
   | { kind: 'contact'; email?: string; note?: string }
   | { kind: 'custom'; title: string; text: string }
-  | { kind: 'gallery'; title?: string; photos: { dataUrl: string }[] }
+  | { kind: 'gallery'; title?: string; photos: PhotoRef[] }
   | {
       kind: 'hours';
       title?: string;
@@ -47,7 +55,7 @@ export interface SiteData {
   lang?: string;
   tagline?: string;
   /** Cropped square JPEG data URL, max 512x512. Produced by the wizard. */
-  photo?: { dataUrl: string };
+  photo?: PhotoRef;
   /** Custom tab icon: 64x64 PNG data URL. Absent = generated initials icon. */
   favicon?: { dataUrl: string };
   links: Link[];
@@ -155,15 +163,21 @@ export function galleryPath(sectionIdx: number, photoIdx: number): string {
   return `assets/gallery-${sectionIdx}-${photoIdx + 1}.jpg`;
 }
 
-/** Every embedded image the site references: [zip path, data URL]. */
+/**
+ * Every INLINE image the site references: [zip path, data URL]. Only
+ * `{ dataUrl }` photos are bundled; `{ src: "/img/..." }` R2 references are
+ * skipped here on purpose (they are served from R2, not embedded).
+ * TODO(S10 export): the authenticated export ZIP must resolve and inline R2
+ * `src` photos too - see docs/MIKOSHI_BUILD_PLAN.md slice S10.
+ */
 export function collectImages(data: SiteData): [string, string][] {
   const images: [string, string][] = [];
-  if (data.photo) images.push([PHOTO_PATH, data.photo.dataUrl]);
+  if (data.photo && 'dataUrl' in data.photo) images.push([PHOTO_PATH, data.photo.dataUrl]);
   if (data.favicon) images.push([CUSTOM_FAVICON_PATH, data.favicon.dataUrl]);
   data.sections.forEach((section, i) => {
     if (section.kind !== 'gallery') return;
     section.photos.forEach((photo, j) => {
-      images.push([galleryPath(i + 1, j), photo.dataUrl]);
+      if ('dataUrl' in photo) images.push([galleryPath(i + 1, j), photo.dataUrl]);
     });
   });
   return images;

@@ -370,7 +370,7 @@ function sectionEditor(section: Section, i: number, ctx: StepCtx): HTMLElement {
       section.photos.forEach((photo, j) => {
         const cell = el('span', { class: 'gallery-thumb' });
         const img = el('img', { alt: `Gallery photo ${j + 1}` });
-        img.src = photo.dataUrl;
+        img.src = 'dataUrl' in photo ? photo.dataUrl : photo.src;
         const rm = el('button', { type: 'button', class: 'icon-btn', 'aria-label': `Remove photo ${j + 1}`, text: '✕' });
         rm.addEventListener('click', () => {
           section.photos.splice(j, 1);

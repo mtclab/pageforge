@@ -2,6 +2,21 @@ import { collectImages, type SiteData } from '../engine/types.js';
 
 const MAX_IMAGE_B64 = 1_100_000;
 const DATA_URL_RE = /^data:image\/(?:jpeg|png);base64,([A-Za-z0-9+/=]+)$/;
+/** R2 photo reference produced by the mikoshi photo store (see biz.ts). */
+const IMG_SRC_RE = /^\/img\/[a-f0-9]{64}$/;
+
+/**
+ * A photo is either an inline `{ dataUrl }` (encoding + size checked below via
+ * collectImages) or an R2 `{ src: "/img/<sha256>" }` reference. Returns an
+ * error string or null.
+ */
+function photoRefError(photo: unknown): string | null {
+  if (!photo || typeof photo !== 'object') return 'bad image';
+  const ref = photo as Record<string, unknown>;
+  if (typeof ref.src === 'string') return IMG_SRC_RE.test(ref.src) ? null : 'bad image reference';
+  if (typeof ref.dataUrl === 'string') return null;
+  return 'bad image';
+}
 
 /** Reject anything that is not a sane, size-capped SiteData. Returns an error string or null. */
 export function validateSiteData(data: SiteData): string | null {
@@ -34,6 +49,10 @@ export function validateSiteData(data: SiteData): string | null {
         break;
       case 'gallery':
         if (!Array.isArray(s.photos) || s.photos.length > 6) return 'too many gallery photos';
+        for (const photo of s.photos) {
+          const photoError = photoRefError(photo);
+          if (photoError) return photoError;
+        }
         break;
       case 'hours':
         if (!Array.isArray(s.days) || s.days.length > 14) return 'too many opening days';
@@ -109,6 +128,10 @@ export function validateSiteData(data: SiteData): string | null {
     if (Object.values(data.capabilities).some((value) => value !== undefined && typeof value !== 'boolean')) {
       return 'bad capabilities';
     }
+  }
+  if (data.photo) {
+    const photoError = photoRefError(data.photo);
+    if (photoError) return photoError;
   }
   for (const [, dataUrl] of collectImages(data)) {
     const m = dataUrl.match(DATA_URL_RE);

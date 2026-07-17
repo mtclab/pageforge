@@ -1,3 +1,5 @@
+import type { D1Database } from './db.js';
+
 export interface KVNamespace {
   get(key: string): Promise<string | null>;
   put(key: string, value: string, opts?: { expirationTtl?: number }): Promise<void>;
@@ -13,9 +15,39 @@ export interface AssetsFetcher {
   fetch(request: Request): Promise<Response>;
 }
 
+/**
+ * Minimal R2 surface used by the photo store, kept local like the KV shim so
+ * unit tests can supply an in-memory stub. Mirrors the Cloudflare R2 API we
+ * actually call: put/get/head with httpMetadata.contentType.
+ */
+export interface R2HttpMetadata {
+  contentType?: string;
+}
+export interface R2Object {
+  httpMetadata?: R2HttpMetadata;
+  size: number;
+}
+export interface R2ObjectBody extends R2Object {
+  body: ReadableStream;
+  arrayBuffer(): Promise<ArrayBuffer>;
+}
+export interface R2Bucket {
+  get(key: string): Promise<R2ObjectBody | null>;
+  head(key: string): Promise<R2Object | null>;
+  put(
+    key: string,
+    value: ArrayBuffer | Uint8Array,
+    opts?: { httpMetadata?: R2HttpMetadata },
+  ): Promise<R2Object>;
+}
+
 export interface Env {
   SITES: KVNamespace;
   ASSETS: AssetsFetcher;
+  /** D1 control plane: source of truth for business sites (see db.ts). */
+  DB: D1Database;
+  /** R2 bucket for business photo bytes. */
+  PHOTOS: R2Bucket;
   PUBLISH_ENABLED?: string;
   MUTATION_API_ENABLED?: string;
   OPERATOR_KEY?: string;
