@@ -49,6 +49,16 @@ describe('deterministic composer', () => {
     expect(new Set(first.map((variant) => themeFamilyForTheme(variant.meta.themeId))).size).toBe(3);
   });
 
+  it('derives a Soita tel link from the contact phone without duplicating one', () => {
+    const withPhone = compose(profile(), 'tel1')[0]!;
+    expect(withPhone.links[0]).toEqual({ label: 'Soita', url: 'tel:+358 40 123 4567', kind: 'phone' });
+    const existing = profile();
+    existing.links = [{ label: 'Puhelin', url: 'tel:+358401234567', kind: 'phone' }];
+    const kept = compose(existing, 'tel2')[0]!;
+    expect(kept.links.filter((link) => link.url.startsWith('tel:'))).toHaveLength(1);
+    expect(kept.links[0]!.label).toBe('Puhelin');
+  });
+
   it('keeps content identical, emits no empty sections, and passes SiteData validation', () => {
     const variants = compose(profile(), 'profile2');
     expect(contentOnly(variants[1]!)).toEqual(contentOnly(variants[0]!));

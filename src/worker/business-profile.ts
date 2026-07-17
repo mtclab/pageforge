@@ -1,3 +1,4 @@
+import { TEL_URL_RE } from '../engine/escape.js';
 import type { LinkKind, Section } from '../engine/types.js';
 
 export type ProvenanceSource = 'prh' | 'places' | 'owner' | 'operator';
@@ -164,7 +165,10 @@ export function validateBusinessProfile(profile: BusinessProfile): string[] {
   if (profile.links.length > BUSINESS_PROFILE_LIMITS.links) errors.push('Linkkejä on liikaa.');
   for (const [index, link] of profile.links.entries()) {
     if (!link.label.trim()) errors.push(`Linkin ${index + 1} nimi vaaditaan.`);
-    if (!validateHttpsUrl(link.url)) errors.push(`Linkin ${index + 1} osoitteen pitää olla HTTPS-URL.`);
+    // tel: links are first-class (they power the business call CTA).
+    if (!validateHttpsUrl(link.url) && !TEL_URL_RE.test(link.url)) {
+      errors.push(`Linkin ${index + 1} osoitteen pitää olla HTTPS-URL tai tel-numero.`);
+    }
   }
   for (const [path, entry] of Object.entries(profile.provenance)) {
     if (!path || !entry || !SOURCES.includes(entry.source) || !Number.isFinite(entry.at) || entry.at <= 0) {
