@@ -12,6 +12,10 @@ MUTATION_API_ENABLED = "false"
 BIZ_INDEXING_ENABLED = "false"
 PRICE_BUILD_CENTS = "24900"
 PRICE_MONTHLY_CENTS = "1900"
+VENDOR_MODE = "manual"
+# Customer domains are not reachable from the staging box. Enable only in an
+# environment that can perform the real ten-second HTTPS verification.
+VERIFY_HTTP_ENABLED = "false"
 
 [assets]
 directory = "dist"

@@ -406,6 +406,21 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
     return json(200, { id, approvalKey });
   }
 
+  const provisioningMatch = pathname.match(/^\/api\/biz\/sites\/([a-z0-9]{8})\/provisioning$/);
+  if (provisioningMatch) {
+    if (request.method !== 'GET') return methodNotAllowed();
+    const denied = await requireOperator(request, env);
+    if (denied) return denied;
+    const site = await cp.getSiteByPublicId(provisioningMatch[1]!);
+    if (!site) return json(404, { error: 'Site not found.' });
+    const [run, renewals] = await Promise.all([
+      cp.latestProvisioningRunForSite(site.id),
+      cp.listRenewalsForSite(site.id),
+    ]);
+    const steps = run === null ? [] : await cp.listProvisioningSteps(run.id);
+    return json(200, { run, steps, renewals });
+  }
+
   const siteMatch = pathname.match(/^\/api\/biz\/sites\/([a-z0-9]{8})$/);
   if (siteMatch) {
     if (request.method !== 'GET') return methodNotAllowed();

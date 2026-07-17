@@ -32,6 +32,7 @@ import {
   messagePage,
   panelTokenPage,
   previewTokenPage,
+  provisioningPage,
   prospectDetailPage,
   prospectsPage,
   siteDetailPage,
@@ -55,6 +56,12 @@ import {
   publishGateError,
   runQaChecks,
 } from './qa.js';
+import {
+  abortProvisioningRun,
+  advanceProvisioningAdapters,
+  startProvisioningRun,
+  transitionProvisioningStep,
+} from './provisioning.js';
 import { validateSiteData } from './validate.js';
 
 const ADMIN_HEADERS = {
@@ -207,7 +214,7 @@ async function siteDetailResponse(
   error?: string,
   status = 200,
 ): Promise<Response> {
-  const [versions, proposals, photoCount, events, tokens, panelTokens, updateRequests, comments, qaRun, checklist, gate, order, billingEvents] = await Promise.all([
+  const [versions, proposals, photoCount, events, tokens, panelTokens, updateRequests, comments, qaRun, checklist, gate, order, billingEvents, provisioningRun, renewals] = await Promise.all([
     cp.listSnapshots(site.id),
     cp.listOpenProposals(site.id),
     cp.photoCountForSite(site.id),
@@ -221,7 +228,12 @@ async function siteDetailResponse(
     publishGate(cp, site),
     cp.latestOrderForSite(site.id),
     cp.listBillingEventsForSite(site.id, 20),
+    cp.latestProvisioningRunForSite(site.id),
+    cp.listRenewalsForSite(site.id),
   ]);
+  const provisioningSteps = provisioningRun === null
+    ? []
+    : await cp.listProvisioningSteps(provisioningRun.id);
   return html(siteDetailPage({
     site,
     versions,
@@ -237,6 +249,9 @@ async function siteDetailResponse(
     publishGateMessage: publishGateError(gate),
     order: order ?? undefined,
     billingEvents,
+    provisioningRun: provisioningRun ?? undefined,
+    provisioningSteps,
+    renewals,
     csrf,
     ...(error === undefined ? {} : { error }),
   }), status);
@@ -299,6 +314,15 @@ export async function handleAdminRequest(request: Request, env: Env): Promise<Re
     }
     const status = rawStatus as UpdateRequestStatus | undefined;
     return html(updatesPage(await cp.listUpdateRequests(status), csrf, status));
+  }
+
+  if (pathname === '/admin/provisioning') {
+    if (request.method !== 'GET') return methodNotAllowed(csrf);
+    const [runs, renewals] = await Promise.all([
+      cp.listActiveProvisioningRuns(),
+      cp.listUpcomingRenewals(),
+    ]);
+    return html(provisioningPage(runs, renewals, csrf));
   }
 
   const updateCloseMatch = pathname.match(/^\/admin\/updates\/(\d+)\/close$/);
@@ -449,6 +473,53 @@ export async function handleAdminRequest(request: Request, env: Env): Promise<Re
   if (pathname === '/admin/sites') {
     if (request.method !== 'GET') return methodNotAllowed(csrf);
     return html(sitesPage(await cp.listSites(), csrf));
+  }
+
+  const provisioningStartMatch = pathname.match(/^\/admin\/sites\/([^/]+)\/provisioning\/start$/);
+  if (provisioningStartMatch) {
+    if (request.method !== 'POST') return methodNotAllowed(csrf);
+    const site = await cp.getSiteByPublicId(provisioningStartMatch[1]!);
+    if (!site) return html(messagePage('Sivustoa ei löytynyt', 'Tuntematon sivusto.', csrf), 404);
+    const result = await startProvisioningRun(cp, env, site, formString(form!, 'domain') ?? '');
+    if (!result.ok) return siteDetailResponse(cp, site, csrf, result.error, result.status);
+    return redirect(`/admin/sites/${site.publicId}`);
+  }
+
+  const provisioningStepMatch = pathname.match(/^\/admin\/sites\/([^/]+)\/provisioning\/steps\/([^/]+)$/);
+  if (provisioningStepMatch) {
+    if (request.method !== 'POST') return methodNotAllowed(csrf);
+    const site = await cp.getSiteByPublicId(provisioningStepMatch[1]!);
+    if (!site) return html(messagePage('Sivustoa ei löytynyt', 'Tuntematon sivusto.', csrf), 404);
+    const run = await cp.activeProvisioningRunForSite(site.id);
+    if (!run) return siteDetailResponse(cp, site, csrf, 'Käynnissä olevaa provisiointia ei löytynyt.', 404);
+    const rawStatus = formString(form!, 'status');
+    if (rawStatus !== 'tehty' && rawStatus !== 'ohitettu') {
+      return siteDetailResponse(cp, site, csrf, 'Tuntematon provisiointivaiheen tila.', 400);
+    }
+    const result = await transitionProvisioningStep(
+      cp,
+      env,
+      run,
+      site,
+      provisioningStepMatch[2]!,
+      rawStatus,
+      formString(form!, 'evidence'),
+    );
+    if (!result.ok) return siteDetailResponse(cp, site, csrf, result.error, result.status);
+    await advanceProvisioningAdapters(cp, env, run, site);
+    return redirect(`/admin/sites/${site.publicId}`);
+  }
+
+  const provisioningAbortMatch = pathname.match(/^\/admin\/sites\/([^/]+)\/provisioning\/abort$/);
+  if (provisioningAbortMatch) {
+    if (request.method !== 'POST') return methodNotAllowed(csrf);
+    const site = await cp.getSiteByPublicId(provisioningAbortMatch[1]!);
+    if (!site) return html(messagePage('Sivustoa ei löytynyt', 'Tuntematon sivusto.', csrf), 404);
+    const run = await cp.activeProvisioningRunForSite(site.id);
+    if (!run) return siteDetailResponse(cp, site, csrf, 'Käynnissä olevaa provisiointia ei löytynyt.', 404);
+    const result = await abortProvisioningRun(cp, run);
+    if (!result.ok) return siteDetailResponse(cp, site, csrf, result.error, result.status);
+    return redirect(`/admin/sites/${site.publicId}`);
   }
 
   const proposalMatch = pathname.match(/^\/admin\/sites\/([^/]+)\/proposals\/([^/]+)\/(approve|reject)$/);

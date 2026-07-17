@@ -207,6 +207,81 @@ interface OrderRow {
   updated_at: number;
 }
 
+export type ProvisioningRunStatus = 'kaynnissa' | 'valmis' | 'keskeytetty';
+export type ProvisioningStepStatus = 'odottaa' | 'tehty' | 'ohitettu' | 'epaonnistui';
+export type RenewalKind = 'domain' | 'postilaatikko';
+export type RenewalStatus = 'tulossa' | 'hoidettu';
+
+export interface ProvisioningRun {
+  id: number;
+  publicId: string;
+  siteId: number;
+  orderId?: number;
+  domain: string;
+  status: ProvisioningRunStatus;
+  createdAt: number;
+  updatedAt: number;
+  sitePublicId?: string;
+  siteName?: string;
+}
+
+export interface ProvisioningStep {
+  id: number;
+  runId: number;
+  step: string;
+  ord: number;
+  status: ProvisioningStepStatus;
+  evidence?: string;
+  updatedAt: number;
+}
+
+export interface Renewal {
+  id: number;
+  siteId: number;
+  kind: RenewalKind;
+  label: string;
+  dueAt: number;
+  status: RenewalStatus;
+  createdAt: number;
+  sitePublicId?: string;
+  siteName?: string;
+}
+
+interface ProvisioningRunRow {
+  id: number;
+  public_id: string;
+  site_id: number;
+  order_id: number | null;
+  domain: string;
+  status: ProvisioningRunStatus;
+  created_at: number;
+  updated_at: number;
+  site_public_id?: string;
+  site_data?: string;
+}
+
+interface ProvisioningStepRow {
+  id: number;
+  run_id: number;
+  step: string;
+  ord: number;
+  status: ProvisioningStepStatus;
+  evidence: string | null;
+  updated_at: number;
+}
+
+interface RenewalRow {
+  id: number;
+  site_id: number;
+  kind: RenewalKind;
+  label: string;
+  due_at: number;
+  status: RenewalStatus;
+  created_at: number;
+  site_public_id?: string;
+  site_data?: string;
+}
+
 export interface BillingEvent {
   id: number;
   orderId?: number;
@@ -1472,6 +1547,240 @@ export class ControlPlane {
       payload: row.payload,
       createdAt: row.created_at,
     }));
+  }
+
+  // --- provisioning and renewals ---------------------------------------
+
+  private rowToProvisioningRun(row: ProvisioningRunRow): ProvisioningRun {
+    const siteData = row.site_data === undefined ? undefined : JSON.parse(row.site_data) as SiteData;
+    return {
+      id: row.id,
+      publicId: row.public_id,
+      siteId: row.site_id,
+      ...(row.order_id === null ? {} : { orderId: row.order_id }),
+      domain: row.domain,
+      status: row.status,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      ...(row.site_public_id === undefined ? {} : { sitePublicId: row.site_public_id }),
+      ...(siteData === undefined ? {} : { siteName: siteData.name }),
+    };
+  }
+
+  private rowToProvisioningStep(row: ProvisioningStepRow): ProvisioningStep {
+    return {
+      id: row.id,
+      runId: row.run_id,
+      step: row.step,
+      ord: row.ord,
+      status: row.status,
+      ...(row.evidence === null ? {} : { evidence: row.evidence }),
+      updatedAt: row.updated_at,
+    };
+  }
+
+  private rowToRenewal(row: RenewalRow): Renewal {
+    const siteData = row.site_data === undefined ? undefined : JSON.parse(row.site_data) as SiteData;
+    return {
+      id: row.id,
+      siteId: row.site_id,
+      kind: row.kind,
+      label: row.label,
+      dueAt: row.due_at,
+      status: row.status,
+      createdAt: row.created_at,
+      ...(row.site_public_id === undefined ? {} : { sitePublicId: row.site_public_id }),
+      ...(siteData === undefined ? {} : { siteName: siteData.name }),
+    };
+  }
+
+  async createProvisioningRun(input: {
+    publicId: string;
+    site: Site;
+    orderId?: number;
+    domain: string;
+    steps: readonly { id: string; ord: number }[];
+  }): Promise<ProvisioningRun> {
+    const at = this.now();
+    const results = await this.db.batch([
+      this.db
+        .prepare(
+          `INSERT INTO provisioning_runs
+             (public_id, site_id, order_id, domain, status, created_at, updated_at)
+           VALUES (?, ?, ?, ?, 'kaynnissa', ?, ?)`,
+        )
+        .bind(input.publicId, input.site.id, input.orderId ?? null, input.domain, at, at),
+      ...input.steps.map((step) => this.db
+        .prepare(
+          `INSERT INTO provisioning_steps (run_id, step, ord, status, updated_at)
+           VALUES ((SELECT id FROM provisioning_runs WHERE public_id = ?), ?, ?, 'odottaa', ?)`,
+        )
+        .bind(input.publicId, step.id, step.ord, at)),
+      this.db
+        .prepare(
+          `INSERT INTO renewals (site_id, kind, label, due_at, status, created_at)
+           VALUES (?, 'domain', ?, ?, 'tulossa', ?)`,
+        )
+        .bind(input.site.id, input.domain, at + 365 * 24 * 60 * 60 * 1000, at),
+      this.auditStatement(at, {
+        actor: 'operator',
+        action: 'provisioning.start',
+        entity: 'provisioning',
+        entityId: input.publicId,
+        detail: { run: input.publicId, site: input.site.publicId, domain: input.domain },
+      }),
+    ]);
+    const id = results[0]?.meta.last_row_id;
+    if (id === undefined) throw new Error('provisioning run insert did not return an id');
+    return {
+      id,
+      publicId: input.publicId,
+      siteId: input.site.id,
+      ...(input.orderId === undefined ? {} : { orderId: input.orderId }),
+      domain: input.domain,
+      status: 'kaynnissa',
+      createdAt: at,
+      updatedAt: at,
+    };
+  }
+
+  async getProvisioningRunByPublicId(publicId: string): Promise<ProvisioningRun | null> {
+    const row = await this.db
+      .prepare('SELECT * FROM provisioning_runs WHERE public_id = ?')
+      .bind(publicId)
+      .first<ProvisioningRunRow>();
+    return row ? this.rowToProvisioningRun(row) : null;
+  }
+
+  async latestProvisioningRunForSite(siteId: number): Promise<ProvisioningRun | null> {
+    const row = await this.db
+      .prepare('SELECT * FROM provisioning_runs WHERE site_id = ? ORDER BY created_at DESC, id DESC LIMIT 1')
+      .bind(siteId)
+      .first<ProvisioningRunRow>();
+    return row ? this.rowToProvisioningRun(row) : null;
+  }
+
+  async activeProvisioningRunForSite(siteId: number): Promise<ProvisioningRun | null> {
+    const row = await this.db
+      .prepare("SELECT * FROM provisioning_runs WHERE site_id = ? AND status = 'kaynnissa' LIMIT 1")
+      .bind(siteId)
+      .first<ProvisioningRunRow>();
+    return row ? this.rowToProvisioningRun(row) : null;
+  }
+
+  async listActiveProvisioningRuns(): Promise<ProvisioningRun[]> {
+    const { results } = await this.db
+      .prepare(
+        `SELECT p.*, s.public_id AS site_public_id, s.data AS site_data
+           FROM provisioning_runs p
+           JOIN sites s ON s.id = p.site_id
+          WHERE p.status = 'kaynnissa'
+          ORDER BY p.created_at ASC, p.id ASC`,
+      )
+      .all<ProvisioningRunRow>();
+    return results.map((row) => this.rowToProvisioningRun(row));
+  }
+
+  async listProvisioningSteps(runId: number): Promise<ProvisioningStep[]> {
+    const { results } = await this.db
+      .prepare('SELECT * FROM provisioning_steps WHERE run_id = ? ORDER BY ord ASC, id ASC')
+      .bind(runId)
+      .all<ProvisioningStepRow>();
+    return results.map((row) => this.rowToProvisioningStep(row));
+  }
+
+  async setProvisioningStep(input: {
+    run: ProvisioningRun;
+    step: string;
+    status: ProvisioningStepStatus;
+    evidence?: string;
+  }): Promise<void> {
+    const at = this.now();
+    await this.db.batch([
+      this.db
+        .prepare('UPDATE provisioning_steps SET status = ?, evidence = ?, updated_at = ? WHERE run_id = ? AND step = ?')
+        .bind(input.status, input.evidence ?? null, at, input.run.id, input.step),
+      this.db
+        .prepare('UPDATE provisioning_runs SET updated_at = ? WHERE id = ?')
+        .bind(at, input.run.id),
+      this.auditStatement(at, {
+        actor: 'operator',
+        action: 'provisioning.step',
+        entity: 'provisioning',
+        entityId: input.run.publicId,
+        detail: { run: input.run.publicId, step: input.step, status: input.status },
+      }),
+    ]);
+  }
+
+  async completeProvisioningRun(input: {
+    run: ProvisioningRun;
+    step: string;
+    evidence?: string;
+  }): Promise<void> {
+    const at = this.now();
+    await this.db.batch([
+      this.db
+        .prepare("UPDATE provisioning_steps SET status = 'tehty', evidence = ?, updated_at = ? WHERE run_id = ? AND step = ?")
+        .bind(input.evidence ?? null, at, input.run.id, input.step),
+      this.db
+        .prepare("UPDATE provisioning_runs SET status = 'valmis', updated_at = ? WHERE id = ?")
+        .bind(at, input.run.id),
+      this.auditStatement(at, {
+        actor: 'operator',
+        action: 'provisioning.step',
+        entity: 'provisioning',
+        entityId: input.run.publicId,
+        detail: { run: input.run.publicId, step: input.step, status: 'tehty' },
+      }),
+      this.auditStatement(at, {
+        actor: 'operator',
+        action: 'provisioning.golive',
+        entity: 'provisioning',
+        entityId: input.run.publicId,
+        detail: { run: input.run.publicId, domain: input.run.domain },
+      }),
+    ]);
+  }
+
+  async abortProvisioningRun(run: ProvisioningRun): Promise<void> {
+    const at = this.now();
+    await this.db.batch([
+      this.db
+        .prepare("UPDATE provisioning_runs SET status = 'keskeytetty', updated_at = ? WHERE id = ? AND status = 'kaynnissa'")
+        .bind(at, run.id),
+      this.auditStatement(at, {
+        actor: 'operator',
+        action: 'provisioning.abort',
+        entity: 'provisioning',
+        entityId: run.publicId,
+        detail: { run: run.publicId },
+      }),
+    ]);
+  }
+
+  async listRenewalsForSite(siteId: number): Promise<Renewal[]> {
+    const { results } = await this.db
+      .prepare('SELECT * FROM renewals WHERE site_id = ? ORDER BY due_at ASC, id ASC')
+      .bind(siteId)
+      .all<RenewalRow>();
+    return results.map((row) => this.rowToRenewal(row));
+  }
+
+  async listUpcomingRenewals(windowMs = 90 * 24 * 60 * 60 * 1000): Promise<Renewal[]> {
+    // The production cron trigger is intentionally deferred; this query is the
+    // monitor model used by the operator console in v1.
+    const { results } = await this.db
+      .prepare(
+        `SELECT r.*, s.public_id AS site_public_id, s.data AS site_data
+           FROM renewals r
+           JOIN sites s ON s.id = r.site_id
+          WHERE r.status = 'tulossa' AND r.due_at <= ?
+          ORDER BY r.due_at ASC, r.id ASC`,
+      )
+      .bind(this.now() + windowMs)
+      .all<RenewalRow>();
+    return results.map((row) => this.rowToRenewal(row));
   }
 
   // --- photos ------------------------------------------------------------

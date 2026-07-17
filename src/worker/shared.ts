@@ -54,6 +54,8 @@ export interface Env {
   OPERATOR_KEY?: string;
   PRICE_BUILD_CENTS?: string;
   PRICE_MONTHLY_CENTS?: string;
+  VENDOR_MODE?: string;
+  VERIFY_HTTP_ENABLED?: string;
   STRIPE_SECRET_KEY?: string;
   STRIPE_WEBHOOK_SECRET?: string;
   BUILD_COMMIT?: string;

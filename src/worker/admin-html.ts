@@ -11,6 +11,9 @@ import type {
   DraftComment,
   OpenProposal,
   Order,
+  ProvisioningRun,
+  ProvisioningStep,
+  Renewal,
   LaunchChecklistRecord,
   PreviewToken,
   PanelToken,
@@ -26,6 +29,7 @@ import type {
 } from './db.js';
 import { ORDER_STATUSES, PROSPECT_STATUSES, SITE_STATUSES } from './db.js';
 import { LAUNCH_CHECKLIST_ITEMS } from './qa.js';
+import { PROVISIONING_STEPS } from './provisioning.js';
 
 function formToken(csrf: string): string {
   return `<input type="hidden" name="csrf" value="${escAttr(csrf)}">`;
@@ -77,6 +81,7 @@ export function layout(title: string, content: string, csrf?: string): string {
          <a href="/admin">Dashboard</a>
          <a href="/admin/prospects">Prospektit</a>
          <a href="/admin/sites">Sivustot</a>
+         <a href="/admin/provisioning">Provisiointi</a>
          <a href="/admin/updates">Päivityspyynnöt</a>
          <a href="/admin/audit">Loki</a>
          <form action="/admin/logout" method="post">${formToken(csrf)}<button class="link" type="submit">Kirjaudu ulos</button></form>
@@ -279,12 +284,16 @@ export function siteDetailPage(input: {
   publishGateMessage: string;
   order?: Order;
   billingEvents: BillingEvent[];
+  provisioningRun?: ProvisioningRun;
+  provisioningSteps: ProvisioningStep[];
+  renewals: Renewal[];
   csrf: string;
   error?: string;
 }): string {
   const {
     site, versions, proposals, photoCount, events, tokens, panelTokens, updateRequests, comments,
-    qaRun, checklist, publishGateMessage, order, billingEvents, csrf, error,
+    qaRun, checklist, publishGateMessage, order, billingEvents,
+    provisioningRun, provisioningSteps, renewals, csrf, error,
   } = input;
   const message = error === undefined ? '' : `<p class="notice error" role="alert">${esc(error)}</p>`;
   const proposalHtml = proposals.map((proposal) => {
@@ -311,6 +320,24 @@ export function siteDetailPage(input: {
     ? `<div class="table-wrap"><table><thead><tr><th>Aika</th><th>Tyyppi</th><th>Raakatapahtuma</th></tr></thead><tbody>${billingRows}</tbody></table></div>`
     : '<p class="muted">Ei laskutustapahtumia.</p>';
   const orderBlock = `${orderDetails}<form action="/admin/sites/${escAttr(site.publicId)}/order" method="post">${formToken(csrf)}<button type="submit">Luo tilaus</button></form><h3>Laskutustapahtumat</h3>${billingTable}`;
+  const provisioningRows = provisioningSteps.map((step) => {
+    const definition = PROVISIONING_STEP_LABELS[step.step] ?? step.step;
+    const controls = provisioningRun?.status !== 'kaynnissa' ? '' : `<div class="actions">
+      <form class="stack" action="/admin/sites/${escAttr(site.publicId)}/provisioning/steps/${escAttr(step.step)}" method="post">${formToken(csrf)}<input type="hidden" name="status" value="tehty"><label>Evidenssi<textarea name="evidence">${esc(step.evidence ?? '')}</textarea></label><button type="submit">Merkitse tehdyksi</button></form>
+      <form action="/admin/sites/${escAttr(site.publicId)}/provisioning/steps/${escAttr(step.step)}" method="post">${formToken(csrf)}<input type="hidden" name="status" value="ohitettu"><button class="secondary" type="submit">Ohita</button></form>
+    </div>`;
+    return `<tr><td>${esc(String(step.ord))}</td><td>${esc(definition)}</td><td>${badge(step.status)}</td><td>${esc(step.evidence ?? '')}</td><td>${controls}</td></tr>`;
+  }).join('');
+  const provisioningTable = provisioningRows
+    ? `<div class="table-wrap"><table><thead><tr><th>#</th><th>Vaihe</th><th>Tila</th><th>Evidenssi</th><th></th></tr></thead><tbody>${provisioningRows}</tbody></table></div>`
+    : '<p class="muted">Provisiointia ei ole aloitettu.</p>';
+  const provisioningHeader = provisioningRun === undefined
+    ? `<form class="card stack" action="/admin/sites/${escAttr(site.publicId)}/provisioning/start" method="post">${formToken(csrf)}<label>Verkkotunnus *<input name="domain" required maxlength="72" pattern="^[a-z0-9][a-z0-9.-]{2,60}\\.[a-z]{2,10}$" placeholder="yritys.fi"></label><div><button type="submit">Aloita provisiointi</button></div></form>`
+    : `<dl class="definition"><dt>Ajo</dt><dd>${esc(provisioningRun.publicId)}</dd><dt>Verkkotunnus</dt><dd>${esc(provisioningRun.domain)}</dd><dt>Tila</dt><dd>${badge(provisioningRun.status)}</dd></dl>${provisioningRun.status === 'kaynnissa' ? `<form action="/admin/sites/${escAttr(site.publicId)}/provisioning/abort" method="post">${formToken(csrf)}<button class="danger" type="submit">Keskeytä provisiointi</button></form>` : `<form class="card stack" action="/admin/sites/${escAttr(site.publicId)}/provisioning/start" method="post">${formToken(csrf)}<label>Uusi verkkotunnus *<input name="domain" required maxlength="72" pattern="^[a-z0-9][a-z0-9.-]{2,60}\\.[a-z]{2,10}$"></label><div><button type="submit">Aloita uusi provisiointi</button></div></form>`}`;
+  const renewalRows = renewals.map((renewal) => `<tr><td>${esc(renewal.kind)}</td><td>${esc(renewal.label)}</td><td>${formatTime(renewal.dueAt)}</td><td>${badge(renewal.status)}</td></tr>`).join('');
+  const renewalTable = renewalRows
+    ? `<div class="table-wrap"><table><thead><tr><th>Tyyppi</th><th>Nimi</th><th>Erääntyy</th><th>Tila</th></tr></thead><tbody>${renewalRows}</tbody></table></div>`
+    : '<p class="muted">Ei uusintoja.</p>';
   const qaRows = qaRun?.results.map((result) => `<tr><td>${esc(result.label)}</td><td>${result.passed ? 'Läpäisi' : 'Hylätty'}</td><td>${esc(result.detail ?? '')}</td></tr>`).join('') ?? '';
   const qaTable = qaRun
     ? `<p>Versio ${esc(String(qaRun.version))} · ${formatTime(qaRun.createdAt)} · <strong>${qaRun.passed ? 'Läpäisi' : 'Hylätty'}</strong></p><div class="table-wrap"><table><thead><tr><th>Tarkistus</th><th>Tulos</th><th>Lisätieto</th></tr></thead><tbody>${qaRows}</tbody></table></div>`
@@ -325,6 +352,7 @@ export function siteDetailPage(input: {
   return layout(site.data.name, `<p><a href="/admin/sites">← Sivustot</a></p><h1>${esc(site.data.name)}</h1>${message}
     <dl class="definition"><dt>ID</dt><dd>${esc(site.publicId)}</dd><dt>Kuvaus</dt><dd>${esc(site.data.tagline ?? '—')}</dd><dt>Tila</dt><dd>${badge(site.status)}</dd><dt>Nykyinen versio</dt><dd>${esc(String(site.currentVersion))}</dd><dt>Julkaistu versio</dt><dd>${esc(site.publishedVersion === undefined ? '—' : String(site.publishedVersion))}</dd><dt>Kuvia</dt><dd>${esc(String(photoCount))}</dd><dt>Nykyisen esikatselu</dt><dd><a href="/p/${escAttr(site.publicId)}/current">/p/${esc(site.publicId)}/current</a></dd></dl>${publishControls}
     <h2>Tilaus</h2>${orderBlock}
+    <h2>Provisiointi</h2>${provisioningHeader}${provisioningTable}<h3>Uusinnat</h3>${renewalTable}
     <h2>QA</h2><form action="/admin/sites/${escAttr(site.publicId)}/qa" method="post">${formToken(csrf)}<button type="submit">Aja tarkistukset</button></form>${qaTable}
     <h3>Julkaisun tarkistuslista</h3><div class="grid">${checklistHtml}</div>
     <h2>Avoimet ehdotukset</h2><div class="card">${proposalHtml}</div>
@@ -335,6 +363,26 @@ export function siteDetailPage(input: {
     <h2>Asiakaspaneelilinkit</h2>${panelTokenTable}<form class="card" action="/admin/sites/${escAttr(site.publicId)}/panel-tokens" method="post">${formToken(csrf)}<button type="submit">Luo 30 päivän paneelilinkki</button></form>
     <h2>Kommentit</h2>${commentTable}
     <h2>Tapahtumat</h2>${auditTable(events)}`, csrf);
+}
+
+const PROVISIONING_STEP_LABELS: Record<string, string> = Object.fromEntries(
+  PROVISIONING_STEPS.map((step) => [step.id, step.label]),
+);
+
+export function provisioningPage(
+  runs: ProvisioningRun[],
+  renewals: Renewal[],
+  csrf: string,
+): string {
+  const runRows = runs.map((run) => `<tr><td>${esc(run.publicId)}</td><td><a href="/admin/sites/${escAttr(run.sitePublicId ?? '')}">${esc(run.siteName ?? run.sitePublicId ?? String(run.siteId))}</a></td><td>${esc(run.domain)}</td><td>${formatTime(run.createdAt)}</td><td>${badge(run.status)}</td></tr>`).join('');
+  const runTable = runRows
+    ? `<div class="table-wrap"><table><thead><tr><th>Ajo</th><th>Sivusto</th><th>Verkkotunnus</th><th>Aloitettu</th><th>Tila</th></tr></thead><tbody>${runRows}</tbody></table></div>`
+    : '<p class="muted">Ei käynnissä olevia provisiointeja.</p>';
+  const renewalRows = renewals.map((renewal) => `<tr><td><a href="/admin/sites/${escAttr(renewal.sitePublicId ?? '')}">${esc(renewal.siteName ?? renewal.sitePublicId ?? String(renewal.siteId))}</a></td><td>${esc(renewal.kind)}</td><td>${esc(renewal.label)}</td><td>${formatTime(renewal.dueAt)}</td><td>${badge(renewal.status)}</td></tr>`).join('');
+  const renewalTable = renewalRows
+    ? `<div class="table-wrap"><table><thead><tr><th>Sivusto</th><th>Tyyppi</th><th>Nimi</th><th>Erääntyy</th><th>Tila</th></tr></thead><tbody>${renewalRows}</tbody></table></div>`
+    : '<p class="muted">Ei seuraavan 90 päivän uusintoja.</p>';
+  return layout('Provisiointi', `<h1>Provisiointi</h1><h2>Käynnissä olevat ajot</h2>${runTable}<h2>Uusinnat 90 päivän sisällä</h2>${renewalTable}`, csrf);
 }
 
 export function previewTokenPage(site: Site, previewUrl: string, csrf: string): string {
