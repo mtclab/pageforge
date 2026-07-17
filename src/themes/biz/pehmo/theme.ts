@@ -39,7 +39,7 @@ const css = `/* business voice: pehmo — warm craft */
 .service-price { margin-top: .55rem; }
 .section-hours {
   margin: calc(3rem * var(--density)) .5rem 0;
-  transform: rotate(-1.2deg);
+  transform: rotate(-.55deg);
   border: 2px dashed var(--accent);
   box-shadow: 0 12px 24px color-mix(in srgb, var(--text) 14%, transparent);
 }
@@ -55,7 +55,7 @@ const css = `/* business voice: pehmo — warm craft */
   background: color-mix(in srgb, var(--accent) 30%, var(--bg));
   box-shadow: 0 1px 2px color-mix(in srgb, var(--text) 20%, transparent);
 }
-.hours-list { gap: .5rem; }
+.hours-list { max-width: 26rem; gap: .5rem; }
 .hours-row { align-items: baseline; }
 .hours-row dt, .hours-row dd { margin: 0; line-height: 1.4; }
 .gallery img { border-radius: 14px; filter: sepia(.5) saturate(1.3) hue-rotate(-9deg); }
