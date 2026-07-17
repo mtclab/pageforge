@@ -4,56 +4,70 @@ The mutation API is a staging-only surface for Finnish small-business card sites
 
 ## Environment and authentication
 
-Both of these conditions must be true before any `/api/biz/*`, `/api/mcp`, `/p/*`, or `/b/*` route opens:
+Both of these conditions must be true before any `/api/biz/*`, `/api/mcp`, `/api/billing/*`, `/p/*`, `/b/*`, `/img/*`, `/panel`, `/admin*`, `/mock-checkout/*`, or `/order/*` route opens:
 
 - `MUTATION_API_ENABLED=true`
 - `OPERATOR_KEY` is set
 
-`wrangler.toml` keeps `MUTATION_API_ENABLED="false"`. Never put `OPERATOR_KEY` there. For local staging, set it in `.dev.vars` or pass it to `wrangler dev` with `--var OPERATOR_KEY:<secret>`. Closed routes return 404.
+`wrangler.toml` keeps `MUTATION_API_ENABLED="false"`. Never put `OPERATOR_KEY` there. For local staging, set it in `.dev.vars`. Closed routes return 404.
 
-Operator requests use `Authorization: Bearer <OPERATOR_KEY>`. Creating a site returns a per-site approval key once; only its SHA-256 hash is stored. Site reads, approval, rejection, and rollback accept either the operator key or that site's approval key. Proposal creation and MCP require the operator key.
+Auth surfaces:
 
-## REST endpoints
+- **Operator**: `Authorization: Bearer <OPERATOR_KEY>` on the API; on the console a stateless HMAC session cookie (login at `/admin/login`, 12h, rotation of `OPERATOR_KEY` revokes all sessions; CSRF token on every mutating form).
+- **Approval key**: creating a site returns a per-site approval key once; only its SHA-256 hash is stored. It can read the site, approve/reject proposals, roll back, and publish (gated - see below).
+- **Preview tokens**: `/p/*` requires `?t=<token>` (hash-only storage, expiry, revocable, optionally proposal-scoped; auto-issued for 14 days on every proposal) or an operator session. Bare preview URLs 404.
+- **Panel tokens**: `/panel?t=<token>` magic links (30 days, revocable) let the customer submit capability-scoped update proposals. The panel can never approve or publish.
+
+## REST endpoints (main surface)
 
 | Method | Path | Auth | Purpose |
 | --- | --- | --- | --- |
-| POST | `/api/biz/sites` | Operator | Create a site and return its id and one-time approval key |
-| GET | `/api/biz/sites/:id` | Operator or approval key | Read current data, version metadata, and open proposal ids |
-| POST | `/api/biz/sites/:id/proposals` | Operator | Validate and stage a complete candidate |
-| GET | `/p/:id/:pid` | Gated public preview | Render an open proposal with a draft banner and `noindex` |
-| POST | `/api/biz/sites/:id/proposals/:pid/approve` | Operator or approval key | Snapshot current data and make the candidate current |
-| POST | `/api/biz/sites/:id/proposals/:pid/reject` | Operator or approval key | Close a proposal without changing the site |
-| POST | `/api/biz/sites/:id/rollback` | Operator or approval key | Snapshot current data and restore a selected version |
-| GET | `/b/:id` | Gated public preview | Render current data with `noindex` |
+| POST | `/api/biz/sites` | Operator | Create a site; returns id + one-time approval key |
+| GET | `/api/biz/sites/:id` | Operator or approval key | Data, version metadata, published pointer, open proposals |
+| POST | `/api/biz/sites/:id/proposals` | Operator | Stage a complete validated candidate (returns tokened preview path) |
+| POST | `.../proposals/:pid/approve\|reject` | Operator or approval key | Decide a proposal (approve promotes to a new current version) |
+| POST | `/api/biz/sites/:id/rollback` | Operator or approval key | Restore version n (original = version 0) |
+| POST | `/api/biz/sites/:id/publish` | Operator or approval key | Point `/b/` at exact version n (default: current). Gated: passed QA run for current version + full launch checklist; operator may override with audited reason; approval-key publishes additionally require a paid order and cannot override |
+| POST | `/api/biz/sites/:id/unpublish` | Operator or approval key | Back to live-current serving |
+| POST | `/api/biz/sites/:id/photos` | Operator | Upload photo (R2, sha256 dedup, 2 MB, jpeg/png/webp) -> `/img/<sha>` |
+| POST | `/api/biz/sites/:id/order` | Operator or approval key | Create the 249e + 19e/kk order; returns checkout redirect (mock provider by default) |
+| GET | `/api/biz/sites/:id/export` | Operator or approval key | ZIP: rendered index.html (no credit/banner), site.json, assets, LUEMINUT.txt |
+| POST | `/api/biz/email-ingress` | Operator | Staging simulator for the Email Worker handler |
+| POST | `/api/billing/webhook` | Signature | Provider webhooks (HMAC-verified, drives order state) |
+| GET | `/p/:id/:pid` | Token or operator session | Proposal preview, draft banner, noindex, comment form |
+| POST | `/p/:id/:pid/comments` | Token double-submit | Customer feedback (20/proposal cap) |
+| GET | `/b/:id` | Public (when flag on) | Published pointer if set, else current; archived sites 404 |
+| GET/POST | `/panel` | Panel token | Capability-scoped customer update form -> staged proposal |
 
-Proposal creation is limited to 50 per site per UTC day. Proposals expire from KV after 14 days. Previous current states are stored newest-first, with at most 20 snapshots.
+Proposal creation is limited to 50 per site per UTC day. Snapshots are capped at the newest 20.
 
-## Lifecycle
+## Versioning semantics
 
-```text
-current site
-    |
-    | operator proposes complete candidate
-    v
-open proposal ---- customer/operator rejects ----> rejected
-    |
-    | customer/operator approves
-    v
-snapshot previous current -> candidate becomes current
-    |
-    | customer/operator rolls back to snapshot n
-    v
-snapshot replaced current -> selected snapshot becomes current
-```
+Snapshot **n holds the exact content of version n**; the original site is
+version 0 and the current version has no snapshot row until it is replaced.
+`publish {n}` serves exactly that content; `publishedVersion === currentVersion`
+serves live data. Approving a proposal bumps the current version but never
+moves the published pointer - re-publish (through the QA gate) to ship it.
+
+## Operator console
+
+`/admin` (session + CSRF): dashboard counts, prospect kanban with enforced FI
+status transitions, intake forms, compose (3 deterministic variants), site
+detail (proposals, versions, publish/rollback, QA runs + launch checklist,
+preview/panel tokens, comments, order, provisioning steps with evidence,
+archive/restore/delete), `/admin/updates` queue, `/admin/provisioning`,
+`/admin/audit`, `/admin/deletions`. Every state change appends an audit row.
 
 ## MCP
 
-`POST /api/mcp` is a stateless JSON-RPC 2.0 Streamable-HTTP endpoint using protocol version `2025-06-18`. JSON-RPC requests receive one JSON response, while `notifications/initialized` receives an empty 202 response. There are no sessions, SSE streams, or SDK dependency.
+`POST /api/mcp` is a stateless JSON-RPC 2.0 Streamable-HTTP endpoint using protocol version `2025-06-18`. Operator bearer required.
 
 | Tool | Input | Result |
 | --- | --- | --- |
-| `get_site` | `{siteId}` | Current SiteData, version metadata, and open proposal ids |
-| `propose_update` | `{siteId, candidate, note?}` | Proposal id, preview path, and deterministic summary |
+| `get_site` | `{siteId}` | Current SiteData, version metadata, open proposal ids |
+| `propose_update` | `{siteId, candidate, note?, updateRequestId?}` | Proposal id, tokened preview path, summary; links the update request when given |
 | `list_proposals` | `{siteId}` | Open proposal ids and summaries |
+| `list_update_requests` | `{siteId, status?}` | Queued email/panel/mcp update requests |
+| `get_update_request` | `{siteId, requestId}` | One request with raw body |
 
-There are intentionally no MCP tools for approval, rejection, rollback, or publishing. **AI proposes, humans approve.** Human approval must happen outside MCP through the REST workflow, and all serving routes remain staging-only and `noindex`.
+There are intentionally no MCP tools for approval, rejection, rollback, or publishing. **AI proposes, humans approve.** Human approval happens through the REST/console workflow, and all serving routes remain staging-only and `noindex` until `BIZ_INDEXING_ENABLED` is turned on for published sites in production.
