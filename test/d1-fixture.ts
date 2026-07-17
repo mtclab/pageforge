@@ -131,4 +131,8 @@ export class MemoryR2 implements R2Bucket {
       arrayBuffer: async () => buffer,
     };
   }
+
+  async delete(key: string | string[]): Promise<void> {
+    for (const item of Array.isArray(key) ? key : [key]) this.objects.delete(item);
+  }
 }

@@ -39,6 +39,7 @@ export interface R2Bucket {
     value: ArrayBuffer | Uint8Array,
     opts?: { httpMetadata?: R2HttpMetadata },
   ): Promise<R2Object>;
+  delete(key: string | string[]): Promise<void>;
 }
 
 export interface Env {

@@ -167,11 +167,9 @@ export function galleryPath(sectionIdx: number, photoIdx: number): string {
 }
 
 /**
- * Every INLINE image the site references: [zip path, data URL]. Only
- * `{ dataUrl }` photos are bundled; `{ src: "/img/..." }` R2 references are
- * skipped here on purpose (they are served from R2, not embedded).
- * TODO(S10 export): the authenticated export ZIP must resolve and inline R2
- * `src` photos too - see docs/MIKOSHI_BUILD_PLAN.md slice S10.
+ * Every inline image the site references: [zip path, data URL]. R2-backed
+ * `{ src }` photos are resolved by the authenticated business export because
+ * that operation has access to the PHOTOS binding and stored content types.
  */
 export function collectImages(data: SiteData): [string, string][] {
   const images: [string, string][] = [];

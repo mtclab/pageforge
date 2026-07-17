@@ -390,6 +390,21 @@ export interface AuditEventOptions {
   limit: number;
 }
 
+export interface DeletionLogRecord {
+  id: number;
+  siteId: number;
+  sitePublicId: string;
+  item: string;
+  detail?: unknown;
+  actor: string;
+  createdAt: number;
+}
+
+export interface DeletionLogOptions {
+  before?: number;
+  limit: number;
+}
+
 interface AuditRow {
   id: number;
   at: number;
@@ -428,6 +443,34 @@ export class ControlPlane {
         event.entityId,
         event.detail === undefined ? null : JSON.stringify(event.detail),
       );
+  }
+
+  private deletionStatement(
+    at: number,
+    site: Pick<Site, 'id' | 'publicId'>,
+    item: string,
+    actor: AuditActor,
+    detail?: unknown,
+  ): D1PreparedStatement {
+    return this.db
+      .prepare(
+        `INSERT INTO deletion_log
+           (site_id, site_public_id, item, detail, actor, created_at)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+      )
+      .bind(
+        site.id,
+        site.publicId,
+        item,
+        detail === undefined ? null : JSON.stringify(detail),
+        actor,
+        at,
+      );
+  }
+
+  private async count(query: string, ...values: unknown[]): Promise<number> {
+    const row = await this.db.prepare(query).bind(...values).first<{ count: number }>();
+    return row?.count ?? 0;
   }
 
   async recordAudit(event: AuditEvent): Promise<void> {
@@ -1825,6 +1868,175 @@ export class ControlPlane {
       .bind(siteId)
       .first<{ count: number }>();
     return row?.count ?? 0;
+  }
+
+  async listPhotoMetaForSite(siteId: number): Promise<PhotoMeta[]> {
+    const { results } = await this.db
+      .prepare('SELECT r2_key, content_type, bytes FROM photos WHERE site_id = ? ORDER BY id ASC')
+      .bind(siteId)
+      .all<{ r2_key: string; content_type: string; bytes: number }>();
+    return results.map((row) => ({
+      r2Key: row.r2_key,
+      contentType: row.content_type,
+      bytes: row.bytes,
+    }));
+  }
+
+  // --- offboarding ------------------------------------------------------
+
+  async archiveSite(site: Site, cachePurged: number, actor: AuditActor = 'operator'): Promise<void> {
+    const at = this.now();
+    const [previewTokens, panelTokens, proposals] = await Promise.all([
+      this.count('SELECT COUNT(*) AS count FROM preview_tokens WHERE site_id = ? AND revoked_at IS NULL', site.id),
+      this.count('SELECT COUNT(*) AS count FROM panel_tokens WHERE site_id = ? AND revoked_at IS NULL', site.id),
+      this.count("SELECT COUNT(*) AS count FROM draft_versions WHERE site_id = ? AND kind = 'proposal' AND status = 'open'", site.id),
+    ]);
+    await this.db.batch([
+      this.db.prepare('UPDATE preview_tokens SET revoked_at = ? WHERE site_id = ? AND revoked_at IS NULL').bind(at, site.id),
+      this.db.prepare('UPDATE panel_tokens SET revoked_at = ? WHERE site_id = ? AND revoked_at IS NULL').bind(at, site.id),
+      this.db.prepare("UPDATE draft_versions SET status = 'superseded' WHERE site_id = ? AND kind = 'proposal' AND status = 'open'").bind(site.id),
+      this.db.prepare("UPDATE sites SET status = 'archived', updated_at = ? WHERE id = ?").bind(at, site.id),
+      this.deletionStatement(at, site, 'cache_purged', actor, { count: cachePurged }),
+      this.deletionStatement(at, site, 'tokens_revoked', actor, {
+        count: previewTokens + panelTokens,
+        previewTokens,
+        panelTokens,
+      }),
+      this.deletionStatement(at, site, 'proposals_superseded', actor, { count: proposals }),
+      this.deletionStatement(at, site, 'site_archived', actor),
+      this.auditStatement(at, {
+        actor,
+        action: 'site.archive',
+        entity: 'site',
+        entityId: site.publicId,
+      }),
+    ]);
+  }
+
+  async restoreSite(site: Site, actor: AuditActor = 'operator'): Promise<void> {
+    const at = this.now();
+    await this.db.batch([
+      this.db.prepare("UPDATE sites SET status = 'approved', updated_at = ? WHERE id = ? AND status = 'archived'").bind(at, site.id),
+      this.deletionStatement(at, site, 'site_restored', actor),
+      this.auditStatement(at, {
+        actor,
+        action: 'site.restore',
+        entity: 'site',
+        entityId: site.publicId,
+      }),
+    ]);
+  }
+
+  async permanentlyDeleteSite(site: Site, actor: AuditActor = 'operator'): Promise<Record<string, number>> {
+    const profileWhere = site.prospectId === undefined ? 'WHERE 0' : 'WHERE prospect_id = ?';
+    const profileValues = site.prospectId === undefined ? [] : [site.prospectId];
+    const [photos, profiles, updates, comments, qaRuns, checklist, previewTokens,
+      panelTokens, provisioningSteps, provisioningRuns, renewals, versions, orders] = await Promise.all([
+      this.count('SELECT COUNT(*) AS count FROM photos WHERE site_id = ?', site.id),
+      this.count(`SELECT COUNT(*) AS count FROM business_profiles ${profileWhere}`, ...profileValues),
+      this.count('SELECT COUNT(*) AS count FROM update_requests WHERE site_id = ?', site.id),
+      this.count('SELECT COUNT(*) AS count FROM draft_comments WHERE site_id = ?', site.id),
+      this.count('SELECT COUNT(*) AS count FROM qa_runs WHERE site_id = ?', site.id),
+      this.count('SELECT COUNT(*) AS count FROM launch_checklist WHERE site_id = ?', site.id),
+      this.count('SELECT COUNT(*) AS count FROM preview_tokens WHERE site_id = ?', site.id),
+      this.count('SELECT COUNT(*) AS count FROM panel_tokens WHERE site_id = ?', site.id),
+      this.count('SELECT COUNT(*) AS count FROM provisioning_steps WHERE run_id IN (SELECT id FROM provisioning_runs WHERE site_id = ?)', site.id),
+      this.count('SELECT COUNT(*) AS count FROM provisioning_runs WHERE site_id = ?', site.id),
+      this.count('SELECT COUNT(*) AS count FROM renewals WHERE site_id = ?', site.id),
+      this.count('SELECT COUNT(*) AS count FROM draft_versions WHERE site_id = ?', site.id),
+      this.count('SELECT COUNT(*) AS count FROM orders WHERE site_id = ?', site.id),
+    ]);
+    const counts = {
+      photos,
+      businessProfiles: profiles,
+      updateRequests: updates,
+      comments,
+      qaRuns,
+      checklist,
+      previewTokens,
+      panelTokens,
+      provisioningSteps,
+      provisioningRuns,
+      renewals,
+      draftVersions: versions,
+      ordersRetained: orders,
+      sites: 1,
+    };
+    const at = this.now();
+    const logs: [string, unknown][] = [
+      ['photos_deleted', { count: photos }],
+      ['business_profile_deleted', { count: profiles }],
+      ['update_requests_deleted', { count: updates }],
+      ['comments_deleted', { count: comments }],
+      ['qa_runs_deleted', { count: qaRuns }],
+      ['checklist_deleted', { count: checklist }],
+      ['tokens_deleted', { count: previewTokens + panelTokens, previewTokens, panelTokens }],
+      ['provisioning_data_deleted', {
+        count: provisioningSteps + provisioningRuns + renewals,
+        provisioningSteps,
+        provisioningRuns,
+        renewals,
+      }],
+      ['draft_versions_deleted', { count: versions }],
+      ['orders_retained', { count: orders }],
+      ['site_deleted', { count: 1 }],
+    ];
+    const statements: D1PreparedStatement[] = [
+      this.db.prepare('DELETE FROM photos WHERE site_id = ?').bind(site.id),
+      this.db.prepare(`DELETE FROM business_profiles ${profileWhere}`).bind(...profileValues),
+      this.db.prepare('DELETE FROM update_requests WHERE site_id = ?').bind(site.id),
+      this.db.prepare('DELETE FROM draft_comments WHERE site_id = ?').bind(site.id),
+      this.db.prepare('DELETE FROM qa_runs WHERE site_id = ?').bind(site.id),
+      this.db.prepare('DELETE FROM launch_checklist WHERE site_id = ?').bind(site.id),
+      this.db.prepare('DELETE FROM preview_tokens WHERE site_id = ?').bind(site.id),
+      this.db.prepare('DELETE FROM panel_tokens WHERE site_id = ?').bind(site.id),
+      this.db.prepare('DELETE FROM provisioning_steps WHERE run_id IN (SELECT id FROM provisioning_runs WHERE site_id = ?)').bind(site.id),
+      this.db.prepare('DELETE FROM provisioning_runs WHERE site_id = ?').bind(site.id),
+      this.db.prepare('DELETE FROM renewals WHERE site_id = ?').bind(site.id),
+      ...logs.map(([item, detail]) => this.deletionStatement(at, site, item, actor, detail)),
+      this.auditStatement(at, {
+        actor,
+        action: 'site.delete',
+        entity: 'site',
+        entityId: site.publicId,
+        detail: counts,
+      }),
+      this.db.prepare('DELETE FROM draft_versions WHERE site_id = ?').bind(site.id),
+      this.db.prepare('DELETE FROM sites WHERE id = ?').bind(site.id),
+    ];
+    await this.db.batch(statements);
+    return counts;
+  }
+
+  async listDeletionLog(opts: DeletionLogOptions): Promise<DeletionLogRecord[]> {
+    const limit = Math.max(1, Math.min(100, Math.floor(opts.limit)));
+    const where = opts.before === undefined ? '' : 'WHERE id < ?';
+    const values = opts.before === undefined ? [limit] : [opts.before, limit];
+    const { results } = await this.db
+      .prepare(
+        `SELECT id, site_id, site_public_id, item, detail, actor, created_at
+           FROM deletion_log ${where}
+          ORDER BY id DESC LIMIT ?`,
+      )
+      .bind(...values)
+      .all<{
+        id: number;
+        site_id: number;
+        site_public_id: string;
+        item: string;
+        detail: string | null;
+        actor: string;
+        created_at: number;
+      }>();
+    return results.map((row) => ({
+      id: row.id,
+      siteId: row.site_id,
+      sitePublicId: row.site_public_id,
+      item: row.item,
+      ...(row.detail === null ? {} : { detail: JSON.parse(row.detail) as unknown }),
+      actor: row.actor,
+      createdAt: row.created_at,
+    }));
   }
 
   // --- audit -------------------------------------------------------------

@@ -1,7 +1,13 @@
-import { renderSite } from '../engine/render.js';
+import { renderFavicon } from '../engine/favicon.js';
+import { effectivePalette, renderSite, resolveFont } from '../engine/render.js';
 import { renderLocalBusinessJsonLd } from '../engine/jsonld.js';
 import { escAttr } from '../engine/escape.js';
-import type { SiteData } from '../engine/types.js';
+import {
+  collectImages,
+  FAVICON_PATH,
+  type PhotoRef,
+  type SiteData,
+} from '../engine/types.js';
 import { getTheme } from '../themes/index.js';
 import {
   type AuditActor,
@@ -27,6 +33,7 @@ import {
 } from './payments.js';
 import { validateSiteData } from './validate.js';
 import { handleEmailSimulator } from './update-channels.js';
+import { buildStoreZip } from './store-zip.js';
 
 export interface ProposalInfo {
   proposalId: string;
@@ -304,6 +311,7 @@ export function bizHtml(
   draft: boolean,
   noindex = true,
   comment?: { action: string; token: string },
+  suppressBranding = false,
 ): string {
   const theme = getTheme(data.meta.themeId);
   const rendered = renderSite(data, theme, { heroCta: true });
@@ -318,10 +326,78 @@ export function bizHtml(
     const banner = '<div style="position:fixed;z-index:9999;top:0;left:0;right:0;padding:.35rem 1rem;text-align:center;background:var(--accent);color:var(--accent-contrast);font:600 .875rem/1.4 sans-serif">Luonnos - esikatselu</div>';
     const feedback = comment === undefined ? '' : `<form action="${escAttr(comment.action)}" method="post" style="position:relative;z-index:9998;margin:2.5rem auto 1rem;max-width:40rem;padding:1rem;background:#fff;color:#111;border:1px solid #bbb;font:400 1rem/1.4 sans-serif"><input type="hidden" name="t" value="${escAttr(comment.token)}"><label style="display:grid;gap:.4rem;font-weight:600">Kommentti<textarea name="body" required maxlength="2000" style="min-height:6rem;padding:.5rem"></textarea></label><button type="submit" style="margin-top:.6rem;padding:.45rem .8rem">Lähetä kommentti</button></form>`;
     html = html.replace(/(<body[^>]*>)/, `$1\n${banner}${feedback}`);
-  } else if (data.meta.hideBranding !== true) {
+  } else if (!suppressBranding && data.meta.hideBranding !== true) {
     html = html.replace('</footer>', '<p class="mikoshi-credit">Sivut: Mikoshi</p>\n</footer>');
   }
+  if (suppressBranding) html = html.replace(/\n\.mikoshi-credit \{[^}]*\}/, '');
   return html;
+}
+
+const EXPORT_CONTENT_TYPES: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+};
+
+function dataUrlBytes(dataUrl: string): Uint8Array {
+  const base64 = dataUrl.slice(dataUrl.indexOf(',') + 1);
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index++) bytes[index] = binary.charCodeAt(index);
+  return bytes;
+}
+
+async function exportFiles(
+  env: Env,
+  cp: ControlPlane,
+  source: SiteData,
+): Promise<Record<string, Uint8Array>> {
+  const data = JSON.parse(JSON.stringify(source)) as SiteData;
+  const files: Record<string, Uint8Array> = {};
+
+  const resolvePhoto = async (photo: PhotoRef): Promise<PhotoRef> => {
+    if ('dataUrl' in photo) return photo;
+    const match = photo.src.match(/^\/img\/([a-f0-9]{64})$/);
+    if (!match) throw new Error(`invalid R2 photo reference in export: ${photo.src}`);
+    const r2Key = `photos/${match[1]!}`;
+    const meta = await cp.getPhotoMeta(r2Key);
+    if (!meta) throw new Error(`photo metadata missing for export: ${r2Key}`);
+    const extension = EXPORT_CONTENT_TYPES[meta.contentType];
+    if (!extension) throw new Error(`unsupported stored photo type: ${meta.contentType}`);
+    const path = `assets/${match[1]!}.${extension}`;
+    if (files[path] === undefined) {
+      const object = await env.PHOTOS.get(r2Key);
+      if (!object) throw new Error(`photo object missing for export: ${r2Key}`);
+      files[path] = new Uint8Array(await object.arrayBuffer());
+    }
+    return { src: path };
+  };
+
+  if (data.photo) data.photo = await resolvePhoto(data.photo);
+  for (const section of data.sections) {
+    if (section.kind === 'gallery') section.photos = await Promise.all(section.photos.map(resolvePhoto));
+  }
+  for (const [path, dataUrl] of collectImages(data)) files[path] = dataUrlBytes(dataUrl);
+
+  const theme = getTheme(data.meta.themeId);
+  if (!data.favicon) {
+    files[FAVICON_PATH] = new TextEncoder().encode(renderFavicon(
+      data.name,
+      effectivePalette(data, theme),
+      resolveFont(theme, data.meta.fontId),
+    ));
+  }
+  const encoder = new TextEncoder();
+  files['index.html'] = encoder.encode(bizHtml(data, false, false, undefined, true));
+  files['site.json'] = encoder.encode(`${JSON.stringify(data, null, 2)}\n`);
+  files['LUEMINUT.txt'] = encoder.encode(
+    `SIVUSTON LUOVUTUSPAKETTI\n\n`+
+    `index.html on valmis verkkosivu. site.json sisältää sivuston rakenteiset tiedot, `+
+    `ja assets-kansiossa ovat sivun kuvat.\n\n`+
+    `Voit julkaista sivun millä tahansa tavallisia HTML-tiedostoja palvelevalla webhotellilla: `+
+    `pura ZIP ja siirrä index.html, site.json, LUEMINUT.txt ja assets-kansio samaan hakemistoon.\n`,
+  );
+  return files;
 }
 
 type PreviewAccess = { viaToken: boolean; token: string };
@@ -404,6 +480,35 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
       actor: 'operator',
     });
     return json(200, { id, approvalKey });
+  }
+
+  const exportMatch = pathname.match(/^\/api\/biz\/sites\/([a-z0-9]{8})\/export$/);
+  if (exportMatch) {
+    if (request.method !== 'GET') return methodNotAllowed();
+    const site = await cp.getSiteByPublicId(exportMatch[1]!);
+    if (!site) return json(404, { error: 'Site not found.' });
+    const auth = await siteAuth(request, env, site);
+    if (auth instanceof Response) return auth;
+    let data = site.data;
+    if (site.publishedVersion !== undefined) {
+      const snapshot = await cp.getSnapshot(site.id, site.publishedVersion);
+      if (snapshot) data = snapshot.data;
+    }
+    const zip = buildStoreZip(await exportFiles(env, cp, data));
+    await cp.recordAudit({
+      actor: auth.actor,
+      action: 'site.export',
+      entity: 'site',
+      entityId: site.publicId,
+    });
+    const body = zip.buffer.slice(zip.byteOffset, zip.byteOffset + zip.byteLength) as ArrayBuffer;
+    return new Response(body, {
+      headers: {
+        'content-type': 'application/zip',
+        'content-disposition': `attachment; filename="${site.publicId}-export.zip"`,
+        'cache-control': 'no-store',
+      },
+    });
   }
 
   const provisioningMatch = pathname.match(/^\/api\/biz\/sites\/([a-z0-9]{8})\/provisioning$/);
@@ -656,7 +761,7 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
   if (publicMatch) {
     if (request.method !== 'GET') return methodNotAllowed();
     const site = await cp.getSiteByPublicId(publicMatch[1]!);
-    if (!site) return new Response('Not found', { status: 404 });
+    if (!site || site.status === 'archived') return new Response('Not found', { status: 404 });
     const noindex = env.BIZ_INDEXING_ENABLED !== 'true' || site.status !== 'published';
     let data = site.data;
     if (site.publishedVersion !== undefined) {

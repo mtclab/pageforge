@@ -27,6 +27,7 @@ import {
 import {
   auditPage,
   dashboardPage,
+  deletionsPage,
   intakePage,
   loginPage,
   messagePage,
@@ -37,6 +38,7 @@ import {
   prospectsPage,
   siteDetailPage,
   sitesPage,
+  transferPage,
   updatesPage,
 } from './admin-html.js';
 import { emptyBusinessProfile, parseBusinessProfileForm } from './intake-form.js';
@@ -182,6 +184,20 @@ function methodNotAllowed(csrf?: string): Response {
   );
 }
 
+async function purgeSiteRenderCache(env: Env, sitePublicId: string): Promise<number> {
+  const prefix = `bizhtml:${sitePublicId}:`;
+  let cursor: string | undefined;
+  let count = 0;
+  do {
+    const page = await env.SITES.list({ prefix, ...(cursor === undefined ? {} : { cursor }) });
+    await Promise.all(page.keys.map((key) => env.SITES.delete(key.name)));
+    count += page.keys.length;
+    if (page.list_complete || !page.cursor) break;
+    cursor = page.cursor;
+  } while (true);
+  return count;
+}
+
 async function prospectDetailResponse(
   cp: ControlPlane,
   prospect: Prospect,
@@ -323,6 +339,24 @@ export async function handleAdminRequest(request: Request, env: Env): Promise<Re
       cp.listUpcomingRenewals(),
     ]);
     return html(provisioningPage(runs, renewals, csrf));
+  }
+
+  if (pathname === '/admin/deletions') {
+    if (request.method !== 'GET') return methodNotAllowed(csrf);
+    const rawBefore = url.searchParams.get('before') ?? undefined;
+    const before = rawBefore === undefined ? undefined : Number(rawBefore);
+    if (before !== undefined && (!Number.isInteger(before) || before <= 0)) {
+      return html(messagePage('Virheellinen sivutus', 'before-parametrin pitää olla positiivinen ID.', csrf), 400);
+    }
+    const entries = await cp.listDeletionLog({
+      limit: 50,
+      ...(before === undefined ? {} : { before }),
+    });
+    return html(deletionsPage(
+      entries,
+      csrf,
+      entries.length < 50 ? undefined : entries[entries.length - 1]!.id,
+    ));
   }
 
   const updateCloseMatch = pathname.match(/^\/admin\/updates\/(\d+)\/close$/);
@@ -473,6 +507,47 @@ export async function handleAdminRequest(request: Request, env: Env): Promise<Re
   if (pathname === '/admin/sites') {
     if (request.method !== 'GET') return methodNotAllowed(csrf);
     return html(sitesPage(await cp.listSites(), csrf));
+  }
+
+  const transferMatch = pathname.match(/^\/admin\/sites\/([^/]+)\/transfer$/);
+  if (transferMatch) {
+    if (request.method !== 'GET') return methodNotAllowed(csrf);
+    const site = await cp.getSiteByPublicId(transferMatch[1]!);
+    if (!site) return html(messagePage('Sivustoa ei löytynyt', 'Tuntematon sivusto.', csrf), 404);
+    const run = await cp.latestProvisioningRunForSite(site.id);
+    return html(transferPage(site, run?.domain));
+  }
+
+  const offboardingMatch = pathname.match(/^\/admin\/sites\/([^/]+)\/(archive|restore|delete)$/);
+  if (offboardingMatch) {
+    if (request.method !== 'POST') return methodNotAllowed(csrf);
+    const site = await cp.getSiteByPublicId(offboardingMatch[1]!);
+    if (!site) return html(messagePage('Sivustoa ei löytynyt', 'Tuntematon sivusto.', csrf), 404);
+    const action = offboardingMatch[2]!;
+    if (action === 'archive') {
+      if (site.status === 'archived') return siteDetailResponse(cp, site, csrf, 'Sivusto on jo arkistoitu.', 400);
+      if (formString(form!, 'confirm') !== 'true') {
+        return siteDetailResponse(cp, site, csrf, 'Vahvista arkistointi.', 400);
+      }
+      const cachePurged = await purgeSiteRenderCache(env, site.publicId);
+      await cp.archiveSite(site, cachePurged, 'operator');
+      return redirect(`/admin/sites/${site.publicId}`);
+    }
+    if (action === 'restore') {
+      if (site.status !== 'archived') return siteDetailResponse(cp, site, csrf, 'Vain arkistoidun sivuston voi palauttaa.', 400);
+      await cp.restoreSite(site, 'operator');
+      return redirect(`/admin/sites/${site.publicId}`);
+    }
+    if (site.status !== 'archived') {
+      return siteDetailResponse(cp, site, csrf, 'Sivusto pitää arkistoida ennen pysyvää poistoa.', 400);
+    }
+    if (formString(form!, 'confirm') !== site.publicId) {
+      return siteDetailResponse(cp, site, csrf, 'Vahvistus ei vastaa sivuston ID:tä.', 400);
+    }
+    const photos = await cp.listPhotoMetaForSite(site.id);
+    if (photos.length) await env.PHOTOS.delete(photos.map((photo) => photo.r2Key));
+    await cp.permanentlyDeleteSite(site, 'operator');
+    return redirect('/admin/deletions');
   }
 
   const provisioningStartMatch = pathname.match(/^\/admin\/sites\/([^/]+)\/provisioning\/start$/);

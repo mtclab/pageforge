@@ -8,6 +8,7 @@ import type {
   AuditEventRecord,
   BillingEvent,
   BusinessProfileRecord,
+  DeletionLogRecord,
   DraftComment,
   OpenProposal,
   Order,
@@ -84,6 +85,7 @@ export function layout(title: string, content: string, csrf?: string): string {
          <a href="/admin/provisioning">Provisiointi</a>
          <a href="/admin/updates">Päivityspyynnöt</a>
          <a href="/admin/audit">Loki</a>
+         <a href="/admin/deletions">Poistoloki</a>
          <form action="/admin/logout" method="post">${formToken(csrf)}<button class="link" type="submit">Kirjaudu ulos</button></form>
        </nav>`;
   return `<!doctype html>
@@ -349,8 +351,12 @@ export function siteDetailPage(input: {
   }).join('');
   const gateHint = publishGateMessage ? `<p class="notice">Julkaisuportti ei täyty. ${esc(publishGateMessage)}</p>` : '<p class="notice">Julkaisuportti täyttyy.</p>';
   const publishControls = `${gateHint}<div class="actions">${publishForm(site.currentVersion)}${site.publishedVersion === undefined ? '' : `<form action="/admin/sites/${escAttr(site.publicId)}/unpublish" method="post">${formToken(csrf)}<button class="danger" type="submit">Poista julkaisu</button></form>`}</div>`;
+  const offboardingControls = site.status === 'archived'
+    ? `<div class="actions"><form action="/admin/sites/${escAttr(site.publicId)}/restore" method="post">${formToken(csrf)}<button type="submit">Palauta</button></form></div>
+      <form class="card stack" action="/admin/sites/${escAttr(site.publicId)}/delete" method="post">${formToken(csrf)}<h3>Poista pysyvästi</h3><p class="notice error">Tätä ei voi perua. Kirjoita sivuston ID vahvistukseksi.</p><label>Vahvista ID <input name="confirm" required autocomplete="off" pattern="${escAttr(site.publicId)}"></label><div><button class="danger" type="submit">Poista pysyvästi</button></div></form>`
+    : `<form class="card stack" action="/admin/sites/${escAttr(site.publicId)}/archive" method="post">${formToken(csrf)}<h3>Arkistoi</h3><label><span><input name="confirm" type="checkbox" value="true" required> Vahvistan arkistoinnin ja asiakaslinkkien sulkemisen</span></label><div><button class="danger" type="submit">Arkistoi</button></div></form>`;
   return layout(site.data.name, `<p><a href="/admin/sites">← Sivustot</a></p><h1>${esc(site.data.name)}</h1>${message}
-    <dl class="definition"><dt>ID</dt><dd>${esc(site.publicId)}</dd><dt>Kuvaus</dt><dd>${esc(site.data.tagline ?? '—')}</dd><dt>Tila</dt><dd>${badge(site.status)}</dd><dt>Nykyinen versio</dt><dd>${esc(String(site.currentVersion))}</dd><dt>Julkaistu versio</dt><dd>${esc(site.publishedVersion === undefined ? '—' : String(site.publishedVersion))}</dd><dt>Kuvia</dt><dd>${esc(String(photoCount))}</dd><dt>Nykyisen esikatselu</dt><dd><a href="/p/${escAttr(site.publicId)}/current">/p/${esc(site.publicId)}/current</a></dd></dl>${publishControls}
+    <dl class="definition"><dt>ID</dt><dd>${esc(site.publicId)}</dd><dt>Kuvaus</dt><dd>${esc(site.data.tagline ?? '—')}</dd><dt>Tila</dt><dd>${badge(site.status)}</dd><dt>Nykyinen versio</dt><dd>${esc(String(site.currentVersion))}</dd><dt>Julkaistu versio</dt><dd>${esc(site.publishedVersion === undefined ? '—' : String(site.publishedVersion))}</dd><dt>Kuvia</dt><dd>${esc(String(photoCount))}</dd><dt>Nykyisen esikatselu</dt><dd><a href="/p/${escAttr(site.publicId)}/current">/p/${esc(site.publicId)}/current</a></dd><dt>Luovutus</dt><dd><a href="/admin/sites/${escAttr(site.publicId)}/transfer">Siirron tarkistuslista</a> · <a href="/api/biz/sites/${escAttr(site.publicId)}/export">Export ZIP</a></dd></dl>${publishControls}
     <h2>Tilaus</h2>${orderBlock}
     <h2>Provisiointi</h2>${provisioningHeader}${provisioningTable}<h3>Uusinnat</h3>${renewalTable}
     <h2>QA</h2><form action="/admin/sites/${escAttr(site.publicId)}/qa" method="post">${formToken(csrf)}<button type="submit">Aja tarkistukset</button></form>${qaTable}
@@ -362,6 +368,7 @@ export function siteDetailPage(input: {
     <h3>Uusi esikatselulinkki</h3><form class="card fields" action="/admin/sites/${escAttr(site.publicId)}/tokens" method="post">${formToken(csrf)}<label>Nimi *<input name="label" required maxlength="100"></label><label>Voimassa päivää *<input name="days" type="number" min="1" max="60" value="14" required></label><label>Ehdotus (valinnainen)<select name="proposal"><option value="">Koko sivusto</option>${proposalOptions}</select></label><div class="actions"><button type="submit">Luo linkki</button></div></form>
     <h2>Asiakaspaneelilinkit</h2>${panelTokenTable}<form class="card" action="/admin/sites/${escAttr(site.publicId)}/panel-tokens" method="post">${formToken(csrf)}<button type="submit">Luo 30 päivän paneelilinkki</button></form>
     <h2>Kommentit</h2>${commentTable}
+    <h2>Arkistointi ja poisto</h2>${offboardingControls}
     <h2>Tapahtumat</h2>${auditTable(events)}`, csrf);
 }
 
@@ -409,6 +416,39 @@ export function auditPage(input: {
   return layout('Loki', `<h1>Audit-loki</h1>
     <form class="card fields" action="/admin/audit" method="get"><label>Kohdetyyppi<input name="entity" value="${escAttr(entity ?? '')}" placeholder="site"></label><label>Kohteen ID<input name="entityId" value="${escAttr(entityId ?? '')}"></label><div class="actions"><button type="submit">Suodata</button><a href="/admin/audit">Tyhjennä</a></div></form>
     <h2>Tapahtumat</h2>${auditTable(events)}${next}`, csrf);
+}
+
+export function transferPage(site: Site, domain?: string): string {
+  const domainFact = domain ?? 'Ei provisiointitietoa';
+  return `<!doctype html>
+<html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Siirron tarkistuslista · ${esc(site.data.name)}</title>
+<style>:root{font-family:system-ui,sans-serif;line-height:1.5;color:#111}body{max-width:48rem;margin:2rem auto;padding:0 1rem}h1{margin-bottom:.25rem}.facts{border:1px solid #bbb;padding:1rem}li{margin:.7rem 0}.warning{border-left:.3rem solid #a12828;padding-left:1rem}@media print{body{max-width:none;margin:0}.screen-only{display:none}a{color:inherit;text-decoration:none}}</style>
+</head><body><p class="screen-only"><a href="/admin/sites/${escAttr(site.publicId)}">← Takaisin sivustolle</a></p>
+<h1>Siirron tarkistuslista</h1><p>${esc(site.data.name)}</p>
+<dl class="facts"><dt>Sivuston ID</dt><dd>${esc(site.publicId)}</dd><dt>Verkkotunnus</dt><dd>${esc(domainFact)}</dd></dl>
+<ol>
+  <li><strong>Verkkotunnuksen siirron valtuutuskoodi:</strong> pyydä nykyiseltä välittäjältä siirtoavain ja toimita se uudelle välittäjälle. Poista siirtolukitus tarvittaessa.</li>
+  <li><strong>DNS-tietueet:</strong> tallenna nykyiset tietueet, vaihda A/AAAA/CNAME-tietueet uuden palvelun ohjeen mukaan ja tarkista myös MX-, SPF-, DKIM- ja DMARC-tietueet.</li>
+  <li><strong>Postilaatikoiden siirto:</strong> luo osoitteet uudelle palvelulle, kopioi vanhat viestit ja testaa lähetys sekä vastaanotto ennen vanhan palvelun sulkemista.</li>
+  <li><strong>Sivuston tiedostot:</strong> lataa <a href="/api/biz/sites/${escAttr(site.publicId)}/export">export ZIP</a>, pura se ja siirrä sisältö uuden webhotellin julkaisemaan hakemistoon.</li>
+  <li><strong>Lopputarkistus:</strong> testaa verkkotunnus, HTTPS, kuvat, puhelin- ja sähköpostilinkit sekä mobiilinäkymä.</li>
+</ol>
+<section class="warning"><h2>Mitä lakkaa toimimasta</h2><ul><li>Mikoshin ylläpitämä julkaisu ja renderöintivälimuisti.</li><li>Asiakaspaneeli- ja esikatselulinkit.</li><li>Mikoshin päivityspyyntöjen käsittely.</li><li>Hallitut verkkotunnus- ja postilaatikkouusinnat sekä niihin liittyvät muistutukset.</li></ul></section>
+<p class="screen-only"><button onclick="print()">Tulosta tarkistuslista</button></p></body></html>`;
+}
+
+export function deletionsPage(
+  entries: DeletionLogRecord[],
+  csrf: string,
+  nextBefore?: number,
+): string {
+  const rows = entries.map((entry) => `<tr><td>${esc(String(entry.id))}</td><td class="nowrap">${formatTime(entry.createdAt)}</td><td>${esc(entry.sitePublicId)}<br><span class="muted">sisäinen ${esc(String(entry.siteId))}</span></td><td>${esc(entry.item)}</td><td>${esc(entry.actor)}</td><td>${esc(entry.detail === undefined ? '' : JSON.stringify(entry.detail))}</td></tr>`).join('');
+  const table = rows
+    ? `<div class="table-wrap"><table><thead><tr><th>ID</th><th>Aika</th><th>Sivusto</th><th>Kohde</th><th>Toimija</th><th>Tiedot</th></tr></thead><tbody>${rows}</tbody></table></div>`
+    : '<p class="muted">Ei poistotapahtumia.</p>';
+  const next = nextBefore === undefined ? '' : `<p><a class="button" href="/admin/deletions?before=${escAttr(String(nextBefore))}">Vanhemmat tapahtumat →</a></p>`;
+  return layout('Poistoloki', `<h1>Poistoloki</h1><p>Arkistoinnin, palautusten ja pysyvien poistojen säilyvä loki.</p>${table}${next}`, csrf);
 }
 
 export function messagePage(title: string, message: string, csrf: string): string {
