@@ -44,6 +44,20 @@ describe('BusinessProfile validators', () => {
     expect(validateHttpsUrl('javascript:alert(1)')).toBe(false);
   });
 
+  it('accepts operator-typed hour-only and dot times', () => {
+    const short = profile();
+    short.hours = [
+      { label: 'Ma-Pe', open: '9', close: '21' },
+      { label: 'La', open: '9.30', close: '14:00' },
+    ];
+    expect(validateBusinessProfile(short)).toEqual([]);
+    const wrapped = profile();
+    wrapped.hours = [{ label: 'Ma', open: '21', close: '9' }];
+    expect(validateBusinessProfile(wrapped)).toEqual([
+      expect.stringContaining('avausajan'),
+    ]);
+  });
+
   it('checks hours, duplicate days, item limits, prices, and photo paths', () => {
     expect(validateBusinessProfile(profile())).toEqual([]);
     const invalid = profile();

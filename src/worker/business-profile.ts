@@ -56,7 +56,8 @@ export const BUSINESS_PROFILE_LIMITS = {
 const PHOTO_SRC_RE = /^\/img\/[a-f0-9]{64}$/;
 const PHONE_CHARS_RE = /^\+?[0-9][0-9 ()/.\-]*$/;
 const PRICE_RE = /^(?:alkaen\s+)?\d{1,6}(?:[,.]\d{1,2})?\s*(?:€|eur)?$/i;
-const TIME_RE = /^(?:[01]\d|2[0-3])[:.]([0-5]\d)$/;
+/** Operators type "9", "9.30" or "09:30" - accept hour-only and dot forms. */
+const TIME_RE = /^([01]?\d|2[0-3])(?:[:.]([0-5]\d))?$/;
 const SOURCES: readonly ProvenanceSource[] = ['prh', 'places', 'owner', 'operator'];
 
 /** Finnish business-id checksum (mod-11). */
@@ -98,7 +99,9 @@ export function validatePrice(value: string): boolean {
 }
 
 function normalizedTime(value: string): string | null {
-  return TIME_RE.test(value) ? value.replace('.', ':') : null;
+  const match = value.match(TIME_RE);
+  if (!match) return null;
+  return `${match[1]!.padStart(2, '0')}:${match[2] ?? '00'}`;
 }
 
 /** Pure, single-point hard validation for BusinessProfile v1. */
