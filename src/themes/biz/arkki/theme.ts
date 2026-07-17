@@ -36,6 +36,7 @@ const css = `/* business voice: arkki — letterpress paper */
 }
 .initial-cap { float: left; margin: .08em .12em 0 0; color: var(--accent); font-size: 4.6em; font-weight: 700; line-height: .72; }
 .services { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 2.5rem; }
+.service-group { border-bottom: 1px solid #00000022; padding-bottom: .35rem; font-style: italic; }
 .service { padding-bottom: 1rem; border-bottom: 1px solid #00000022; }
 .service-price { margin-top: .35rem; font-style: italic; }
 .hours-list { max-width: 36rem; }

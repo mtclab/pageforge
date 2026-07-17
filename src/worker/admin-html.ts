@@ -100,12 +100,13 @@ export function layout(title: string, content: string, csrf?: string): string {
   <title>${esc(title)} · Pageforge</title>
   <style>
     :root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1b2430;background:#f5f7fa;line-height:1.45}
-    *{box-sizing:border-box}body{margin:0}header{background:#fff;border-bottom:1px solid #d8dee8}header>div{max-width:72rem;margin:auto;padding:1rem;display:flex;gap:1.5rem;align-items:center;justify-content:space-between;flex-wrap:wrap}.brand{font-size:1.2rem;font-weight:750;color:#152238;text-decoration:none}nav{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}nav a,.link{color:#174ea6;text-decoration:none;font:inherit}.link{padding:0;border:0;background:none;cursor:pointer}nav form{margin:0}main{max-width:72rem;margin:auto;padding:1.5rem 1rem 3rem}h1{margin-top:0}h2{margin-top:2rem}a{color:#174ea6}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:1rem}.card,.column{background:#fff;border:1px solid #d8dee8;border-radius:.5rem;padding:1rem}.card h2,.column h2{margin-top:0}.number{font-size:2rem;font-weight:750}.kanban{display:grid;grid-template-columns:repeat(9,minmax(12rem,1fr));gap:.75rem;overflow-x:auto;padding-bottom:.5rem}.column{padding:.75rem}.column h2{font-size:1rem}.prospect{display:block;border-top:1px solid #e5e9f0;padding:.65rem 0;text-decoration:none}.prospect:first-of-type{border-top:0}.muted{color:#5d6878}.badge{display:inline-block;padding:.12rem .45rem;border-radius:999px;background:#e7eefb;color:#183b6b;font-size:.8rem}table{width:100%;border-collapse:collapse;background:#fff}th,td{padding:.55rem .65rem;border:1px solid #d8dee8;text-align:left;vertical-align:top}th{background:#eef2f7}form.stack{display:grid;gap:.8rem;max-width:40rem}.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:.8rem}label{display:grid;gap:.25rem;font-weight:600}input,select,textarea,button{font:inherit}input,select,textarea{width:100%;padding:.5rem;border:1px solid #aeb8c7;border-radius:.3rem;background:#fff}textarea{min-height:5rem}button,.button{display:inline-block;width:auto;padding:.45rem .7rem;border:1px solid #174ea6;border-radius:.3rem;background:#174ea6;color:#fff;text-decoration:none;cursor:pointer}button.secondary{background:#fff;color:#174ea6}button.danger{border-color:#a12828;background:#a12828}.actions{display:flex;gap:.5rem;align-items:end;flex-wrap:wrap}.actions form{margin:0}.notice{padding:.75rem 1rem;border-radius:.35rem;background:#fff1d6;border:1px solid #e1b85b}.error{background:#fde8e8;border-color:#d78888;color:#791f1f}.filters{display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0}.filters a{padding:.3rem .55rem;border:1px solid #bdc7d5;border-radius:.3rem;background:#fff;text-decoration:none}.filters a.active{background:#174ea6;color:#fff;border-color:#174ea6}.summary{margin:.25rem 0;padding-left:1.2rem}.proposal{border-top:1px solid #d8dee8;padding:1rem 0}.proposal:first-of-type{border-top:0}.definition{display:grid;grid-template-columns:max-content 1fr;gap:.4rem 1rem}.definition dt{font-weight:700}.definition dd{margin:0}.nowrap{white-space:nowrap}@media(max-width:45rem){table{font-size:.9rem}.table-wrap{overflow-x:auto}.definition{grid-template-columns:1fr}.definition dd{margin-bottom:.6rem}}
+    *{box-sizing:border-box}body{margin:0}header{background:#fff;border-bottom:1px solid #d8dee8}header>div{max-width:72rem;margin:auto;padding:1rem;display:flex;gap:1.5rem;align-items:center;justify-content:space-between;flex-wrap:wrap}.brand{font-size:1.2rem;font-weight:750;color:#152238;text-decoration:none}nav{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}nav a,.link{color:#174ea6;text-decoration:none;font:inherit}.link{padding:0;border:0;background:none;cursor:pointer}nav form{margin:0}main{max-width:72rem;margin:auto;padding:1.5rem 1rem 3rem}h1{margin-top:0}h2{margin-top:2rem}a{color:#174ea6}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:1rem}.card,.column{background:#fff;border:1px solid #d8dee8;border-radius:.5rem;padding:1rem}.card h2,.column h2{margin-top:0}.number{font-size:2rem;font-weight:750}.kanban{display:grid;grid-template-columns:repeat(9,minmax(12rem,1fr));gap:.75rem;overflow-x:auto;padding-bottom:.5rem}.column{padding:.75rem}.column h2{font-size:1rem}.prospect{display:block;border-top:1px solid #e5e9f0;padding:.65rem 0;text-decoration:none}.prospect:first-of-type{border-top:0}.muted{color:#5d6878}.badge{display:inline-block;padding:.12rem .45rem;border-radius:999px;background:#e7eefb;color:#183b6b;font-size:.8rem}table{width:100%;border-collapse:collapse;background:#fff}th,td{padding:.55rem .65rem;border:1px solid #d8dee8;text-align:left;vertical-align:top}th{background:#eef2f7}form.stack{display:grid;gap:.8rem;max-width:40rem}.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:.8rem}label{display:grid;gap:.25rem;font-weight:600}input,select,textarea,button{font:inherit}input,select,textarea{width:100%;padding:.5rem;border:1px solid #aeb8c7;border-radius:.3rem;background:#fff}textarea{min-height:5rem}button,.button{display:inline-block;width:auto;padding:.45rem .7rem;border:1px solid #174ea6;border-radius:.3rem;background:#174ea6;color:#fff;text-decoration:none;cursor:pointer}button.secondary{background:#fff;color:#174ea6}button.danger{border-color:#a12828;background:#a12828}.actions{display:flex;gap:.5rem;align-items:end;flex-wrap:wrap}.actions form{margin:0}.notice{padding:.75rem 1rem;border-radius:.35rem;background:#fff1d6;border:1px solid #e1b85b}.error{background:#fde8e8;border-color:#d78888;color:#791f1f}.filters{display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0}.filters a{padding:.3rem .55rem;border:1px solid #bdc7d5;border-radius:.3rem;background:#fff;text-decoration:none}.filters a.active{background:#174ea6;color:#fff;border-color:#174ea6}.summary{margin:.25rem 0;padding-left:1.2rem}.proposal{border-top:1px solid #d8dee8;padding:1rem 0}.proposal:first-of-type{border-top:0}.definition{display:grid;grid-template-columns:max-content 1fr;gap:.4rem 1rem}.definition dt{font-weight:700}.definition dd{margin:0}.nowrap{white-space:nowrap}.repeat-empty{margin:.4rem 0;color:#5d6878}.repeat-actions{display:flex;gap:.5rem;margin-top:.6rem}.repeat-remove{border-color:#a12828;background:#fff;color:#a12828;white-space:nowrap}@media(max-width:45rem){table{font-size:.9rem}.table-wrap{overflow-x:auto}.definition{grid-template-columns:1fr}.definition dd{margin-bottom:.6rem}}
   </style>
 </head>
 <body>
   <header><div>${navigation}</div></header>
   <main>${content}</main>
+  <script src="/rows.js"></script>
 </body>
 </html>`;
 }
@@ -206,6 +207,7 @@ export function intakePage(input: {
   csrf: string;
   errors?: string[];
   warnings?: string[];
+  rowCounts?: Record<string, number>;
 }): string {
   const { prospect, profile, csrf, errors = [], warnings = [] } = input;
   const errorHtml = errors.length
@@ -216,35 +218,54 @@ export function intakePage(input: {
     : '';
   const identitySource = sourceFor(profile, 'identity.name');
   const contactSource = sourceFor(profile, 'contact.phone');
-  const hourRows = Array.from({ length: BUSINESS_PROFILE_LIMITS.hours }, (_, index) => {
-    const row = profile.hours[index];
-    return `<tr><td><input aria-label="Päivä ${index + 1}" name="hours_${index}_label" value="${escAttr(row?.label ?? '')}"></td><td><input aria-label="Aukeaa ${index + 1}" name="hours_${index}_open" value="${escAttr(row?.open ?? '')}" placeholder="09:00"></td><td><input aria-label="Sulkeutuu ${index + 1}" name="hours_${index}_close" value="${escAttr(row?.close ?? '')}" placeholder="17:00"></td><td><input aria-label="Suljettu ${index + 1}" name="hours_${index}_closed" type="checkbox"${row?.closed ? ' checked' : ''}></td><td>${sourceSelect(`hours_${index}_source`, sourceFor(profile, `hours.${index}.label`))}</td></tr>`;
-  }).join('');
+  const countFor = (prefix: keyof typeof BUSINESS_PROFILE_LIMITS, filled: number): number => Math.min(
+    BUSINESS_PROFILE_LIMITS[prefix] * 2,
+    Math.max(filled + 2, input.rowCounts?.[prefix] ?? 0),
+  );
+  const repeatTable = (
+    prefix: keyof typeof BUSINESS_PROFILE_LIMITS,
+    title: string,
+    headings: string[],
+    filled: number,
+    row: (index: number, blank?: boolean) => string,
+  ): string => {
+    const rows = Array.from({ length: countFor(prefix, filled) }, (_, index) => row(index)).join('');
+    return `<section data-repeat="${escAttr(prefix)}"><h2>${esc(title)}</h2>${filled ? '' : '<p class="repeat-empty">Ei rivejä vielä - lisää ensimmäinen.</p>'}<div class="table-wrap"><table><thead><tr>${headings.map((heading) => `<th>${esc(heading)}</th>`).join('')}<th>Toiminnot</th></tr></thead><tbody data-repeat-rows>${rows}</tbody></table></div><template>${row(0, true)}</template><div class="repeat-actions"><button class="secondary" type="submit" name="add_rows" value="${escAttr(prefix)}" data-repeat-add>Lisää rivejä</button></div></section>`;
+  };
+  const hourRow = (index: number, blank = false): string => {
+    const row = blank ? undefined : profile.hours[index];
+    return `<tr data-repeat-row><td><input aria-label="Päivä ${index + 1}" name="hours_${index}_label" value="${escAttr(row?.label ?? '')}"></td><td><input aria-label="Aukeaa ${index + 1}" name="hours_${index}_open" value="${escAttr(row?.open ?? '')}" placeholder="09:00"></td><td><input aria-label="Sulkeutuu ${index + 1}" name="hours_${index}_close" value="${escAttr(row?.close ?? '')}" placeholder="17:00"></td><td><input aria-label="Suljettu ${index + 1}" name="hours_${index}_closed" type="checkbox"${row?.closed ? ' checked' : ''}></td><td>${sourceSelect(`hours_${index}_source`, sourceFor(profile, `hours.${index}.label`))}</td><td><button class="repeat-remove" type="button" data-repeat-remove>Poista</button></td></tr>`;
+  };
+  const exceptionRow = (index: number, blank = false): string => {
+    const row = blank ? undefined : profile.exceptions?.[index];
+    return `<tr data-repeat-row><td><input aria-label="Poikkeuspäivä ${index + 1}" name="exceptions_${index}_date" value="${escAttr(row?.date ?? '')}" placeholder="24.12."></td><td><input aria-label="Poikkeusaukiolo ${index + 1}" name="exceptions_${index}_text" value="${escAttr(row?.text ?? '')}" placeholder="suljettu"></td><td>${sourceSelect(`exceptions_${index}_source`, sourceFor(profile, `exceptions.${index}.date`))}</td><td><button class="repeat-remove" type="button" data-repeat-remove>Poista</button></td></tr>`;
+  };
   const itemTable = (prefix: 'services' | 'menu', title: string): string => {
     const items = profile[prefix];
-    const rows = Array.from({ length: BUSINESS_PROFILE_LIMITS[prefix] }, (_, index) => {
-      const item = items[index];
-      return `<tr><td><input aria-label="${escAttr(title)} nimi ${index + 1}" name="${prefix}_${index}_name" value="${escAttr(item?.name ?? '')}"></td><td><input aria-label="${escAttr(title)} hinta ${index + 1}" name="${prefix}_${index}_price" value="${escAttr(item?.price ?? '')}" placeholder="35 €"></td><td><textarea aria-label="${escAttr(title)} kuvaus ${index + 1}" name="${prefix}_${index}_desc">${esc(item?.desc ?? '')}</textarea></td><td>${sourceSelect(`${prefix}_${index}_source`, sourceFor(profile, `${prefix}.${index}.name`), Boolean(item?.desc))}</td></tr>`;
-    }).join('');
-    return `<h2>${esc(title)}</h2><div class="table-wrap"><table><thead><tr><th>Nimi</th><th>Hinta</th><th>Kuvaus</th><th>Lähde</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    const row = (index: number, blank = false): string => {
+      const item = blank ? undefined : items[index];
+      return `<tr data-repeat-row><td><input aria-label="${escAttr(title)} nimi ${index + 1}" name="${prefix}_${index}_name" value="${escAttr(item?.name ?? '')}"></td><td><input aria-label="${escAttr(title)} ryhmä ${index + 1}" name="${prefix}_${index}_group" value="${escAttr(item?.group ?? '')}"></td><td><input aria-label="${escAttr(title)} hinta ${index + 1}" name="${prefix}_${index}_price" value="${escAttr(item?.price ?? '')}" placeholder="35 €"></td><td><textarea aria-label="${escAttr(title)} kuvaus ${index + 1}" name="${prefix}_${index}_desc">${esc(item?.desc ?? '')}</textarea></td><td>${sourceSelect(`${prefix}_${index}_source`, sourceFor(profile, `${prefix}.${index}.name`), Boolean(item?.desc))}</td><td><button class="repeat-remove" type="button" data-repeat-remove>Poista</button></td></tr>`;
+    };
+    return repeatTable(prefix, title, ['Nimi', 'Ryhmä', 'Hinta', 'Kuvaus', 'Lähde'], items.length, row);
   };
-  const photoRows = Array.from({ length: BUSINESS_PROFILE_LIMITS.photos }, (_, index) => `<tr><td><input aria-label="Kuvapolku ${index + 1}" name="photos_${index}_src" value="${escAttr(profile.photos[index]?.src ?? '')}" placeholder="/img/sha256"></td><td>${sourceSelect(`photos_${index}_source`, sourceFor(profile, `photos.${index}.src`))}</td></tr>`).join('');
+  const photoRow = (index: number, blank = false): string => `<tr data-repeat-row><td><input aria-label="Kuvapolku ${index + 1}" name="photos_${index}_src" value="${escAttr(blank ? '' : profile.photos[index]?.src ?? '')}" placeholder="/img/sha256"></td><td>${sourceSelect(`photos_${index}_source`, blank ? 'operator' : sourceFor(profile, `photos.${index}.src`))}</td><td><button class="repeat-remove" type="button" data-repeat-remove>Poista</button></td></tr>`;
   const linkKinds = ['', 'website', 'phone', 'instagram', 'facebook', 'linkedin', 'youtube', 'github', 'x', 'email'];
-  const linkRows = Array.from({ length: BUSINESS_PROFILE_LIMITS.links }, (_, index) => {
-    const link = profile.links[index];
-    return `<tr><td><input aria-label="Linkin nimi ${index + 1}" name="links_${index}_label" value="${escAttr(link?.label ?? '')}"></td><td><input aria-label="Linkin URL ${index + 1}" name="links_${index}_url" type="url" value="${escAttr(link?.url ?? '')}" placeholder="https://"></td><td><select aria-label="Linkin tyyppi ${index + 1}" name="links_${index}_kind">${linkKinds.map((kind) => `<option value="${escAttr(kind)}"${kind === (link?.kind ?? '') ? ' selected' : ''}>${esc(kind || '—')}</option>`).join('')}</select></td><td>${sourceSelect(`links_${index}_source`, sourceFor(profile, `links.${index}.label`))}</td></tr>`;
-  }).join('');
+  const linkRow = (index: number, blank = false): string => {
+    const link = blank ? undefined : profile.links[index];
+    return `<tr data-repeat-row><td><input aria-label="Linkin nimi ${index + 1}" name="links_${index}_label" value="${escAttr(link?.label ?? '')}"></td><td><input aria-label="Linkin URL ${index + 1}" name="links_${index}_url" type="url" value="${escAttr(link?.url ?? '')}" placeholder="https://"></td><td><select aria-label="Linkin tyyppi ${index + 1}" name="links_${index}_kind">${linkKinds.map((kind) => `<option value="${escAttr(kind)}"${kind === (link?.kind ?? '') ? ' selected' : ''}>${esc(kind || '—')}</option>`).join('')}</select></td><td>${sourceSelect(`links_${index}_source`, sourceFor(profile, `links.${index}.label`))}</td><td><button class="repeat-remove" type="button" data-repeat-remove>Poista</button></td></tr>`;
+  };
   const vertical = profile.identity.vertical;
   const address = profile.contact.address;
   return layout(`Intake: ${prospect.name}`, `<p><a href="/admin/prospects/${escAttr(prospect.publicId)}">← ${esc(prospect.name)}</a></p><h1>BusinessProfile intake</h1>${errorHtml}${warningHtml}
     <form class="stack" action="/admin/prospects/${escAttr(prospect.publicId)}/intake" method="post">${formToken(csrf)}
       <section class="card"><h2>Identiteetti</h2><div class="fields">${valueField('Nimi *', 'name', profile.identity.name)}${valueField('Y-tunnus', 'yTunnus', profile.identity.yTunnus)}${valueField('Toimialakoodi', 'vertical_code', vertical?.code)}${valueField('Toimialan nimi', 'vertical_label', vertical?.label)}<label>Tietolähde${sourceSelect('identity_source', identitySource)}</label></div></section>
       <section class="card"><h2>Yhteystiedot</h2><div class="fields">${valueField('Puhelin', 'phone', profile.contact.phone)}${valueField('Sähköposti', 'email', profile.contact.email, 'email')}${valueField('Katuosoite', 'street', address?.street)}${valueField('Postinumero', 'postal', address?.postal)}${valueField('Kaupunki', 'city', address?.city)}<label>Tietolähde${sourceSelect('contact_source', contactSource)}</label></div></section>
-      <h2>Aukioloajat</h2><div class="table-wrap"><table><thead><tr><th>Päivä</th><th>Aukeaa</th><th>Sulkeutuu</th><th>Suljettu</th><th>Lähde</th></tr></thead><tbody>${hourRows}</tbody></table></div>
+      ${repeatTable('hours', 'Aukioloajat', ['Päivä', 'Aukeaa', 'Sulkeutuu', 'Suljettu', 'Lähde'], profile.hours.length, hourRow)}
+      ${repeatTable('exceptions', 'Poikkeusaukiolot', ['Päivä', 'Teksti', 'Lähde'], profile.exceptions?.length ?? 0, exceptionRow)}
       ${itemTable('services', 'Palvelut')}${itemTable('menu', 'Ruokalista')}
       <section class="card"><h2>Tekstit</h2><label>Iskulause<textarea name="tagline">${esc(profile.tagline ?? '')}</textarea>${sourceSelect('tagline_source', sourceFor(profile, 'tagline'), true)}</label><label>Esittely<textarea name="about">${esc(profile.about ?? '')}</textarea>${sourceSelect('about_source', sourceFor(profile, 'about'), true)}</label></section>
-      <h2>Kuvat</h2><div class="table-wrap"><table><thead><tr><th>R2-polku</th><th>Lähde</th></tr></thead><tbody>${photoRows}</tbody></table></div>
-      <h2>Linkit</h2><div class="table-wrap"><table><thead><tr><th>Nimi</th><th>HTTPS-URL</th><th>Tyyppi</th><th>Lähde</th></tr></thead><tbody>${linkRows}</tbody></table></div>
+      ${repeatTable('photos', 'Kuvat', ['R2-polku', 'Lähde'], profile.photos.length, photoRow)}
+      ${repeatTable('links', 'Linkit', ['Nimi', 'HTTPS-URL', 'Tyyppi', 'Lähde'], profile.links.length, linkRow)}
       <section class="card"><h2>Suostumus</h2><label><span><input name="consent_photos" type="checkbox"${profile.consent.photos ? ' checked' : ''}> Kuvien käyttö vahvistettu</span></label><label><span><input name="consent_texts" type="checkbox"${profile.consent.texts ? ' checked' : ''}> Tekstien käyttö vahvistettu</span></label><label>Huomio<textarea name="consent_note">${esc(profile.consent.note ?? '')}</textarea></label></section>
       <div><button type="submit">Tallenna BusinessProfile</button></div>
     </form>`, csrf);

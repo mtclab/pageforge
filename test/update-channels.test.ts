@@ -126,6 +126,25 @@ describe('S7 update channels', () => {
     expect(panelHtml).toContain('Aukioloajat');
     expect(panelHtml).toContain('Tiedote');
     expect(panelHtml).not.toContain('<h2>Palvelut</h2>');
+    expect(panelHtml.match(/<script src="\/rows\.js"><\/script>/g)).toHaveLength(1);
+
+    const addRows = await worker.fetch(new Request(`https://example.test/panel?t=${token}`, {
+      method: 'POST',
+      body: new URLSearchParams({
+        t: token,
+        hours_0_label: 'Yö',
+        hours_0_open: '22:00',
+        hours_0_close: '02:00',
+        hours_1_label: '',
+        hours_2_label: '',
+        add_rows: 'hours',
+      }),
+    }), env);
+    expect(addRows.status).toBe(200);
+    const addRowsHtml = await addRows.text();
+    expect(addRowsHtml).toContain('name="hours_0_label" value="Yö"');
+    expect(addRowsHtml).toContain('name="hours_5_label" value=""');
+    expect(await cp.listUpdateRequests()).toHaveLength(0);
 
     const posted = await worker.fetch(new Request(`https://example.test/panel?t=${token}`, {
       method: 'POST',

@@ -159,14 +159,29 @@ function renderServices(s: Extract<Section, { kind: 'services' }>, idx: number, 
     .map((item) => {
       const desc = item.desc?.trim() ? `\n<p class="desc">${esc(item.desc.trim())}</p>` : '';
       const price = item.price?.trim() ? `\n<p class="service-price">${esc(item.price.trim())}</p>` : '';
-      return `<li class="service"><h3>${esc(item.name.trim())}</h3>${desc}${price}</li>`;
+      return { group: item.group?.trim() ?? '', html: `<li class="service"><h3>${esc(item.name.trim())}</h3>${desc}${price}</li>` };
     });
   if (!items.length) return '';
+  const lists: string[] = [];
+  let group: string | undefined;
+  let current: string[] = [];
+  const flush = (): void => {
+    if (!current.length) return;
+    const heading = group ? `<h3 class="service-group">${esc(group)}</h3>\n` : '';
+    lists.push(`${heading}<ul class="services menu-board">\n${current.join('\n')}\n</ul>`);
+    current = [];
+  };
+  for (const item of items) {
+    if (group !== undefined && item.group !== group) flush();
+    group = item.group;
+    current.push(item.html);
+  }
+  flush();
   return wrap(
     'services',
     idx,
     s.title?.trim() || businessLabels(lang).services,
-    `<ul class="services menu-board">\n${items.join('\n')}\n</ul>`,
+    lists.join('\n'),
   );
 }
 

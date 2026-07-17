@@ -113,7 +113,7 @@ export function localBusinessJsonLd(data: SiteData): LocalBusinessJsonLd | null 
       if (day.closed || !day.label.trim()) return [];
       const opens = jsonLdTime(day.open);
       const closes = jsonLdTime(day.close);
-      if (!opens || !closes) return [];
+      if (!opens || !closes || opens === closes) return [];
       const dayOfWeek = schemaDaysForLabel(day.label);
       if (!dayOfWeek.length) return [];
       return [{

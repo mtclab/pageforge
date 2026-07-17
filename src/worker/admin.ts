@@ -8,6 +8,7 @@ import {
   summarizeChanges,
 } from './biz.js';
 import {
+  BUSINESS_PROFILE_LIMITS,
   businessProfileWarnings,
   validateBusinessProfile,
 } from './business-profile.js';
@@ -406,6 +407,23 @@ export async function handleAdminRequest(request: Request, env: Env): Promise<Re
     }
     if (request.method !== 'POST') return methodNotAllowed(csrf);
     const profile = parseBusinessProfileForm(form!, prospect);
+    const addRows = formString(form!, 'add_rows');
+    if (addRows && Object.prototype.hasOwnProperty.call(BUSINESS_PROFILE_LIMITS, addRows)) {
+      const prefix = addRows as keyof typeof BUSINESS_PROFILE_LIMITS;
+      let rendered = 0;
+      const pattern = new RegExp(`^${prefix}_(\\d+)_`);
+      for (const key of form!.keys()) {
+        const index = Number(key.match(pattern)?.[1]);
+        if (Number.isInteger(index)) rendered = Math.max(rendered, index + 1);
+      }
+      return html(intakePage({
+        prospect,
+        profile,
+        csrf,
+        warnings: businessProfileWarnings(profile, prospect),
+        rowCounts: { [prefix]: Math.min(BUSINESS_PROFILE_LIMITS[prefix] * 2, rendered + 3) },
+      }));
+    }
     const errors = validateBusinessProfile(profile);
     if (errors.length) {
       return html(intakePage({

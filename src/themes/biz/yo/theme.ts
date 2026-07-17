@@ -27,6 +27,7 @@ const css = `/* business voice: yö — bold dark */
 .section { padding-top: 1.25rem; border-top: 1px solid var(--muted); }
 .section h2 { color: var(--accent); font-size: .78rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
 .services { grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 1px; background: var(--muted); border: 1px solid var(--muted); }
+.service-group { border-left: .4rem solid var(--accent); padding-left: .7rem; color: var(--text); text-transform: uppercase; }
 .service { min-height: 10rem; padding: 1.2rem; background: var(--bg); }
 .service h3 { font-size: 1.45rem; }
 .service-price { margin-top: 1rem; font-size: 1.25rem; }

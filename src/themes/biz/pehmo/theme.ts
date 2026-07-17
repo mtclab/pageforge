@@ -35,6 +35,7 @@ const css = `/* business voice: pehmo — warm craft */
 }
 .section h2 { color: var(--accent); font-size: 1.35rem; }
 .services { grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1.25rem; }
+.service-group { display: inline-block; padding: .25rem .7rem; border-radius: 999px; background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
 .service { padding: .9rem; border-radius: 14px; background: color-mix(in srgb, var(--accent) 7%, var(--surface)); }
 .service-price { margin-top: .55rem; }
 .section-hours {

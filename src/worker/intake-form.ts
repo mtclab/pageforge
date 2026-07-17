@@ -29,7 +29,7 @@ function sourceFor(
   return value && allowed.includes(value) ? value : 'operator';
 }
 
-/** Parse numbered zero-JS intake fields, ignoring rows beyond the documented caps. */
+/** Parse numbered zero-JS intake fields, ignoring parsed rows beyond the documented caps. */
 export function parseBusinessProfileForm(
   form: FormData,
   prospect: Prospect,
@@ -65,7 +65,7 @@ export function parseBusinessProfileForm(
   }
 
   const hours: BusinessProfile['hours'] = [];
-  for (let index = 0; index < BUSINESS_PROFILE_LIMITS.hours; index++) {
+  for (let index = 0; index < BUSINESS_PROFILE_LIMITS.hours * 2; index++) {
     const label = optional(form, `hours_${index}_label`);
     const open = optional(form, `hours_${index}_open`);
     const close = optional(form, `hours_${index}_close`);
@@ -79,24 +79,39 @@ export function parseBusinessProfileForm(
     };
     hours.push(row);
     for (const key of Object.keys(row)) mark(`hours.${hours.length - 1}.${key}`, `hours_${index}_source`);
+    if (hours.length >= BUSINESS_PROFILE_LIMITS.hours) break;
+  }
+
+  const exceptions: NonNullable<BusinessProfile['exceptions']> = [];
+  for (let index = 0; index < BUSINESS_PROFILE_LIMITS.exceptions * 2; index++) {
+    const date = optional(form, `exceptions_${index}_date`);
+    const text = optional(form, `exceptions_${index}_text`);
+    if (!date && !text) continue;
+    exceptions.push({ date: date ?? '', text: text ?? '' });
+    mark(`exceptions.${exceptions.length - 1}.date`, `exceptions_${index}_source`);
+    mark(`exceptions.${exceptions.length - 1}.text`, `exceptions_${index}_source`);
+    if (exceptions.length >= BUSINESS_PROFILE_LIMITS.exceptions) break;
   }
 
   const parseItems = (prefix: 'services' | 'menu', limit: number): BusinessProfileItem[] => {
     const items: BusinessProfileItem[] = [];
-    for (let index = 0; index < limit; index++) {
+    for (let index = 0; index < limit * 2; index++) {
       const itemName = optional(form, `${prefix}_${index}_name`);
       const price = optional(form, `${prefix}_${index}_price`);
       const desc = optional(form, `${prefix}_${index}_desc`);
-      if (!itemName && !price && !desc) continue;
+      const group = optional(form, `${prefix}_${index}_group`);
+      if (!itemName && !price && !desc && !group) continue;
       const item = {
         name: itemName ?? '',
         ...(price === undefined ? {} : { price }),
         ...(desc === undefined ? {} : { desc }),
+        ...(group === undefined ? {} : { group }),
       };
       items.push(item);
       for (const key of Object.keys(item)) {
         mark(`${prefix}.${items.length - 1}.${key}`, `${prefix}_${index}_source`, key === 'desc');
       }
+      if (items.length >= limit) break;
     }
     return items;
   };
@@ -107,15 +122,16 @@ export function parseBusinessProfileForm(
   if (tagline) mark('tagline', 'tagline_source', true);
 
   const photos: BusinessProfile['photos'] = [];
-  for (let index = 0; index < BUSINESS_PROFILE_LIMITS.photos; index++) {
+  for (let index = 0; index < BUSINESS_PROFILE_LIMITS.photos * 2; index++) {
     const src = optional(form, `photos_${index}_src`);
     if (!src) continue;
     photos.push({ src });
     mark(`photos.${photos.length - 1}.src`, `photos_${index}_source`);
+    if (photos.length >= BUSINESS_PROFILE_LIMITS.photos) break;
   }
 
   const links: BusinessProfile['links'] = [];
-  for (let index = 0; index < BUSINESS_PROFILE_LIMITS.links; index++) {
+  for (let index = 0; index < BUSINESS_PROFILE_LIMITS.links * 2; index++) {
     const label = optional(form, `links_${index}_label`);
     const url = optional(form, `links_${index}_url`);
     const rawKind = optional(form, `links_${index}_kind`) as LinkKind | undefined;
@@ -128,6 +144,7 @@ export function parseBusinessProfileForm(
     };
     links.push(link);
     for (const key of Object.keys(link)) mark(`links.${links.length - 1}.${key}`, `links_${index}_source`);
+    if (links.length >= BUSINESS_PROFILE_LIMITS.links) break;
   }
 
   const consentNote = optional(form, 'consent_note');
@@ -151,6 +168,7 @@ export function parseBusinessProfileForm(
         : {}),
     },
     hours,
+    exceptions,
     services: parseItems('services', BUSINESS_PROFILE_LIMITS.services),
     menu: parseItems('menu', BUSINESS_PROFILE_LIMITS.menu),
     ...(about === undefined ? {} : { about }),
@@ -180,6 +198,7 @@ export function emptyBusinessProfile(prospect: Prospect): BusinessProfile {
       ...(prospect.contactEmail === undefined ? {} : { email: prospect.contactEmail }),
     },
     hours: [],
+    exceptions: [],
     services: [],
     menu: [],
     photos: [],

@@ -1,5 +1,6 @@
 import { collectImages, type SiteData } from '../engine/types.js';
 import { TEL_URL_RE } from '../engine/escape.js';
+import { jsonLdTime } from '../engine/jsonld.js';
 
 const MAX_IMAGE_B64 = 1_100_000;
 const DATA_URL_RE = /^data:image\/(?:jpeg|png);base64,([A-Za-z0-9+/=]+)$/;
@@ -78,9 +79,15 @@ export function validateSiteData(
           if (day.label.length > 120 || (day.open ?? '').length > 50 || (day.close ?? '').length > 50) {
             return 'opening day too long';
           }
+          if (!day.closed) {
+            const open = jsonLdTime(day.open);
+            const close = jsonLdTime(day.close);
+            if (!open || !close) return 'bad opening time';
+            if (open === close) return 'opening and closing times must differ';
+          }
         }
         if (s.exceptions !== undefined && !Array.isArray(s.exceptions)) return 'bad opening exceptions';
-        if ((s.exceptions?.length ?? 0) > 20) return 'too many opening exceptions';
+        if ((s.exceptions?.length ?? 0) > 10) return 'too many opening exceptions';
         for (const exception of s.exceptions ?? []) {
           if (typeof exception?.date !== 'string' || typeof exception?.text !== 'string') {
             return 'bad opening exception';
@@ -95,8 +102,9 @@ export function validateSiteData(
             typeof item?.name !== 'string'
             || (item.desc !== undefined && typeof item.desc !== 'string')
             || (item.price !== undefined && typeof item.price !== 'string')
+            || (item.group !== undefined && typeof item.group !== 'string')
           ) return 'bad service';
-          if (item.name.length > 200 || (item.desc ?? '').length > 2000 || (item.price ?? '').length > 100) {
+          if (item.name.length > 200 || (item.desc ?? '').length > 2000 || (item.price ?? '').length > 100 || (item.group ?? '').length > 60) {
             return 'service too long';
           }
         }

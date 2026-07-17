@@ -321,6 +321,27 @@ describe('operator console', () => {
     expect((await post('/admin/prospects/intake01/compose')).status).toBe(400);
   });
 
+  it('round-trips no-JS add-row intake submissions without saving and adds three spares', async () => {
+    await cp.createProspect({
+      publicId: 'addrows1',
+      name: 'Lisärivit',
+      status: 'arvioitu',
+      actor: 'operator',
+    });
+    const response = await post('/admin/prospects/addrows1/intake', {
+      name: 'Säilyvä nimi',
+      services_0_name: 'Leikkaus',
+      services_1_name: '',
+      add_rows: 'services',
+    });
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain('name="name" type="text" value="Säilyvä nimi"');
+    expect(html).toContain('name="services_0_name" value="Leikkaus"');
+    expect(html).toContain('name="services_4_name" value=""');
+    expect(await cp.getBusinessProfileByProspectId((await cp.getProspect('addrows1'))!.id)).toBeNull();
+  });
+
   it('returns 404 when the mutation gate is closed', async () => {
     const closed = workerEnv({ MUTATION_API_ENABLED: 'false' });
     const response = await worker.fetch(new Request('https://example.test/admin'), closed);

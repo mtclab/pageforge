@@ -14,7 +14,7 @@ const PANEL_HEADERS = {
 };
 
 function response(content: string, status = 200): Response {
-  return new Response(`<!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Päivitä sivustoa · Mikoshi</title><style>:root{font-family:system-ui,sans-serif;line-height:1.5;color:#1b2430;background:#f5f7fa}*{box-sizing:border-box}main{max-width:60rem;margin:auto;padding:2rem 1rem}section{background:#fff;border:1px solid #d8dee8;border-radius:.5rem;padding:1rem;margin:1rem 0}label{display:grid;gap:.25rem;font-weight:600;margin:.7rem 0}input,textarea,button{font:inherit;padding:.5rem}input,textarea{width:100%}textarea{min-height:6rem}table{width:100%;border-collapse:collapse}th,td{padding:.45rem;border:1px solid #d8dee8;text-align:left}button{background:#174ea6;color:#fff;border:0;border-radius:.3rem}.notice{padding:.8rem;background:#fff1d6;border:1px solid #e1b85b;border-radius:.4rem}.error{background:#fde8e8;border-color:#d78888}a{color:#174ea6}@media(max-width:42rem){.table-wrap{overflow-x:auto}}</style></head><body><main>${content}</main></body></html>`, {
+  return new Response(`<!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Päivitä sivustoa · Mikoshi</title><style>:root{font-family:system-ui,sans-serif;line-height:1.5;color:#1b2430;background:#f5f7fa}*{box-sizing:border-box}main{max-width:60rem;margin:auto;padding:2rem 1rem}section{background:#fff;border:1px solid #d8dee8;border-radius:.5rem;padding:1rem;margin:1rem 0}label{display:grid;gap:.25rem;font-weight:600;margin:.7rem 0}input,textarea,button{font:inherit;padding:.5rem}input,textarea{width:100%}textarea{min-height:6rem}table{width:100%;border-collapse:collapse}th,td{padding:.45rem;border:1px solid #d8dee8;text-align:left}button{background:#174ea6;color:#fff;border:0;border-radius:.3rem}.repeat-empty{color:#5d6878}.repeat-actions{margin-top:.6rem}.repeat-remove{border:1px solid #a12828;background:#fff;color:#a12828;white-space:nowrap}.notice{padding:.8rem;background:#fff1d6;border:1px solid #e1b85b;border-radius:.4rem}.error{background:#fde8e8;border-color:#d78888}a{color:#174ea6}@media(max-width:42rem){.table-wrap{overflow-x:auto}}</style></head><body><main>${content}</main><script src="/rows.js"></script></body></html>`, {
     status,
     headers: PANEL_HEADERS,
   });
@@ -41,23 +41,39 @@ function firstSection<K extends PanelKind>(
   return data.sections.find((section): section is Extract<Section, { kind: K }> => section.kind === kind);
 }
 
-function panelForm(site: Site, token: string, error?: string): string {
+function panelForm(site: Site, token: string, error?: string, rowCounts: Record<string, number> = {}): string {
   const permitted = panelCapabilities(site.data);
   const hours = firstSection(site.data, 'hours');
   const services = firstSection(site.data, 'services');
   const notice = firstSection(site.data, 'notice');
-  const hourRows = Array.from({ length: BUSINESS_PROFILE_LIMITS.hours }, (_, index) => {
-    const row = hours?.days[index];
-    return `<tr><td><input aria-label="Päivä ${index + 1}" name="hours_${index}_label" value="${escAttr(row?.label ?? '')}"></td><td><input aria-label="Aukeaa ${index + 1}" name="hours_${index}_open" value="${escAttr(row?.open ?? '')}" placeholder="09:00"></td><td><input aria-label="Sulkeutuu ${index + 1}" name="hours_${index}_close" value="${escAttr(row?.close ?? '')}" placeholder="17:00"></td><td><input aria-label="Suljettu ${index + 1}" name="hours_${index}_closed" type="checkbox"${row?.closed ? ' checked' : ''}></td></tr>`;
-  }).join('');
-  const serviceRows = Array.from({ length: BUSINESS_PROFILE_LIMITS.services }, (_, index) => {
-    const item = services?.items[index];
-    return `<tr><td><input aria-label="Palvelun nimi ${index + 1}" name="services_${index}_name" value="${escAttr(item?.name ?? '')}"></td><td><input aria-label="Palvelun hinta ${index + 1}" name="services_${index}_price" value="${escAttr(item?.price ?? '')}" placeholder="35 €"></td></tr>`;
-  }).join('');
+  const repeatTable = (
+    prefix: 'hours' | 'exceptions' | 'services',
+    title: string,
+    headings: string[],
+    filled: number,
+    row: (index: number, blank?: boolean) => string,
+  ): string => {
+    const limit = BUSINESS_PROFILE_LIMITS[prefix];
+    const count = Math.min(limit * 2, Math.max(filled + 2, rowCounts[prefix] ?? 0));
+    const rows = Array.from({ length: count }, (_, index) => row(index)).join('');
+    return `<section data-repeat="${prefix}"><h2>${esc(title)}</h2>${filled ? '' : '<p class="repeat-empty">Ei rivejä vielä - lisää ensimmäinen.</p>'}<div class="table-wrap"><table><thead><tr>${headings.map((heading) => `<th>${esc(heading)}</th>`).join('')}<th>Toiminnot</th></tr></thead><tbody data-repeat-rows>${rows}</tbody></table></div><template>${row(0, true)}</template><div class="repeat-actions"><button type="submit" name="add_rows" value="${prefix}" data-repeat-add>Lisää rivejä</button></div></section>`;
+  };
+  const hourRow = (index: number, blank = false): string => {
+    const row = blank ? undefined : hours?.days[index];
+    return `<tr data-repeat-row><td><input aria-label="Päivä ${index + 1}" name="hours_${index}_label" value="${escAttr(row?.label ?? '')}"></td><td><input aria-label="Aukeaa ${index + 1}" name="hours_${index}_open" value="${escAttr(row?.open ?? '')}" placeholder="09:00"></td><td><input aria-label="Sulkeutuu ${index + 1}" name="hours_${index}_close" value="${escAttr(row?.close ?? '')}" placeholder="17:00"></td><td><input aria-label="Suljettu ${index + 1}" name="hours_${index}_closed" type="checkbox"${row?.closed ? ' checked' : ''}></td><td><button class="repeat-remove" type="button" data-repeat-remove>Poista</button></td></tr>`;
+  };
+  const exceptionRow = (index: number, blank = false): string => {
+    const row = blank ? undefined : hours?.exceptions?.[index];
+    return `<tr data-repeat-row><td><input aria-label="Poikkeuspäivä ${index + 1}" name="exceptions_${index}_date" value="${escAttr(row?.date ?? '')}" placeholder="24.12."></td><td><input aria-label="Poikkeusaukiolo ${index + 1}" name="exceptions_${index}_text" value="${escAttr(row?.text ?? '')}" placeholder="suljettu"></td><td><button class="repeat-remove" type="button" data-repeat-remove>Poista</button></td></tr>`;
+  };
+  const serviceRow = (index: number, blank = false): string => {
+    const item = blank ? undefined : services?.items[index];
+    return `<tr data-repeat-row><td><input aria-label="Palvelun nimi ${index + 1}" name="services_${index}_name" value="${escAttr(item?.name ?? '')}"></td><td><input aria-label="Palvelun ryhmä ${index + 1}" name="services_${index}_group" value="${escAttr(item?.group ?? '')}"></td><td><input aria-label="Palvelun hinta ${index + 1}" name="services_${index}_price" value="${escAttr(item?.price ?? '')}" placeholder="35 €"></td><td><button class="repeat-remove" type="button" data-repeat-remove>Poista</button></td></tr>`;
+  };
   const sections = [
-    permitted.has('hours') ? `<section><h2>Aukioloajat</h2><div class="table-wrap"><table><thead><tr><th>Päivä</th><th>Aukeaa</th><th>Sulkeutuu</th><th>Suljettu</th></tr></thead><tbody>${hourRows}</tbody></table></div></section>` : '',
+    permitted.has('hours') ? `${repeatTable('hours', 'Aukioloajat', ['Päivä', 'Aukeaa', 'Sulkeutuu', 'Suljettu'], hours?.days.length ?? 0, hourRow)}${repeatTable('exceptions', 'Poikkeusaukiolot', ['Päivä', 'Teksti'], hours?.exceptions?.length ?? 0, exceptionRow)}` : '',
     permitted.has('notice') ? `<section><h2>Tiedote</h2><label>Otsikko<input name="notice_title" value="${escAttr(notice?.title ?? '')}"></label><label>Teksti<textarea name="notice_text">${esc(notice?.text ?? '')}</textarea></label><label>Voimassa asti<input name="notice_until" type="date" value="${escAttr(notice?.until ?? '')}"></label></section>` : '',
-    permitted.has('services') ? `<section><h2>Palvelut</h2><div class="table-wrap"><table><thead><tr><th>Nimi</th><th>Hinta</th></tr></thead><tbody>${serviceRows}</tbody></table></div></section>` : '',
+    permitted.has('services') ? repeatTable('services', 'Palvelut', ['Nimi', 'Ryhmä', 'Hinta'], services?.items.length ?? 0, serviceRow) : '',
   ].join('');
   const message = error === undefined ? '' : `<p class="notice error" role="alert">${esc(error)}</p>`;
   return `<h1>Päivitä sivuston tietoja</h1><p>${esc(site.data.name)}</p>${message}<form action="/panel?t=${escAttr(encodeURIComponent(token))}" method="post"><input type="hidden" name="t" value="${escAttr(token)}">${sections}<button type="submit">Lähetä ehdotus</button></form>`;
@@ -80,7 +96,7 @@ export function panelCandidate(current: SiteData, form: FormData): SiteData {
   if (permitted.has('hours')) {
     const existing = firstSection(current, 'hours');
     const days: Extract<Section, { kind: 'hours' }>['days'] = [];
-    for (let index = 0; index < BUSINESS_PROFILE_LIMITS.hours; index++) {
+    for (let index = 0; index < BUSINESS_PROFILE_LIMITS.hours * 2; index++) {
       const label = formValue(form, `hours_${index}_label`);
       const open = formValue(form, `hours_${index}_open`);
       const close = formValue(form, `hours_${index}_close`);
@@ -92,12 +108,21 @@ export function panelCandidate(current: SiteData, form: FormData): SiteData {
         ...(close ? { close } : {}),
         ...(closed ? { closed: true } : {}),
       });
+      if (days.length >= BUSINESS_PROFILE_LIMITS.hours) break;
+    }
+    const exceptions: NonNullable<Extract<Section, { kind: 'hours' }>['exceptions']> = [];
+    for (let index = 0; index < BUSINESS_PROFILE_LIMITS.exceptions * 2; index++) {
+      const date = formValue(form, `exceptions_${index}_date`);
+      const text = formValue(form, `exceptions_${index}_text`);
+      if (!date && !text) continue;
+      exceptions.push({ date, text });
+      if (exceptions.length >= BUSINESS_PROFILE_LIMITS.exceptions) break;
     }
     candidate = replaceSection(candidate, 'hours', {
       kind: 'hours',
       ...(existing?.title === undefined ? {} : { title: existing.title }),
       days,
-      ...(existing?.exceptions === undefined ? {} : { exceptions: existing.exceptions }),
+      exceptions,
     });
   }
   if (permitted.has('notice')) {
@@ -114,11 +139,13 @@ export function panelCandidate(current: SiteData, form: FormData): SiteData {
   if (permitted.has('services')) {
     const existing = firstSection(current, 'services');
     const items: Extract<Section, { kind: 'services' }>['items'] = [];
-    for (let index = 0; index < BUSINESS_PROFILE_LIMITS.services; index++) {
+    for (let index = 0; index < BUSINESS_PROFILE_LIMITS.services * 2; index++) {
       const name = formValue(form, `services_${index}_name`);
       const price = formValue(form, `services_${index}_price`);
-      if (!name && !price) continue;
-      items.push({ name, ...(price ? { price } : {}) });
+      const group = formValue(form, `services_${index}_group`);
+      if (!name && !price && !group) continue;
+      items.push({ name, ...(price ? { price } : {}), ...(group ? { group } : {}) });
+      if (items.length >= BUSINESS_PROFILE_LIMITS.services) break;
     }
     candidate = replaceSection(candidate, 'services', {
       kind: 'services',
@@ -153,6 +180,26 @@ export async function handlePanelRequest(request: Request, env: Env): Promise<Re
   }
   if (!constantTimeEqual(formValue(form, 't'), token)) return notFound();
   const candidate = panelCandidate(site.data, form);
+  const addRows = formValue(form, 'add_rows');
+  const permitted = panelCapabilities(site.data);
+  const allowedRepeat = addRows === 'services'
+    ? permitted.has('services')
+    : (addRows === 'hours' || addRows === 'exceptions') && permitted.has('hours');
+  if (allowedRepeat) {
+    const prefix = addRows as 'hours' | 'exceptions' | 'services';
+    let rendered = 0;
+    const pattern = new RegExp(`^${prefix}_(\\d+)_`);
+    for (const key of form.keys()) {
+      const index = Number(key.match(pattern)?.[1]);
+      if (Number.isInteger(index)) rendered = Math.max(rendered, index + 1);
+    }
+    return response(panelForm(
+      { ...site, data: candidate },
+      token,
+      undefined,
+      { [prefix]: Math.min(BUSINESS_PROFILE_LIMITS[prefix] * 2, rendered + 3) },
+    ));
+  }
   const proposal = await createProposal(
     env,
     site.publicId,
@@ -162,7 +209,6 @@ export async function handlePanelRequest(request: Request, env: Env): Promise<Re
     { channel: 'panel' },
   );
   if (!proposal.ok) return response(panelForm(site, token, proposal.error), proposal.status);
-  const permitted = panelCapabilities(site.data);
   const updateRequest = await cp.createUpdateRequest({
     site,
     channel: 'panel',

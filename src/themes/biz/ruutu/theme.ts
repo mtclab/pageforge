@@ -36,6 +36,7 @@ const css = `/* business voice: ruutu — price-board rhythm */
   background: var(--surface);
   box-shadow: 7px 7px 0 var(--accent);
 }
+.service-group { margin-top: 1.75rem; border-bottom: 3px solid var(--text); padding-bottom: .35rem; letter-spacing: .1em; text-transform: uppercase; }
 .menu-board .service {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

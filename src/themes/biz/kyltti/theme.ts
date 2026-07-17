@@ -61,6 +61,7 @@ const css = `/* business voice: kyltti — sign-painter */
   text-transform: uppercase;
 }
 .services { grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 0; border: 3px solid var(--text); }
+.service-group { font-family: "Arial Narrow", "Helvetica Neue Condensed", sans-serif; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
 .service { padding: 1rem; border: 1px solid var(--text); }
 .service-price { margin-top: .45rem; font-size: 1.1rem; }
 .hours-list { border: 3px solid var(--text); padding: .8rem 1rem; }

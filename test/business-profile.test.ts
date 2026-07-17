@@ -53,22 +53,26 @@ describe('BusinessProfile validators', () => {
     expect(validateBusinessProfile(short)).toEqual([]);
     const wrapped = profile();
     wrapped.hours = [{ label: 'Ma', open: '21', close: '9' }];
-    expect(validateBusinessProfile(wrapped)).toEqual([
-      expect.stringContaining('avausajan'),
-    ]);
+    expect(validateBusinessProfile(wrapped)).toEqual([]);
+
+    const equal = profile();
+    equal.hours = [{ label: 'Ma', open: '09:00', close: '9' }];
+    expect(validateBusinessProfile(equal)).toContain(
+      'Avaus- ja sulkemisaika eivät voi olla samat.',
+    );
   });
 
   it('checks hours, duplicate days, item limits, prices, and photo paths', () => {
     expect(validateBusinessProfile(profile())).toEqual([]);
     const invalid = profile();
     invalid.hours = [
-      { label: 'Ma', open: '17:00', close: '09:00' },
+      { label: 'Ma', open: '09:00', close: '09:00' },
       { label: 'ma', open: '09:00', close: '17:00' },
     ];
     invalid.services = [{ name: 'Työ', price: 'free<script>' }];
     invalid.photos = [{ src: '/img/not-a-hash' }];
     expect(validateBusinessProfile(invalid)).toEqual(expect.arrayContaining([
-      expect.stringContaining('avausajan'),
+      expect.stringContaining('eivät voi olla samat'),
       expect.stringContaining('useammin'),
       expect.stringContaining('hinta'),
       expect.stringContaining('/img/<sha256>'),

@@ -41,17 +41,36 @@ function addressText(profile: BusinessProfile): string | undefined {
   return [address.street, locality].filter(Boolean).join(', ') || undefined;
 }
 
+function groupedItems(items: BusinessProfile['services']): BusinessProfile['services'] {
+  const ungrouped = items.filter((item) => !item.group?.trim());
+  const groups = new Map<string, BusinessProfile['services']>();
+  for (const item of items) {
+    const group = item.group?.trim();
+    if (!group) continue;
+    const entries = groups.get(group) ?? [];
+    entries.push({ ...item, group });
+    groups.set(group, entries);
+  }
+  return [...ungrouped, ...groups.values()].flat();
+}
+
 function sectionFor(kind: StructureSectionKind, profile: BusinessProfile): Section | null {
   switch (kind) {
     case 'about':
       return profile.about ? { kind: 'about', text: profile.about } : null;
     case 'hours':
-      return profile.hours.length ? { kind: 'hours', days: profile.hours } : null;
+      return profile.hours.length || (profile.exceptions?.length ?? 0)
+        ? {
+            kind: 'hours',
+            days: profile.hours,
+            ...(profile.exceptions?.length ? { exceptions: profile.exceptions } : {}),
+          }
+        : null;
     case 'services':
-      return profile.services.length ? { kind: 'services', items: profile.services } : null;
+      return profile.services.length ? { kind: 'services', items: groupedItems(profile.services) } : null;
     case 'menu':
       return profile.menu.length
-        ? { kind: 'services', title: BUSINESS_LABELS.fi.menu, items: profile.menu }
+        ? { kind: 'services', title: BUSINESS_LABELS.fi.menu, items: groupedItems(profile.menu) }
         : null;
     case 'gallery':
       return profile.photos.length

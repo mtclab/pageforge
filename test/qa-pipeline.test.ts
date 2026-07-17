@@ -50,7 +50,7 @@ describe('S6 deterministic QA checks', () => {
       make: (data, page) => [{
         ...data,
         sections: data.sections.map((section) => section.kind === 'hours'
-          ? { ...section, days: [{ label: 'Ma', open: '18:00', close: '09:00' }] }
+          ? { ...section, days: [{ label: 'Ma', open: '09:00', close: '09:00' }] }
           : section),
       }, page],
     },

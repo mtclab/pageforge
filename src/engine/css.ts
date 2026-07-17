@@ -149,6 +149,7 @@ body.bg-wash-corner {
 .hours-exceptions { margin-top: 0.5rem; }
 
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
 .service-price { color: var(--accent); font-weight: 700; }
 

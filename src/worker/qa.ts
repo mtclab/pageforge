@@ -83,7 +83,7 @@ function hoursResult(data: SiteData): boolean | string {
       if (day.closed) continue;
       const open = jsonLdTime(day.open);
       const close = jsonLdTime(day.close);
-      if (!open || !close || open >= close) return `Virheellinen aukioloaika: ${day.label || 'nimetön päivä'}`;
+      if (!open || !close || open === close) return `Virheellinen aukioloaika: ${day.label || 'nimetön päivä'}`;
     }
   }
   return true;

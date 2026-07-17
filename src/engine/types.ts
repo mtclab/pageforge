@@ -44,7 +44,7 @@ export type Section =
   | {
       kind: 'services';
       title?: string;
-      items: { name: string; desc?: string; price?: string }[];
+      items: { name: string; desc?: string; price?: string; group?: string }[];
     }
   | { kind: 'notice'; title?: string; text: string; until?: string }
   | { kind: 'location'; title?: string; address?: string; phone?: string; mapUrl?: string };

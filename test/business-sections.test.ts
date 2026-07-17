@@ -122,7 +122,7 @@ describe('business SiteData validation', () => {
   it('rejects oversized and malformed business sections', () => {
     const variants: SiteData[] = [
       { ...businessSite(), sections: [{ kind: 'hours', days: Array.from({ length: 15 }, (_, i) => ({ label: String(i) })) }] },
-      { ...businessSite(), sections: [{ kind: 'hours', days: [], exceptions: Array.from({ length: 21 }, () => ({ date: 'x', text: 'x' })) }] },
+      { ...businessSite(), sections: [{ kind: 'hours', days: [], exceptions: Array.from({ length: 11 }, () => ({ date: 'x', text: 'x' })) }] },
       { ...businessSite(), sections: [{ kind: 'services', items: Array.from({ length: 61 }, () => ({ name: 'x' })) }] },
       { ...businessSite(), sections: [{ kind: 'notice', text: 'x'.repeat(301) }] },
       { ...businessSite(), sections: [{ kind: 'location', address: 'x'.repeat(201) }] },

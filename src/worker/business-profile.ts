@@ -13,9 +13,11 @@ export interface BusinessProfileItem {
   name: string;
   price?: string;
   desc?: string;
+  group?: string;
 }
 
 export type BusinessHoursDay = Extract<Section, { kind: 'hours' }>['days'][number];
+export type BusinessHoursException = NonNullable<Extract<Section, { kind: 'hours' }>['exceptions']>[number];
 
 export interface BusinessProfile {
   identity: {
@@ -29,6 +31,7 @@ export interface BusinessProfile {
     address?: { street: string; postal: string; city: string };
   };
   hours: BusinessHoursDay[];
+  exceptions?: BusinessHoursException[];
   services: BusinessProfileItem[];
   menu: BusinessProfileItem[];
   about?: string;
@@ -49,6 +52,7 @@ export interface ProspectFacts {
 
 export const BUSINESS_PROFILE_LIMITS = {
   hours: 14,
+  exceptions: 10,
   services: 20,
   menu: 20,
   photos: 6,
@@ -134,7 +138,18 @@ export function validateBusinessProfile(profile: BusinessProfile): string[] {
     const open = jsonLdTime(day.open);
     const close = jsonLdTime(day.close);
     if (!open || !close) errors.push(`Aukiolorivin ${index + 1} kellonaika on virheellinen.`);
-    else if (open >= close) errors.push(`Aukiolorivin ${index + 1} avausajan pitää olla ennen sulkemisaikaa.`);
+    else if (open === close) errors.push('Avaus- ja sulkemisaika eivät voi olla samat.');
+  }
+  if ((profile.exceptions?.length ?? 0) > BUSINESS_PROFILE_LIMITS.exceptions) {
+    errors.push('Poikkeusaukioloja on liikaa.');
+  }
+  for (const [index, exception] of (profile.exceptions ?? []).entries()) {
+    if (!exception.date.trim() || !exception.text.trim()) {
+      errors.push(`Poikkeusaukiolorivillä ${index + 1} tarvitaan päivä ja teksti.`);
+    }
+    if (exception.date.length > 50 || exception.text.length > 300) {
+      errors.push(`Poikkeusaukiolorivi ${index + 1} on liian pitkä.`);
+    }
   }
   for (const [label, items, limit] of [
     ['Palveluita', profile.services, BUSINESS_PROFILE_LIMITS.services],
@@ -145,6 +160,9 @@ export function validateBusinessProfile(profile: BusinessProfile): string[] {
       if (!item.name.trim()) errors.push(`${label} rivillä ${index + 1} nimi vaaditaan.`);
       if (item.name.length > 200 || (item.desc?.length ?? 0) > 2000) {
         errors.push(`${label} rivillä ${index + 1} on liian pitkä.`);
+      }
+      if ((item.group?.length ?? 0) > 60) {
+        errors.push(`${label} rivillä ${index + 1} ryhmä on liian pitkä.`);
       }
       if (item.price && !validatePrice(item.price)) {
         errors.push(`${label} rivillä ${index + 1} hinta on virheellinen.`);
