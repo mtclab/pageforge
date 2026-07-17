@@ -20,6 +20,11 @@ import {
 } from './shared.js';
 import { readSessionCookie, verifySessionCookie } from './session.js';
 import { publishGate, publishGateError } from './qa.js';
+import {
+  createOrderCheckout,
+  OpenOrderError,
+  unusedOrderId,
+} from './payments.js';
 import { validateSiteData } from './validate.js';
 import { handleEmailSimulator } from './update-channels.js';
 
@@ -269,6 +274,9 @@ export async function publishSiteVersion(
   } else {
     const gate = await publishGate(cp, site);
     if (!gate.passed) return { ok: false, status: 409, error: publishGateError(gate) };
+    if (actor === 'approval-key' && !(await cp.siteIsEntitled(site.id))) {
+      return { ok: false, status: 409, error: 'Tilaus ei ole maksettu.' };
+    }
   }
   await cp.publishSiteVersion(site, n, actor, overrideReason);
   return { ok: true, value: n };
@@ -462,6 +470,29 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
     return result.ok
       ? json(200, { ok: true, version: result.value })
       : json(result.status, { error: result.error });
+  }
+
+  const orderMatch = pathname.match(/^\/api\/biz\/sites\/([a-z0-9]{8})\/order$/);
+  if (orderMatch) {
+    if (request.method !== 'POST') return methodNotAllowed();
+    const site = await cp.getSiteByPublicId(orderMatch[1]!);
+    if (!site) return json(404, { error: 'Site not found.' });
+    const auth = await siteAuth(request, env, site);
+    if (auth instanceof Response) return auth;
+    try {
+      const checkout = await createOrderCheckout(
+        cp,
+        env,
+        site,
+        url.origin,
+        await unusedOrderId(cp),
+        auth.actor,
+      );
+      return json(200, { orderId: checkout.order.publicId, redirectUrl: checkout.redirectUrl });
+    } catch (error) {
+      if (error instanceof OpenOrderError) return json(409, { error: 'Site already has an open order.' });
+      throw error;
+    }
   }
 
   const publishMatch = pathname.match(/^\/api\/biz\/sites\/([a-z0-9]{8})\/(publish|unpublish)$/);

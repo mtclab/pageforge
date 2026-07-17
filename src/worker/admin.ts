@@ -20,6 +20,11 @@ import {
   type UpdateRequestStatus,
 } from './db.js';
 import {
+  createOrderCheckout,
+  OpenOrderError,
+  unusedOrderId,
+} from './payments.js';
+import {
   auditPage,
   dashboardPage,
   intakePage,
@@ -202,7 +207,7 @@ async function siteDetailResponse(
   error?: string,
   status = 200,
 ): Promise<Response> {
-  const [versions, proposals, photoCount, events, tokens, panelTokens, updateRequests, comments, qaRun, checklist, gate] = await Promise.all([
+  const [versions, proposals, photoCount, events, tokens, panelTokens, updateRequests, comments, qaRun, checklist, gate, order, billingEvents] = await Promise.all([
     cp.listSnapshots(site.id),
     cp.listOpenProposals(site.id),
     cp.photoCountForSite(site.id),
@@ -214,6 +219,8 @@ async function siteDetailResponse(
     cp.latestQaRun(site.id),
     cp.listLaunchChecklist(site.id),
     publishGate(cp, site),
+    cp.latestOrderForSite(site.id),
+    cp.listBillingEventsForSite(site.id, 20),
   ]);
   return html(siteDetailPage({
     site,
@@ -228,6 +235,8 @@ async function siteDetailResponse(
     qaRun: qaRun ?? undefined,
     checklist,
     publishGateMessage: publishGateError(gate),
+    order: order ?? undefined,
+    billingEvents,
     csrf,
     ...(error === undefined ? {} : { error }),
   }), status);
@@ -479,6 +488,29 @@ export async function handleAdminRequest(request: Request, env: Env): Promise<Re
     const results = await runQaChecks(site.data, bizHtml(site.data, false), cp);
     await cp.recordQaRun(site, site.currentVersion, results, 'operator');
     return redirect(`/admin/sites/${site.publicId}`);
+  }
+
+  const orderMatch = pathname.match(/^\/admin\/sites\/([^/]+)\/order$/);
+  if (orderMatch) {
+    if (request.method !== 'POST') return methodNotAllowed(csrf);
+    const site = await cp.getSiteByPublicId(orderMatch[1]!);
+    if (!site) return html(messagePage('Sivustoa ei löytynyt', 'Tuntematon sivusto.', csrf), 404);
+    try {
+      const checkout = await createOrderCheckout(
+        cp,
+        env,
+        site,
+        url.origin,
+        await unusedOrderId(cp),
+        'operator',
+      );
+      return redirect(checkout.redirectUrl);
+    } catch (error) {
+      if (error instanceof OpenOrderError) {
+        return siteDetailResponse(cp, site, csrf, 'Sivustolla on jo avoin tilaus.', 409);
+      }
+      throw error;
+    }
   }
 
   const checklistMatch = pathname.match(/^\/admin\/sites\/([^/]+)\/checklist\/([^/]+)$/);

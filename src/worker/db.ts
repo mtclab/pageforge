@@ -160,6 +160,61 @@ export interface PanelToken {
   createdAt: number;
 }
 
+export type OrderStatus =
+  | 'luotu'
+  | 'maksettu'
+  | 'peruttu'
+  | 'maksu_epaonnistui'
+  | 'irtisanottu';
+
+export const ORDER_STATUSES: readonly OrderStatus[] = [
+  'luotu',
+  'maksettu',
+  'peruttu',
+  'maksu_epaonnistui',
+  'irtisanottu',
+];
+
+export interface Order {
+  id: number;
+  publicId: string;
+  siteId: number;
+  kind: 'build_and_host';
+  status: OrderStatus;
+  provider: string;
+  providerSessionId?: string;
+  providerSubId?: string;
+  amountBuildCents: number;
+  amountMonthlyCents: number;
+  currency: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+interface OrderRow {
+  id: number;
+  public_id: string;
+  site_id: number;
+  kind: 'build_and_host';
+  status: OrderStatus;
+  provider: string;
+  provider_session_id: string | null;
+  provider_sub_id: string | null;
+  amount_build_cents: number;
+  amount_monthly_cents: number;
+  currency: string;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface BillingEvent {
+  id: number;
+  orderId?: number;
+  type: string;
+  payload: string;
+  createdAt: number;
+}
+
 export type CommentAuthor = 'operator' | 'customer';
 
 export interface DraftComment {
@@ -245,6 +300,7 @@ export interface StatusCounts {
   sites: Record<SiteStatus, number>;
   openProposals: number;
   openUpdateRequests: number;
+  orders: Record<OrderStatus, number>;
 }
 
 export interface AuditEventRecord extends AuditEvent {
@@ -374,7 +430,7 @@ export class ControlPlane {
   }
 
   async countsByStatus(): Promise<StatusCounts> {
-    const [prospectRows, siteRows, proposalRow, updateRequestRow] = await Promise.all([
+    const [prospectRows, siteRows, proposalRow, updateRequestRow, orderRows] = await Promise.all([
       this.db
         .prepare('SELECT status, COUNT(*) AS count FROM prospects GROUP BY status')
         .all<{ status: ProspectStatus; count: number }>(),
@@ -387,6 +443,9 @@ export class ControlPlane {
       this.db
         .prepare("SELECT COUNT(*) AS count FROM update_requests WHERE status != 'suljettu'")
         .first<{ count: number }>(),
+      this.db
+        .prepare('SELECT status, COUNT(*) AS count FROM orders GROUP BY status')
+        .all<{ status: OrderStatus; count: number }>(),
     ]);
     const prospects = Object.fromEntries(PROSPECT_STATUSES.map((status) => [status, 0])) as
       Record<ProspectStatus, number>;
@@ -394,11 +453,15 @@ export class ControlPlane {
       Record<SiteStatus, number>;
     for (const row of prospectRows.results) prospects[row.status] = row.count;
     for (const row of siteRows.results) sites[row.status] = row.count;
+    const orders = Object.fromEntries(ORDER_STATUSES.map((status) => [status, 0])) as
+      Record<OrderStatus, number>;
+    for (const row of orderRows.results) orders[row.status] = row.count;
     return {
       prospects,
       sites,
       openProposals: proposalRow?.count ?? 0,
       openUpdateRequests: updateRequestRow?.count ?? 0,
+      orders,
     };
   }
 
@@ -1209,6 +1272,206 @@ export class ControlPlane {
         entityId: site.publicId,
       }),
     ]);
+  }
+
+  // --- orders and billing ----------------------------------------------
+
+  private rowToOrder(row: OrderRow): Order {
+    return {
+      id: row.id,
+      publicId: row.public_id,
+      siteId: row.site_id,
+      kind: row.kind,
+      status: row.status,
+      provider: row.provider,
+      ...(row.provider_session_id === null ? {} : { providerSessionId: row.provider_session_id }),
+      ...(row.provider_sub_id === null ? {} : { providerSubId: row.provider_sub_id }),
+      amountBuildCents: row.amount_build_cents,
+      amountMonthlyCents: row.amount_monthly_cents,
+      currency: row.currency,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  }
+
+  async createOrder(input: {
+    publicId: string;
+    site: Site;
+    provider: string;
+    amountBuildCents: number;
+    amountMonthlyCents: number;
+    actor: Extract<AuditActor, 'operator' | 'approval-key'>;
+  }): Promise<Order> {
+    const at = this.now();
+    const results = await this.db.batch([
+      this.db
+        .prepare(
+          `INSERT INTO orders
+             (public_id, site_id, kind, status, provider, amount_build_cents,
+              amount_monthly_cents, currency, created_at, updated_at)
+           VALUES (?, ?, 'build_and_host', 'luotu', ?, ?, ?, 'eur', ?, ?)`,
+        )
+        .bind(
+          input.publicId,
+          input.site.id,
+          input.provider,
+          input.amountBuildCents,
+          input.amountMonthlyCents,
+          at,
+          at,
+        ),
+      this.auditStatement(at, {
+        actor: input.actor,
+        action: 'order.create',
+        entity: 'order',
+        entityId: input.publicId,
+        detail: { siteId: input.site.publicId, provider: input.provider },
+      }),
+    ]);
+    const id = results[0]?.meta.last_row_id;
+    if (id === undefined) throw new Error('order insert did not return an id');
+    return {
+      id,
+      publicId: input.publicId,
+      siteId: input.site.id,
+      kind: 'build_and_host',
+      status: 'luotu',
+      provider: input.provider,
+      amountBuildCents: input.amountBuildCents,
+      amountMonthlyCents: input.amountMonthlyCents,
+      currency: 'eur',
+      createdAt: at,
+      updatedAt: at,
+    };
+  }
+
+  async setOrderCheckout(orderId: number, providerSessionId: string): Promise<void> {
+    await this.db
+      .prepare('UPDATE orders SET provider_session_id = ?, updated_at = ? WHERE id = ?')
+      .bind(providerSessionId, this.now(), orderId)
+      .run();
+  }
+
+  async getOrderByPublicId(publicId: string): Promise<Order | null> {
+    const row = await this.db
+      .prepare('SELECT * FROM orders WHERE public_id = ?')
+      .bind(publicId)
+      .first<OrderRow>();
+    return row ? this.rowToOrder(row) : null;
+  }
+
+  async latestOrderForSite(siteId: number): Promise<Order | null> {
+    const row = await this.db
+      .prepare('SELECT * FROM orders WHERE site_id = ? ORDER BY created_at DESC, id DESC LIMIT 1')
+      .bind(siteId)
+      .first<OrderRow>();
+    return row ? this.rowToOrder(row) : null;
+  }
+
+  async openOrderForSite(siteId: number): Promise<Order | null> {
+    const row = await this.db
+      .prepare("SELECT * FROM orders WHERE site_id = ? AND status = 'luotu' ORDER BY id DESC LIMIT 1")
+      .bind(siteId)
+      .first<OrderRow>();
+    return row ? this.rowToOrder(row) : null;
+  }
+
+  async siteIsEntitled(siteId: number): Promise<boolean> {
+    return (await this.latestOrderForSite(siteId))?.status === 'maksettu';
+  }
+
+  private orderAuditAction(status: OrderStatus): 'order.paid' | 'order.failed' | 'order.cancel' {
+    if (status === 'maksettu') return 'order.paid';
+    if (status === 'maksu_epaonnistui') return 'order.failed';
+    return 'order.cancel';
+  }
+
+  async transitionOrder(
+    order: Order,
+    status: Exclude<OrderStatus, 'luotu'>,
+    providerSubId?: string,
+  ): Promise<void> {
+    const at = this.now();
+    await this.db.batch([
+      this.db
+        .prepare(
+          `UPDATE orders
+              SET status = ?, provider_sub_id = COALESCE(?, provider_sub_id), updated_at = ?
+            WHERE id = ?`,
+        )
+        .bind(status, providerSubId ?? null, at, order.id),
+      this.auditStatement(at, {
+        actor: 'system',
+        action: this.orderAuditAction(status),
+        entity: 'order',
+        entityId: order.publicId,
+        detail: { status },
+      }),
+    ]);
+  }
+
+  async recordBillingEvent(input: {
+    order?: Order;
+    type: string;
+    payload: string;
+    status?: Exclude<OrderStatus, 'luotu'>;
+    providerSubId?: string;
+  }): Promise<void> {
+    const at = this.now();
+    const statements = [
+      this.db
+        .prepare(
+          'INSERT INTO billing_events (order_id, type, payload, created_at) VALUES (?, ?, ?, ?)',
+        )
+        .bind(input.order?.id ?? null, input.type, input.payload, at),
+    ];
+    if (input.order && input.status) {
+      statements.push(
+        this.db
+          .prepare(
+            `UPDATE orders
+                SET status = ?, provider_sub_id = COALESCE(?, provider_sub_id), updated_at = ?
+              WHERE id = ?`,
+          )
+          .bind(input.status, input.providerSubId ?? null, at, input.order.id),
+        this.auditStatement(at, {
+          actor: 'system',
+          action: this.orderAuditAction(input.status),
+          entity: 'order',
+          entityId: input.order.publicId,
+          detail: { status: input.status, event: input.type },
+        }),
+      );
+    }
+    await this.db.batch(statements);
+  }
+
+  async listBillingEventsForSite(siteId: number, limit = 20): Promise<BillingEvent[]> {
+    const cappedLimit = Math.max(1, Math.min(100, Math.floor(limit)));
+    const { results } = await this.db
+      .prepare(
+        `SELECT b.id, b.order_id, b.type, b.payload, b.created_at
+           FROM billing_events b
+           JOIN orders o ON o.id = b.order_id
+          WHERE o.site_id = ?
+          ORDER BY b.id DESC
+          LIMIT ?`,
+      )
+      .bind(siteId, cappedLimit)
+      .all<{
+        id: number;
+        order_id: number | null;
+        type: string;
+        payload: string;
+        created_at: number;
+      }>();
+    return results.map((row) => ({
+      id: row.id,
+      ...(row.order_id === null ? {} : { orderId: row.order_id }),
+      type: row.type,
+      payload: row.payload,
+      createdAt: row.created_at,
+    }));
   }
 
   // --- photos ------------------------------------------------------------

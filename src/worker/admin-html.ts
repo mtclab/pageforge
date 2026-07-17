@@ -6,9 +6,11 @@ import {
 } from './business-profile.js';
 import type {
   AuditEventRecord,
+  BillingEvent,
   BusinessProfileRecord,
   DraftComment,
   OpenProposal,
+  Order,
   LaunchChecklistRecord,
   PreviewToken,
   PanelToken,
@@ -22,7 +24,7 @@ import type {
   UpdateRequest,
   UpdateRequestStatus,
 } from './db.js';
-import { PROSPECT_STATUSES, SITE_STATUSES } from './db.js';
+import { ORDER_STATUSES, PROSPECT_STATUSES, SITE_STATUSES } from './db.js';
 import { LAUNCH_CHECKLIST_ITEMS } from './qa.js';
 
 function formToken(csrf: string): string {
@@ -31,6 +33,18 @@ function formToken(csrf: string): string {
 
 function badge(status: string): string {
   return `<span class="badge">${esc(status)}</span>`;
+}
+
+const ORDER_STATUS_FI = {
+  luotu: 'Luotu',
+  maksettu: 'Maksettu',
+  peruttu: 'Peruttu',
+  maksu_epaonnistui: 'Maksu epäonnistui',
+  irtisanottu: 'Irtisanottu',
+} as const;
+
+function orderBadge(status: Order['status']): string {
+  return badge(ORDER_STATUS_FI[status]);
 }
 
 function formatTime(at: number): string {
@@ -114,9 +128,11 @@ function auditTable(events: AuditEventRecord[]): string {
 export function dashboardPage(counts: StatusCounts, events: AuditEventRecord[], csrf: string): string {
   const prospectCards = PROSPECT_STATUSES.map((status) => `<div class="card"><div>${badge(status)}</div><div class="number">${esc(String(counts.prospects[status]))}</div></div>`).join('');
   const siteCards = SITE_STATUSES.map((status) => `<div class="card"><div>${badge(status)}</div><div class="number">${esc(String(counts.sites[status]))}</div></div>`).join('');
+  const orderCards = ORDER_STATUSES.map((status) => `<div class="card"><div>${orderBadge(status)}</div><div class="number">${esc(String(counts.orders[status]))}</div></div>`).join('');
   return layout('Dashboard', `<h1>Dashboard</h1>
     <h2>Prospektit</h2><div class="grid">${prospectCards}</div>
     <h2>Sivustot</h2><div class="grid">${siteCards}<div class="card"><div>Avoimet ehdotukset</div><div class="number">${esc(String(counts.openProposals))}</div></div><a class="card" href="/admin/updates"><div>Avoimet päivityspyynnöt</div><div class="number">${esc(String(counts.openUpdateRequests))}</div></a></div>
+    <h2>Tilaukset</h2><div class="grid">${orderCards}</div>
     <h2>Viimeisimmät tapahtumat</h2>${auditTable(events)}`, csrf);
 }
 
@@ -261,12 +277,14 @@ export function siteDetailPage(input: {
   qaRun?: QaRun;
   checklist: LaunchChecklistRecord[];
   publishGateMessage: string;
+  order?: Order;
+  billingEvents: BillingEvent[];
   csrf: string;
   error?: string;
 }): string {
   const {
     site, versions, proposals, photoCount, events, tokens, panelTokens, updateRequests, comments,
-    qaRun, checklist, publishGateMessage, csrf, error,
+    qaRun, checklist, publishGateMessage, order, billingEvents, csrf, error,
   } = input;
   const message = error === undefined ? '' : `<p class="notice error" role="alert">${esc(error)}</p>`;
   const proposalHtml = proposals.map((proposal) => {
@@ -285,6 +303,14 @@ export function siteDetailPage(input: {
   const proposalOptions = proposals.map((proposal) => `<option value="${escAttr(proposal.proposalId)}">${esc(proposal.proposalId)}</option>`).join('');
   const commentRows = comments.map((comment) => `<tr><td>${formatTime(comment.createdAt)}</td><td>${esc(comment.proposalPublicId ?? 'Koko sivusto')}</td><td>${esc(comment.author)}</td><td>${esc(comment.body)}</td></tr>`).join('');
   const commentTable = commentRows ? `<div class="table-wrap"><table><thead><tr><th>Aika</th><th>Ehdotus</th><th>Kirjoittaja</th><th>Kommentti</th></tr></thead><tbody>${commentRows}</tbody></table></div>` : '<p class="muted">Ei kommentteja.</p>';
+  const orderDetails = order === undefined
+    ? '<p class="muted">Ei tilausta.</p>'
+    : `<dl class="definition"><dt>Tila</dt><dd>${orderBadge(order.status)}</dd><dt>Tilaus-ID</dt><dd>${esc(order.publicId)}</dd><dt>Palveluntarjoaja</dt><dd>${esc(order.provider)}</dd><dt>Hinta</dt><dd>${esc((order.amountBuildCents / 100).toFixed(2))} € + ${esc((order.amountMonthlyCents / 100).toFixed(2))} €/kk</dd></dl>`;
+  const billingRows = billingEvents.map((event) => `<tr><td>${formatTime(event.createdAt)}</td><td>${esc(event.type)}</td><td><code>${esc(event.payload.length > 300 ? `${event.payload.slice(0, 300)}…` : event.payload)}</code></td></tr>`).join('');
+  const billingTable = billingRows
+    ? `<div class="table-wrap"><table><thead><tr><th>Aika</th><th>Tyyppi</th><th>Raakatapahtuma</th></tr></thead><tbody>${billingRows}</tbody></table></div>`
+    : '<p class="muted">Ei laskutustapahtumia.</p>';
+  const orderBlock = `${orderDetails}<form action="/admin/sites/${escAttr(site.publicId)}/order" method="post">${formToken(csrf)}<button type="submit">Luo tilaus</button></form><h3>Laskutustapahtumat</h3>${billingTable}`;
   const qaRows = qaRun?.results.map((result) => `<tr><td>${esc(result.label)}</td><td>${result.passed ? 'Läpäisi' : 'Hylätty'}</td><td>${esc(result.detail ?? '')}</td></tr>`).join('') ?? '';
   const qaTable = qaRun
     ? `<p>Versio ${esc(String(qaRun.version))} · ${formatTime(qaRun.createdAt)} · <strong>${qaRun.passed ? 'Läpäisi' : 'Hylätty'}</strong></p><div class="table-wrap"><table><thead><tr><th>Tarkistus</th><th>Tulos</th><th>Lisätieto</th></tr></thead><tbody>${qaRows}</tbody></table></div>`
@@ -298,6 +324,7 @@ export function siteDetailPage(input: {
   const publishControls = `${gateHint}<div class="actions">${publishForm(site.currentVersion)}${site.publishedVersion === undefined ? '' : `<form action="/admin/sites/${escAttr(site.publicId)}/unpublish" method="post">${formToken(csrf)}<button class="danger" type="submit">Poista julkaisu</button></form>`}</div>`;
   return layout(site.data.name, `<p><a href="/admin/sites">← Sivustot</a></p><h1>${esc(site.data.name)}</h1>${message}
     <dl class="definition"><dt>ID</dt><dd>${esc(site.publicId)}</dd><dt>Kuvaus</dt><dd>${esc(site.data.tagline ?? '—')}</dd><dt>Tila</dt><dd>${badge(site.status)}</dd><dt>Nykyinen versio</dt><dd>${esc(String(site.currentVersion))}</dd><dt>Julkaistu versio</dt><dd>${esc(site.publishedVersion === undefined ? '—' : String(site.publishedVersion))}</dd><dt>Kuvia</dt><dd>${esc(String(photoCount))}</dd><dt>Nykyisen esikatselu</dt><dd><a href="/p/${escAttr(site.publicId)}/current">/p/${esc(site.publicId)}/current</a></dd></dl>${publishControls}
+    <h2>Tilaus</h2>${orderBlock}
     <h2>QA</h2><form action="/admin/sites/${escAttr(site.publicId)}/qa" method="post">${formToken(csrf)}<button type="submit">Aja tarkistukset</button></form>${qaTable}
     <h3>Julkaisun tarkistuslista</h3><div class="grid">${checklistHtml}</div>
     <h2>Avoimet ehdotukset</h2><div class="card">${proposalHtml}</div>

@@ -4,6 +4,7 @@ import { collectImages, type SiteData } from '../engine/types.js';
 import { getTheme } from '../themes/index.js';
 import { adminNotFound, handleAdminRequest } from './admin.js';
 import { handleBizRequest } from './biz.js';
+import { handleBillingRequest } from './billing.js';
 import { handleMcpRequest } from './mcp.js';
 import { ControlPlane } from './db.js';
 import { type Env, JSON_HEADERS, MAX_BODY, json, sha256Hex } from './shared.js';
@@ -244,6 +245,9 @@ export default {
 
     const mutationPath = pathname === '/api/mcp'
       || pathname.startsWith('/api/biz/')
+      || pathname === '/api/billing/webhook'
+      || pathname.startsWith('/mock-checkout/')
+      || pathname.startsWith('/order/')
       || pathname.startsWith('/p/')
       || pathname.startsWith('/b/')
       || pathname.startsWith('/img/')
@@ -261,6 +265,11 @@ export default {
       }
       if (pathname === '/api/mcp') return handleMcpRequest(request, env);
       if (pathname === '/panel') return handlePanelRequest(request, env);
+      if (pathname === '/api/billing/webhook'
+        || pathname.startsWith('/mock-checkout/')
+        || pathname.startsWith('/order/')) {
+        return handleBillingRequest(request, env);
+      }
       return handleBizRequest(request, env);
     }
 

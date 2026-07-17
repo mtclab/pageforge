@@ -52,6 +52,10 @@ export interface Env {
   MUTATION_API_ENABLED?: string;
   BIZ_INDEXING_ENABLED?: string;
   OPERATOR_KEY?: string;
+  PRICE_BUILD_CENTS?: string;
+  PRICE_MONTHLY_CENTS?: string;
+  STRIPE_SECRET_KEY?: string;
+  STRIPE_WEBHOOK_SECRET?: string;
   BUILD_COMMIT?: string;
   BUILD_TIME?: string;
 }

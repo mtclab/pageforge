@@ -10,11 +10,13 @@ routes = [
 PUBLISH_ENABLED = "false"
 MUTATION_API_ENABLED = "false"
 BIZ_INDEXING_ENABLED = "false"
+PRICE_BUILD_CENTS = "24900"
+PRICE_MONTHLY_CENTS = "1900"
 
 [assets]
 directory = "dist"
 binding = "ASSETS"
-run_worker_first = ["/api/*", "/s/*", "/p/*", "/b/*", "/img/*", "/panel", "/robots.txt", "/biz-sitemap.xml"]
+run_worker_first = ["/api/*", "/s/*", "/p/*", "/b/*", "/img/*", "/mock-checkout/*", "/order/*", "/panel", "/robots.txt", "/biz-sitemap.xml"]
 
 [[kv_namespaces]]
 binding = "SITES"

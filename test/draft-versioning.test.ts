@@ -289,6 +289,15 @@ describe('S5 draft versioning', () => {
     for (const item of LAUNCH_CHECKLIST_ITEMS) {
       await cp.checkLaunchChecklist(approved, item.id, 'operator');
     }
+    const paidOrder = await cp.createOrder({
+      publicId: 'order001',
+      site: approved,
+      provider: 'mock',
+      amountBuildCents: 24_900,
+      amountMonthlyCents: 1_900,
+      actor: 'operator',
+    });
+    await cp.transitionOrder(paidOrder, 'maksettu');
 
     const live = await worker.fetch(new Request('https://example.test/b/publish1'), env);
     expect(await live.text()).toContain('Version two');
