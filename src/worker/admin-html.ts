@@ -230,7 +230,7 @@ export function intakePage(input: {
     row: (index: number, blank?: boolean) => string,
   ): string => {
     const rows = Array.from({ length: countFor(prefix, filled) }, (_, index) => row(index)).join('');
-    return `<section data-repeat="${escAttr(prefix)}"><h2>${esc(title)}</h2>${filled ? '' : '<p class="repeat-empty">Ei rivejä vielä - lisää ensimmäinen.</p>'}<div class="table-wrap"><table><thead><tr>${headings.map((heading) => `<th>${esc(heading)}</th>`).join('')}<th>Toiminnot</th></tr></thead><tbody data-repeat-rows>${rows}</tbody></table></div><template>${row(0, true)}</template><div class="repeat-actions"><button class="secondary" type="submit" name="add_rows" value="${escAttr(prefix)}" data-repeat-add>Lisää rivejä</button></div></section>`;
+    return `<section data-repeat="${escAttr(prefix)}"><h2>${esc(title)}</h2><div class="table-wrap"><table><thead><tr>${headings.map((heading) => `<th>${esc(heading)}</th>`).join('')}<th>Toiminnot</th></tr></thead><tbody data-repeat-rows>${rows}</tbody></table></div><template>${row(0, true)}</template><div class="repeat-actions"><button class="secondary" type="submit" name="add_rows" value="${escAttr(prefix)}" data-repeat-add>Lisää rivejä</button></div></section>`;
   };
   const hourRow = (index: number, blank = false): string => {
     const row = blank ? undefined : profile.hours[index];

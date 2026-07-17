@@ -56,7 +56,7 @@ function panelForm(site: Site, token: string, error?: string, rowCounts: Record<
     const limit = BUSINESS_PROFILE_LIMITS[prefix];
     const count = Math.min(limit * 2, Math.max(filled + 2, rowCounts[prefix] ?? 0));
     const rows = Array.from({ length: count }, (_, index) => row(index)).join('');
-    return `<section data-repeat="${prefix}"><h2>${esc(title)}</h2>${count ? '' : '<p class="repeat-empty">Ei rivejä vielä - lisää ensimmäinen.</p>'}<div class="table-wrap"><table><thead><tr>${headings.map((heading) => `<th>${esc(heading)}</th>`).join('')}<th>Toiminnot</th></tr></thead><tbody data-repeat-rows>${rows}</tbody></table></div><template>${row(0, true)}</template><div class="repeat-actions"><button type="submit" name="add_rows" value="${prefix}" data-repeat-add>Lisää rivejä</button></div></section>`;
+    return `<section data-repeat="${prefix}"><h2>${esc(title)}</h2><div class="table-wrap"><table><thead><tr>${headings.map((heading) => `<th>${esc(heading)}</th>`).join('')}<th>Toiminnot</th></tr></thead><tbody data-repeat-rows>${rows}</tbody></table></div><template>${row(0, true)}</template><div class="repeat-actions"><button type="submit" name="add_rows" value="${prefix}" data-repeat-add>Lisää rivejä</button></div></section>`;
   };
   const hourRow = (index: number, blank = false): string => {
     const row = blank ? undefined : hours?.days[index];

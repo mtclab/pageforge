@@ -54,7 +54,7 @@ describe('S13 form mechanics', () => {
     for (const prefix of ['hours', 'exceptions', 'services', 'menu', 'links']) {
       const section = html.match(new RegExp(`<section data-repeat="${prefix}">([\\s\\S]*?)</section>`))?.[1];
       expect(section).toBeDefined();
-      expect(section).toContain('Ei rivejä vielä - lisää ensimmäinen.');
+      expect(section).not.toContain('Ei rivejä vielä');
       expect(section?.match(/<tr data-repeat-row>/g)).toHaveLength(3); // two rows + inert template
       expect(section).toContain(`name="add_rows" value="${prefix}"`);
     }
