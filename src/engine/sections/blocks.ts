@@ -16,7 +16,7 @@ export function renderSection(
 ): string {
   switch (section.kind) {
     case 'about':
-      return renderAbout(section, idx);
+      return renderAbout(section, idx, lang);
     case 'projects':
       return renderProjects(section, idx);
     case 'hobbies':
@@ -46,10 +46,10 @@ ${body}
 </section>`;
 }
 
-function renderAbout(s: Extract<Section, { kind: 'about' }>, idx: number): string {
+function renderAbout(s: Extract<Section, { kind: 'about' }>, idx: number, lang?: string): string {
   const body = textToHtml(s.text);
   if (!body) return '';
-  return wrap('about', idx, 'About', body);
+  return wrap('about', idx, businessLabels(lang).about, body);
 }
 
 function renderProjects(s: Extract<Section, { kind: 'projects' }>, idx: number): string {

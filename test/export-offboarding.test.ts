@@ -134,7 +134,7 @@ describe('S10 export and offboarding', () => {
     expect(html).toContain('Julkaistu versio');
     expect(html).not.toContain('Nykyinen luonnos');
     expect(html).toContain(`src="assets/${sha}.png"`);
-    expect(html).not.toContain('mikoshi-credit');
+    expect(html).not.toContain('Made with');
     expect(html).not.toContain('Sivut: Mikoshi');
     expect(html).not.toContain('Luonnos - esikatselu');
     expect(JSON.parse(decoder.decode(files['site.json']!))).toEqual(expect.objectContaining({

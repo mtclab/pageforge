@@ -73,10 +73,16 @@ describe('renderer completion', () => {
     })).toBe('bad branding preference');
   });
 
-  it('adds published branding unless paid branding is hidden, while drafts retain the banner', () => {
-    expect(bizHtml(base, false)).toContain('<p class="mikoshi-credit">Sivut: Mikoshi</p>');
-    expect(bizHtml({ ...base, meta: { ...base.meta, hideBranding: true } }, false)).not.toContain('Sivut: Mikoshi');
-    const draft = bizHtml({ ...base, meta: { ...base.meta, hideBranding: true } }, true);
+  it('replaces the engine credit with the service credit on business pages', () => {
+    const published = bizHtml(base, false);
+    expect(published).toContain('Sivut: Mikoshi');
+    expect(published).not.toContain('Made with');
+    const hidden = bizHtml({ ...base, meta: { ...base.meta, hideBranding: true } }, false);
+    expect(hidden).not.toContain('Sivut: Mikoshi');
+    expect(hidden).not.toContain('Made with');
+    const draft = bizHtml(base, true);
     expect(draft).toContain('Luonnos - esikatselu');
+    expect(draft).toContain('Sivut: Mikoshi');
+    expect(draft).not.toContain('Made with');
   });
 });

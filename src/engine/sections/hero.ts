@@ -16,14 +16,17 @@ export function renderHero(data: SiteData, heroCta = false): string {
   if (data.tagline?.trim()) {
     parts.push(`<p class="tagline">${esc(data.tagline.trim())}</p>`);
   }
+  let stripLinks = data.links;
   if (heroCta) {
     const phone = data.links.find((link) => safePhoneUrl(link.url) !== null);
     if (phone) {
       const url = safePhoneUrl(phone.url)!;
       parts.push(`<a class="cta-call" href="${escAttr(url)}">${esc(phone.label.trim() || 'Soita')}</a>`);
+      // The CTA already renders this link - keep it out of the strip below.
+      stripLinks = data.links.filter((link) => link !== phone);
     }
   }
-  const links = renderLinks(data.links);
+  const links = renderLinks(stripLinks);
   if (links) parts.push(links);
   return `<header class="hero">\n${parts.join('\n')}\n</header>`;
 }

@@ -64,6 +64,8 @@ const PHOTO_TYPES = new Map<string, true>([
   ['image/webp', true],
 ]);
 
+const PAGEFORGE_CREDIT = 'Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a>';
+
 export function randomPreviewToken(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(16));
   return [...bytes].map((byte) => byte.toString(16).padStart(2, '0')).join('');
@@ -356,14 +358,17 @@ export function bizHtml(
   }
   const jsonLd = renderLocalBusinessJsonLd(data);
   if (jsonLd) html = html.replace('</head>', `${jsonLd}\n</head>`);
+  // Business pages carry the service credit instead of the engine's own:
+  // published and previews alike show "Sivut: Mikoshi" (unless the paid
+  // hideBranding option is on); exports (suppressBranding) carry neither.
+  const credit = suppressBranding || data.meta.hideBranding === true ? '' : 'Sivut: Mikoshi';
+  html = html.replace(PAGEFORGE_CREDIT, credit);
+  html = html.replace('<footer>\n<p></p>\n</footer>', '');
   if (draft) {
     const banner = '<div style="position:fixed;z-index:9999;top:0;left:0;right:0;padding:.35rem 1rem;text-align:center;background:var(--accent);color:var(--accent-contrast);font:600 .875rem/1.4 sans-serif">Luonnos - esikatselu</div>';
     const feedback = comment === undefined ? '' : `<form action="${escAttr(comment.action)}" method="post" style="position:relative;z-index:9998;margin:2.5rem auto 1rem;max-width:40rem;padding:1rem;background:#fff;color:#111;border:1px solid #bbb;font:400 1rem/1.4 sans-serif"><input type="hidden" name="t" value="${escAttr(comment.token)}"><label style="display:grid;gap:.4rem;font-weight:600">Kommentti<textarea name="body" required maxlength="2000" style="min-height:6rem;padding:.5rem"></textarea></label><button type="submit" style="margin-top:.6rem;padding:.45rem .8rem">Lähetä kommentti</button></form>`;
     html = html.replace(/(<body[^>]*>)/, `$1\n${banner}${feedback}`);
-  } else if (!suppressBranding && data.meta.hideBranding !== true) {
-    html = html.replace('</footer>', '<p class="mikoshi-credit">Sivut: Mikoshi</p>\n</footer>');
   }
-  if (suppressBranding) html = html.replace(/\n\.mikoshi-credit \{[^}]*\}/, '');
   return html;
 }
 

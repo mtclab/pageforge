@@ -238,7 +238,6 @@ footer { text-align: center; }
 <p class="tagline">Rauhallinen korttelikampaamo kaikenikäisille.</p>
 <a class="cta-call" href="tel:+358 44 555 0190">Varaa puhelimitse</a>
 <nav class="links" aria-label="Links">
-<a href="tel:+358 44 555 0190"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 2h3.1l1.5 5-2.1 1.6a16.7 16.7 0 0 0 6.3 6.3l1.6-2.1 5 1.5v3.1c0 2.5-2.1 4.6-4.6 4.6C8.9 22 2 15.1 2 6.6 2 4.1 4.1 2 6.6 2z"/></svg><span>Varaa puhelimitse</span></a>
 <a href="https://instagram.com/kampaamohilla"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 7.5zm0 2A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5zM17.5 5.5a1 1 0 1 1-1 1 1 1 0 0 1 1-1z"/></svg><span>Instagram</span></a>
 </nav>
 </header>
@@ -276,8 +275,7 @@ footer { text-align: center; }
 </section>
 </main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
-<p class="mikoshi-credit">Sivut: Mikoshi</p>
+<p>Sivut: Mikoshi</p>
 </footer>
 </div>
 </body>
@@ -586,9 +584,6 @@ footer { text-align: center; }
 <h1>Sataman Grillikioski</h1>
 <p class="tagline">Burgerit ja grilliruoat tuoreena sataman kupeessa.</p>
 <a class="cta-call" href="tel:+358 40 123 4567">Soita ja tilaa</a>
-<nav class="links" aria-label="Links">
-<a href="tel:+358 40 123 4567"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 2h3.1l1.5 5-2.1 1.6a16.7 16.7 0 0 0 6.3 6.3l1.6-2.1 5 1.5v3.1c0 2.5-2.1 4.6-4.6 4.6C8.9 22 2 15.1 2 6.6 2 4.1 4.1 2 6.6 2z"/></svg><span>Soita ja tilaa</span></a>
-</nav>
 </header>
 <main>
 <section class="section section-services" aria-labelledby="sec-1-h">
@@ -619,8 +614,7 @@ footer { text-align: center; }
 </section>
 </main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
-<p class="mikoshi-credit">Sivut: Mikoshi</p>
+<p>Sivut: Mikoshi</p>
 </footer>
 </div>
 </body>
@@ -925,8 +919,7 @@ footer { text-align: center; }
 </header>
 <main></main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
-<p class="mikoshi-credit">Sivut: Mikoshi</p>
+<p>Sivut: Mikoshi</p>
 </footer>
 </div>
 </body>
@@ -1199,9 +1192,6 @@ footer { text-align: center; }
 <h1>Korjaamo Rautio</h1>
 <p class="tagline">Luotettava autohuolto ja korjaus saman katon alta.</p>
 <a class="cta-call" href="tel:050 765 4321">Soita korjaamolle</a>
-<nav class="links" aria-label="Links">
-<a href="tel:050 765 4321"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 2h3.1l1.5 5-2.1 1.6a16.7 16.7 0 0 0 6.3 6.3l1.6-2.1 5 1.5v3.1c0 2.5-2.1 4.6-4.6 4.6C8.9 22 2 15.1 2 6.6 2 4.1 4.1 2 6.6 2z"/></svg><span>Soita korjaamolle</span></a>
-</nav>
 </header>
 <main>
 <section class="section section-services" aria-labelledby="sec-1-h">
@@ -1229,8 +1219,7 @@ footer { text-align: center; }
 </section>
 </main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
-<p class="mikoshi-credit">Sivut: Mikoshi</p>
+<p>Sivut: Mikoshi</p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {

@@ -1,6 +1,7 @@
 export type BusinessLocale = 'fi' | 'en' | 'sv';
 
 export interface BusinessLabels {
+  about: string;
   hours: string;
   services: string;
   menu: string;
@@ -16,6 +17,7 @@ export interface BusinessLabels {
 /** Shared headings and labels for deterministic business-site rendering. */
 export const BUSINESS_LABELS: Record<'fi' | 'en' | 'sv', BusinessLabels> = {
   fi: {
+    about: 'Tietoa meistä',
     hours: 'Aukioloajat',
     services: 'Palvelut',
     menu: 'Ruokalista',
@@ -28,6 +30,7 @@ export const BUSINESS_LABELS: Record<'fi' | 'en' | 'sv', BusinessLabels> = {
     exceptions: 'Poikkeusaukiolot',
   },
   en: {
+    about: 'About',
     hours: 'Hours',
     services: 'Services',
     menu: 'Menu',
@@ -40,6 +43,7 @@ export const BUSINESS_LABELS: Record<'fi' | 'en' | 'sv', BusinessLabels> = {
     exceptions: 'Exceptions',
   },
   sv: {
+    about: 'Om oss',
     hours: 'Öppettider',
     services: 'Tjänster',
     menu: 'Meny',
