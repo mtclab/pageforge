@@ -50,6 +50,14 @@ export interface SiteRow {
 
 export type SiteStatus = 'draft' | 'staged' | 'approved' | 'published' | 'archived';
 
+export const SITE_STATUSES: readonly SiteStatus[] = [
+  'draft',
+  'staged',
+  'approved',
+  'published',
+  'archived',
+];
+
 /** Public view of a site, with data parsed. */
 export interface Site {
   id: number;
@@ -105,6 +113,18 @@ export type ProspectStatus =
   | 'yllapidossa'
   | 'hylatty';
 
+export const PROSPECT_STATUSES: readonly ProspectStatus[] = [
+  'loytynyt',
+  'arvioitu',
+  'luonnos',
+  'yhteydenotto',
+  'vastasi',
+  'myyty',
+  'julkaistu',
+  'yllapidossa',
+  'hylatty',
+];
+
 export interface Prospect {
   publicId: string;
   name: string;
@@ -119,6 +139,38 @@ export interface Prospect {
   notes?: string;
   createdAt: number;
   updatedAt: number;
+}
+
+export interface SiteListItem extends Site {
+  openProposalCount: number;
+}
+
+export interface StatusCounts {
+  prospects: Record<ProspectStatus, number>;
+  sites: Record<SiteStatus, number>;
+  openProposals: number;
+}
+
+export interface AuditEventRecord extends AuditEvent {
+  id: number;
+  at: number;
+}
+
+export interface AuditEventOptions {
+  entity?: string;
+  entityId?: string;
+  before?: number;
+  limit: number;
+}
+
+interface AuditRow {
+  id: number;
+  at: number;
+  actor: AuditActor;
+  action: string;
+  entity: string;
+  entity_id: string;
+  detail: string | null;
 }
 
 /** Newest-first snapshots are capped, matching the documented KV-era behavior. */
@@ -208,6 +260,46 @@ export class ControlPlane {
       .bind(publicId)
       .first<SiteRow>();
     return row ? this.rowToSite(row) : null;
+  }
+
+  async countsByStatus(): Promise<StatusCounts> {
+    const [prospectRows, siteRows, proposalRow] = await Promise.all([
+      this.db
+        .prepare('SELECT status, COUNT(*) AS count FROM prospects GROUP BY status')
+        .all<{ status: ProspectStatus; count: number }>(),
+      this.db
+        .prepare('SELECT status, COUNT(*) AS count FROM sites GROUP BY status')
+        .all<{ status: SiteStatus; count: number }>(),
+      this.db
+        .prepare("SELECT COUNT(*) AS count FROM draft_versions WHERE kind = 'proposal' AND status = 'open'")
+        .first<{ count: number }>(),
+    ]);
+    const prospects = Object.fromEntries(PROSPECT_STATUSES.map((status) => [status, 0])) as
+      Record<ProspectStatus, number>;
+    const sites = Object.fromEntries(SITE_STATUSES.map((status) => [status, 0])) as
+      Record<SiteStatus, number>;
+    for (const row of prospectRows.results) prospects[row.status] = row.count;
+    for (const row of siteRows.results) sites[row.status] = row.count;
+    return { prospects, sites, openProposals: proposalRow?.count ?? 0 };
+  }
+
+  /** Site list and open-proposal totals in one JOIN query (no per-site reads). */
+  async listSites(): Promise<SiteListItem[]> {
+    const { results } = await this.db
+      .prepare(
+        `SELECT s.*,
+                SUM(CASE WHEN d.kind = 'proposal' AND d.status = 'open' THEN 1 ELSE 0 END)
+                  AS open_proposal_count
+           FROM sites s
+           LEFT JOIN draft_versions d ON d.site_id = s.id
+          GROUP BY s.id
+          ORDER BY s.updated_at DESC, s.id DESC`,
+      )
+      .all<SiteRow & { open_proposal_count: number }>();
+    return results.map((row) => ({
+      ...this.rowToSite(row),
+      openProposalCount: row.open_proposal_count,
+    }));
   }
 
   async listSnapshots(siteId: number): Promise<SnapshotMeta[]> {
@@ -452,6 +544,75 @@ export class ControlPlane {
     ]);
   }
 
+  async photoCountForSite(siteId: number): Promise<number> {
+    const row = await this.db
+      .prepare('SELECT COUNT(*) AS count FROM photos WHERE site_id = ?')
+      .bind(siteId)
+      .first<{ count: number }>();
+    return row?.count ?? 0;
+  }
+
+  // --- audit -------------------------------------------------------------
+
+  private rowToAuditEvent(row: AuditRow): AuditEventRecord {
+    return {
+      id: row.id,
+      at: row.at,
+      actor: row.actor,
+      action: row.action,
+      entity: row.entity,
+      entityId: row.entity_id,
+      ...(row.detail === null ? {} : { detail: JSON.parse(row.detail) as unknown }),
+    };
+  }
+
+  async listAuditEvents(opts: AuditEventOptions): Promise<AuditEventRecord[]> {
+    const where: string[] = [];
+    const values: unknown[] = [];
+    if (opts.entity !== undefined) {
+      where.push('entity = ?');
+      values.push(opts.entity);
+    }
+    if (opts.entityId !== undefined) {
+      where.push('entity_id = ?');
+      values.push(opts.entityId);
+    }
+    if (opts.before !== undefined) {
+      where.push('id < ?');
+      values.push(opts.before);
+    }
+    const limit = Math.max(1, Math.min(100, Math.floor(opts.limit)));
+    values.push(limit);
+    const { results } = await this.db
+      .prepare(
+        `SELECT id, at, actor, action, entity, entity_id, detail
+           FROM audit_events
+          ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
+          ORDER BY id DESC
+          LIMIT ?`,
+      )
+      .bind(...values)
+      .all<AuditRow>();
+    return results.map((row) => this.rowToAuditEvent(row));
+  }
+
+  /** Includes direct site events and proposal events whose detail names this site. */
+  async listAuditEventsForSite(sitePublicId: string, limit: number): Promise<AuditEventRecord[]> {
+    const cappedLimit = Math.max(1, Math.min(100, Math.floor(limit)));
+    const { results } = await this.db
+      .prepare(
+        `SELECT id, at, actor, action, entity, entity_id, detail
+           FROM audit_events
+          WHERE (entity = 'site' AND entity_id = ?)
+             OR (detail IS NOT NULL AND json_extract(detail, '$.siteId') = ?)
+          ORDER BY id DESC
+          LIMIT ?`,
+      )
+      .bind(sitePublicId, sitePublicId, cappedLimit)
+      .all<AuditRow>();
+    return results.map((row) => this.rowToAuditEvent(row));
+  }
+
   // --- prospects (minimal, S2 fleshes out the console) -------------------
 
   private rowToProspect(row: Record<string, unknown>): Prospect {
@@ -529,6 +690,14 @@ export class ControlPlane {
     return results.map((row) => this.rowToProspect(row));
   }
 
+  async getProspect(publicId: string): Promise<Prospect | null> {
+    const row = await this.db
+      .prepare('SELECT * FROM prospects WHERE public_id = ?')
+      .bind(publicId)
+      .first<Record<string, unknown>>();
+    return row ? this.rowToProspect(row) : null;
+  }
+
   async updateProspectStatus(input: {
     publicId: string;
     status: ProspectStatus;
@@ -545,7 +714,10 @@ export class ControlPlane {
         action: 'prospect.status',
         entity: 'prospect',
         entityId: input.publicId,
-        detail: { status: input.status },
+        detail: {
+          status: input.status,
+          ...(input.statusReason === undefined ? {} : { statusReason: input.statusReason }),
+        },
       }),
     ]);
     return (update?.meta.changes ?? 0) > 0;

@@ -2,6 +2,7 @@ import { renderFavicon } from '../engine/favicon.js';
 import { effectivePalette, renderSite, resolveFont } from '../engine/render.js';
 import { collectImages, type SiteData } from '../engine/types.js';
 import { getTheme } from '../themes/index.js';
+import { adminNotFound, handleAdminRequest } from './admin.js';
 import { handleBizRequest } from './biz.js';
 import { handleMcpRequest } from './mcp.js';
 import { type Env, JSON_HEADERS, MAX_BODY, json, sha256Hex } from './shared.js';
@@ -183,10 +184,17 @@ export default {
       || pathname.startsWith('/api/biz/')
       || pathname.startsWith('/p/')
       || pathname.startsWith('/b/')
-      || pathname.startsWith('/img/');
+      || pathname.startsWith('/img/')
+      || pathname === '/admin'
+      || pathname.startsWith('/admin/');
     if (mutationPath) {
       if (env.MUTATION_API_ENABLED !== 'true' || !env.OPERATOR_KEY) {
-        return new Response('Not found', { status: 404 });
+        return pathname === '/admin' || pathname.startsWith('/admin/')
+          ? adminNotFound()
+          : new Response('Not found', { status: 404 });
+      }
+      if (pathname === '/admin' || pathname.startsWith('/admin/')) {
+        return handleAdminRequest(request, env);
       }
       if (pathname === '/api/mcp') return handleMcpRequest(request, env);
       return handleBizRequest(request, env);

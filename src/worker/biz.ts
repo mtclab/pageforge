@@ -31,7 +31,7 @@ export interface SiteView {
   status: Site['status'];
 }
 
-type Operation<T> = { ok: true; value: T } | { ok: false; status: number; error: string };
+export type Operation<T> = { ok: true; value: T } | { ok: false; status: number; error: string };
 
 const ID_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyz';
 const PROPOSALS_PER_DAY = 50;
@@ -171,6 +171,57 @@ export async function createProposal(
   return { ok: true, value: { proposalId, previewPath: `/p/${siteId}/${proposalId}`, summary } };
 }
 
+/** Shared proposal decision used by both the JSON API and operator console. */
+export async function applyProposalDecision(
+  cp: ControlPlane,
+  site: Site,
+  proposalId: string,
+  decision: 'approve' | 'reject',
+  actor: Extract<AuditActor, 'operator' | 'approval-key'>,
+): Promise<Operation<number | null>> {
+  const proposal = await cp.getProposal(site.id, proposalId);
+  if (!proposal || proposal.status !== 'open') {
+    return { ok: false, status: 404, error: 'Open proposal not found.' };
+  }
+  if (decision === 'reject') {
+    await cp.rejectProposal(site.id, proposalId, {
+      actor,
+      action: 'proposal.reject',
+      entity: 'proposal',
+      entityId: proposalId,
+      detail: { siteId: site.publicId },
+    });
+    return { ok: true, value: null };
+  }
+  const version = await cp.approveProposal(site, proposal, {
+    actor,
+    action: 'proposal.approve',
+    entity: 'site',
+    entityId: site.publicId,
+    detail: { proposalId, version: site.currentVersion + 1 },
+  });
+  return { ok: true, value: version };
+}
+
+/** Shared rollback used by both the JSON API and operator console. */
+export async function rollbackSiteVersion(
+  cp: ControlPlane,
+  site: Site,
+  to: number,
+  actor: Extract<AuditActor, 'operator' | 'approval-key'>,
+): Promise<Operation<number>> {
+  const version = await cp.rollbackSite(site, to, {
+    actor,
+    action: 'site.rollback',
+    entity: 'site',
+    entityId: site.publicId,
+    detail: { to, version: site.currentVersion + 1 },
+  });
+  return version === null
+    ? { ok: false, status: 400, error: 'Version not found.' }
+    : { ok: true, value: version };
+}
+
 type SiteAuth = { actor: Extract<AuditActor, 'operator' | 'approval-key'> };
 
 async function siteAuth(request: Request, env: Env, site: Site): Promise<SiteAuth | Response> {
@@ -283,26 +334,15 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
     if (!site) return json(404, { error: 'Site not found.' });
     const auth = await siteAuth(request, env, site);
     if (auth instanceof Response) return auth;
-    const proposal = await cp.getProposal(site.id, proposalId!);
-    if (!proposal || proposal.status !== 'open') return json(404, { error: 'Open proposal not found.' });
-    if (decision === 'reject') {
-      await cp.rejectProposal(site.id, proposalId!, {
-        actor: auth.actor,
-        action: 'proposal.reject',
-        entity: 'proposal',
-        entityId: proposalId!,
-        detail: { siteId: siteId! },
-      });
-      return json(200, { ok: true });
-    }
-    const version = await cp.approveProposal(site, proposal, {
-      actor: auth.actor,
-      action: 'proposal.approve',
-      entity: 'site',
-      entityId: siteId!,
-      detail: { proposalId: proposalId!, version: site.currentVersion + 1 },
-    });
-    return json(200, { ok: true, version });
+    const result = await applyProposalDecision(
+      cp,
+      site,
+      proposalId!,
+      decision as 'approve' | 'reject',
+      auth.actor,
+    );
+    if (!result.ok) return json(result.status, { error: result.error });
+    return json(200, result.value === null ? { ok: true } : { ok: true, version: result.value });
   }
 
   const rollbackMatch = pathname.match(/^\/api\/biz\/sites\/([a-z0-9]{8})\/rollback$/);
@@ -316,15 +356,10 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
     const parsed = await readJson<{ to?: number }>(request);
     if ('error' in parsed) return parsed.error;
     if (!Number.isInteger(parsed.value.to)) return json(400, { error: 'Invalid version.' });
-    const version = await cp.rollbackSite(site, parsed.value.to!, {
-      actor: auth.actor,
-      action: 'site.rollback',
-      entity: 'site',
-      entityId: siteId,
-      detail: { to: parsed.value.to!, version: site.currentVersion + 1 },
-    });
-    if (version === null) return json(400, { error: 'Version not found.' });
-    return json(200, { ok: true, version });
+    const result = await rollbackSiteVersion(cp, site, parsed.value.to!, auth.actor);
+    return result.ok
+      ? json(200, { ok: true, version: result.value })
+      : json(result.status, { error: result.error });
   }
 
   const photosMatch = pathname.match(/^\/api\/biz\/sites\/([a-z0-9]{8})\/photos$/);
