@@ -802,7 +802,7 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
     // exact published pointer (or "live" current data) is part of the key.
     // noindex is baked into the cached HTML meta, so a BIZ_INDEXING_ENABLED
     // flip must miss the cache too.
-    const cacheKey = bizRenderCacheKey(site, noindex);
+    const cacheKey = bizRenderCacheKey(site, noindex, env.BUILD_COMMIT ?? 'dev');
     const cached = await env.SITES.get(cacheKey);
     if (cached !== null) return bizPageResponse(cached, noindex);
     const data = await publishedSiteData(cp, site);

@@ -143,8 +143,11 @@ export function bizRenderCachePrefix(sitePublicId: string): string {
   return `${BIZ_RENDER_CACHE_PREFIX}${sitePublicId}:`;
 }
 
-export function bizRenderCacheKey(site: Site, noindex: boolean): string {
-  return `${bizRenderCachePrefix(site.publicId)}${site.currentVersion}:${site.publishedVersion ?? 'live'}:${noindex ? 'noindex' : 'index'}`;
+/** buildStamp (BUILD_COMMIT in prod) keys the cache per deploy, so a code
+ * change that alters rendered HTML can never serve a stale page for 7 days.
+ * Local dev has no stamp - purge .wrangler state when render output changes. */
+export function bizRenderCacheKey(site: Site, noindex: boolean, buildStamp: string): string {
+  return `${bizRenderCachePrefix(site.publicId)}${buildStamp}:${site.currentVersion}:${site.publishedVersion ?? 'live'}:${noindex ? 'noindex' : 'index'}`;
 }
 
 export function constantTimeEqual(a: string, b: string): boolean {

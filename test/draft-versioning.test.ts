@@ -314,7 +314,7 @@ describe('S5 draft versioning', () => {
     const exactHtml = await exact.text();
     expect(exactHtml).toContain('Version one');
     expect(exactHtml).not.toContain('Version two');
-    expect((env.SITES as MemoryKV).values.has('bizhtml:publish1:1:0:noindex')).toBe(true);
+    expect((env.SITES as MemoryKV).values.has('bizhtml:publish1:dev:1:0:noindex')).toBe(true);
 
     const unpublished = await worker.fetch(
       jsonRequest('/api/biz/sites/publish1/unpublish', 'POST', {}, operatorKey),
@@ -374,7 +374,7 @@ describe('S5 draft versioning', () => {
     await env.DB.prepare(
       "UPDATE sites SET published_version = 99, status = 'published' WHERE public_id = 'cacheptr'",
     ).run();
-    (env.SITES as MemoryKV).values.set('bizhtml:cacheptr:0:99:noindex', '<p>cached</p>');
+    (env.SITES as MemoryKV).values.set('bizhtml:cacheptr:dev:0:99:noindex', '<p>cached</p>');
     const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     try {
       const response = await worker.fetch(new Request('https://example.test/b/cacheptr'), env);
