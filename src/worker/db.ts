@@ -652,6 +652,12 @@ export class ControlPlane {
    * and make `newData` current - all atomically. Optionally closes a proposal
    * (on approve). Prunes snapshots beyond the newest MAX_SNAPSHOTS. Returns the
    * new version number.
+   *
+   * Snapshot numbering invariant: snapshot n holds the exact content OF
+   * version n, so the replaced data is stored under the version number it had
+   * (site.currentVersion), never under newN. The current version has no
+   * snapshot row until it is itself replaced - publish/serve paths must treat
+   * publishedVersion === currentVersion as "serve live data".
    */
   private async promote(
     site: Site,
@@ -667,7 +673,7 @@ export class ControlPlane {
           `INSERT INTO draft_versions (site_id, n, data, note, kind, created_at)
            VALUES (?, ?, ?, ?, 'snapshot', ?)`,
         )
-        .bind(site.id, newN, JSON.stringify(site.data), opts.note ?? null, at),
+        .bind(site.id, site.currentVersion, JSON.stringify(site.data), opts.note ?? null, at),
       this.db
         .prepare(
           `UPDATE sites SET data = ?, current_version = ?,

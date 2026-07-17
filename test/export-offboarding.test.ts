@@ -104,7 +104,7 @@ describe('S10 export and offboarding', () => {
       actor: 'operator', action: 'proposal.approve', entity: 'site', entityId: original.publicId,
     });
     const current = (await cp.getSiteByPublicId(original.publicId))!;
-    await cp.publishSiteVersion(current, 1, 'operator');
+    await cp.publishSiteVersion(current, 0, 'operator');
 
     const wrong = await worker.fetch(
       jsonRequest('/api/biz/sites/export01/export', 'GET', undefined, 'wrong'),

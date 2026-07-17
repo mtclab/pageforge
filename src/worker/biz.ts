@@ -210,6 +210,24 @@ export async function createProposal(
   };
 }
 
+/**
+ * The data the published pointer refers to. Snapshot n holds the content OF
+ * version n and the current version has no snapshot row, so pointer ===
+ * currentVersion means "serve live data"; a genuinely dangling pointer falls
+ * back to current with a log line.
+ */
+export async function publishedSiteData(cp: ControlPlane, site: Site): Promise<SiteData> {
+  if (site.publishedVersion === undefined || site.publishedVersion === site.currentVersion) {
+    return site.data;
+  }
+  const snapshot = await cp.getSnapshot(site.id, site.publishedVersion);
+  if (snapshot) return snapshot.data;
+  console.error(
+    `published version ${site.publishedVersion} missing for site ${site.publicId}; serving current`,
+  );
+  return site.data;
+}
+
 /** Shared proposal decision used by both the JSON API and operator console. */
 export async function applyProposalDecision(
   cp: ControlPlane,
@@ -489,11 +507,7 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
     if (!site) return json(404, { error: 'Site not found.' });
     const auth = await siteAuth(request, env, site);
     if (auth instanceof Response) return auth;
-    let data = site.data;
-    if (site.publishedVersion !== undefined) {
-      const snapshot = await cp.getSnapshot(site.id, site.publishedVersion);
-      if (snapshot) data = snapshot.data;
-    }
+    const data = await publishedSiteData(cp, site);
     const zip = buildStoreZip(await exportFiles(env, cp, data));
     await cp.recordAudit({
       actor: auth.actor,
@@ -763,17 +777,7 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
     const site = await cp.getSiteByPublicId(publicMatch[1]!);
     if (!site || site.status === 'archived') return new Response('Not found', { status: 404 });
     const noindex = env.BIZ_INDEXING_ENABLED !== 'true' || site.status !== 'published';
-    let data = site.data;
-    if (site.publishedVersion !== undefined) {
-      const snapshot = await cp.getSnapshot(site.id, site.publishedVersion);
-      if (snapshot) {
-        data = snapshot.data;
-      } else {
-        console.error(
-          `published version ${site.publishedVersion} missing for site ${site.publicId}; serving current`,
-        );
-      }
-    }
+    const data = await publishedSiteData(cp, site);
     // Publishing changes the pointer without changing currentVersion, so the
     // exact published pointer (or "live" current data) is part of the key.
     // noindex is baked into the cached HTML meta, so a BIZ_INDEXING_ENABLED

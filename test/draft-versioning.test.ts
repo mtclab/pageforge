@@ -302,17 +302,17 @@ describe('S5 draft versioning', () => {
     const live = await worker.fetch(new Request('https://example.test/b/publish1'), env);
     expect(await live.text()).toContain('Version two');
     const published = await worker.fetch(
-      jsonRequest('/api/biz/sites/publish1/publish', 'POST', { n: 1 }, 'approval-secret'),
+      jsonRequest('/api/biz/sites/publish1/publish', 'POST', { n: 0 }, 'approval-secret'),
       env,
     );
     expect(published.status).toBe(200);
-    expect(await published.json()).toEqual({ ok: true, version: 1 });
+    expect(await published.json()).toEqual({ ok: true, version: 0 });
     const exact = await worker.fetch(new Request('https://example.test/b/publish1'), env);
     const exactHtml = await exact.text();
     expect(exactHtml).toContain('Version one');
     expect(exactHtml).not.toContain('Version two');
     expect((env.SITES as MemoryKV).values.has('bizhtml:publish1:1:live:noindex')).toBe(true);
-    expect((env.SITES as MemoryKV).values.has('bizhtml:publish1:1:1:noindex')).toBe(true);
+    expect((env.SITES as MemoryKV).values.has('bizhtml:publish1:1:0:noindex')).toBe(true);
 
     const unpublished = await worker.fetch(
       jsonRequest('/api/biz/sites/publish1/unpublish', 'POST', {}, operatorKey),
@@ -325,9 +325,24 @@ describe('S5 draft versioning', () => {
     expect(current.status).toBe('approved');
     const audit = await cp.listAuditEvents({ entity: 'site', entityId: 'publish1', limit: 20 });
     expect(audit).toEqual(expect.arrayContaining([
-      expect.objectContaining({ actor: 'approval-key', action: 'site.publish', detail: { n: 1 } }),
+      expect.objectContaining({ actor: 'approval-key', action: 'site.publish', detail: { n: 0 } }),
       expect.objectContaining({ actor: 'operator', action: 'site.unpublish' }),
     ]));
+  });
+
+  it('publishing the current version serves CURRENT content, not the prior snapshot', async () => {
+    await seedSite('pubcur01', 'First content');
+    let site = (await cp.getSiteByPublicId('pubcur01'))!;
+    await seedProposal('pubcur01', 'pubcurp1', 'Second content');
+    await cp.approveProposal(site, (await cp.getProposal(site.id, 'pubcurp1'))!, {
+      actor: 'operator', action: 'proposal.approve', entity: 'site', entityId: 'pubcur01',
+    });
+    site = (await cp.getSiteByPublicId('pubcur01'))!;
+    expect(site.currentVersion).toBe(1);
+    await cp.publishSiteVersion(site, site.currentVersion, 'operator');
+    const html = await (await worker.fetch(new Request('https://example.test/b/pubcur01'), env)).text();
+    expect(html).toContain('Second content');
+    expect(html).not.toContain('First content');
   });
 
   it('logs a dangling published pointer and safely falls back to current data', async () => {

@@ -158,7 +158,7 @@ describe('operator console', () => {
       expect.objectContaining({ actor: 'operator', action: 'proposal.approve' }),
     ]));
 
-    expect((await post('/admin/sites/site0001/rollback', { to: '1' })).status).toBe(303);
+    expect((await post('/admin/sites/site0001/rollback', { to: '0' })).status).toBe(303);
     expect((await cp.getSiteByPublicId('site0001'))?.data.name).toBe('Alkuperäinen');
     expect((await cp.getSiteByPublicId('site0001'))?.currentVersion).toBe(2);
     const rollbackAudit = await cp.listAuditEvents({ entity: 'site', entityId: 'site0001', limit: 20 });

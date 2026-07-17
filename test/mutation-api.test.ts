@@ -100,7 +100,7 @@ describe('business mutation API', () => {
     };
     expect(afterBody.data.name).toBe('Päivitetty nimi');
     expect(afterBody.versions).toHaveLength(1);
-    expect(afterBody.versions[0]).toMatchObject({ n: 1, note: 'Customer-approved wording' });
+    expect(afterBody.versions[0]).toMatchObject({ n: 0, note: 'Customer-approved wording' });
     expect(afterBody.versions[0]).not.toHaveProperty('data');
     expect(afterBody.openProposals).toEqual([]);
     expect((await worker.fetch(new Request(`https://example.test${proposal.previewPath}`), env)).status).toBe(404);
@@ -129,7 +129,7 @@ describe('business mutation API', () => {
     );
 
     const rollback = await worker.fetch(
-      jsonRequest(`/api/biz/sites/${id}/rollback`, 'POST', { to: 1 }, approvalKey),
+      jsonRequest(`/api/biz/sites/${id}/rollback`, 'POST', { to: 0 }, approvalKey),
       env,
     );
     expect(rollback.status).toBe(200);
@@ -139,7 +139,7 @@ describe('business mutation API', () => {
 
     const detail = await worker.fetch(jsonRequest(`/api/biz/sites/${id}`, 'GET', undefined, approvalKey), env);
     const body = await detail.json() as { versions: { n: number }[] };
-    expect(body.versions.map(({ n }) => n)).toEqual([2, 1]);
+    expect(body.versions.map(({ n }) => n)).toEqual([1, 0]);
   });
 
   it('returns 401 for missing credentials and 403 for wrong credentials', async () => {
