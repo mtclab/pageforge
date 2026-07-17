@@ -1,6 +1,12 @@
 import { esc, escAttr } from '../engine/escape.js';
+import {
+  BUSINESS_PROFILE_LIMITS,
+  type BusinessProfile,
+  type ProvenanceSource,
+} from './business-profile.js';
 import type {
   AuditEventRecord,
+  BusinessProfileRecord,
   OpenProposal,
   Prospect,
   ProspectStatus,
@@ -26,6 +32,19 @@ function formatTime(at: number): string {
 
 function field(label: string, name: string, type = 'text'): string {
   return `<label>${esc(label)}<input name="${escAttr(name)}" type="${escAttr(type)}"></label>`;
+}
+
+function valueField(label: string, name: string, value?: string, type = 'text'): string {
+  return `<label>${esc(label)}<input name="${escAttr(name)}" type="${escAttr(type)}" value="${escAttr(value ?? '')}"></label>`;
+}
+
+function sourceSelect(name: string, selected: ProvenanceSource = 'operator', copyOnly = false): string {
+  const sources: ProvenanceSource[] = copyOnly ? ['owner', 'operator'] : ['prh', 'places', 'owner', 'operator'];
+  return `<select name="${escAttr(name)}" aria-label="Tietolähde">${sources.map((source) => `<option value="${escAttr(source)}"${source === selected ? ' selected' : ''}>${esc(source)}</option>`).join('')}</select>`;
+}
+
+function sourceFor(profile: BusinessProfile, path: string): ProvenanceSource {
+  return profile.provenance[path]?.source ?? 'operator';
 }
 
 export function layout(title: string, content: string, csrf?: string): string {
@@ -120,6 +139,9 @@ export function prospectDetailPage(
   csrf: string,
   transitions: readonly ProspectStatus[],
   error?: string,
+  profile?: BusinessProfileRecord,
+  warnings: string[] = [],
+  site?: Site,
 ): string {
   const message = error === undefined ? '' : `<p class="notice error" role="alert">${esc(error)}</p>`;
   const optional = [
@@ -129,9 +151,68 @@ export function prospectDetailPage(
   ].filter((entry): entry is [string, string] => entry[1] !== undefined)
     .map(([label, value]) => `<dt>${esc(label)}</dt><dd>${esc(value)}</dd>`).join('');
   const forms = transitions.map((status) => `<form class="card stack" action="/admin/prospects/${escAttr(prospect.publicId)}/status" method="post">${formToken(csrf)}<input type="hidden" name="status" value="${escAttr(status)}"><strong>${esc(status)}</strong>${status === 'hylatty' ? '<label>Syy *<input name="statusReason" required></label>' : ''}<div><button type="submit">Vaihda tila</button></div></form>`).join('');
+  const warningHtml = warnings.length
+    ? `<div class="notice"><strong>Ristiriidat</strong><ul>${warnings.map((warning) => `<li>${esc(warning)}</li>`).join('')}</ul></div>`
+    : '<p class="muted">Ei havaittuja ristiriitoja.</p>';
+  const profileCard = profile
+    ? `<div class="card"><p><strong>${esc(profile.data.identity.name)}</strong> · päivitetty ${formatTime(profile.updatedAt)}</p>${warningHtml}<div class="actions"><a class="button" href="/admin/prospects/${escAttr(prospect.publicId)}/intake">Muokkaa intakea</a>${site
+      ? `<a href="/admin/sites/${escAttr(site.publicId)}">Avaa sivusto ${esc(site.publicId)}</a>`
+      : `<form action="/admin/prospects/${escAttr(prospect.publicId)}/compose" method="post">${formToken(csrf)}<button type="submit">Luo kolme versiota</button></form>`}</div></div>`
+    : `<div class="card"><p class="muted">Intakea ei ole vielä tallennettu.</p><a class="button" href="/admin/prospects/${escAttr(prospect.publicId)}/intake">Täytä intake</a></div>`;
   return layout(prospect.name, `<p><a href="/admin/prospects">← Prospektit</a></p><h1>${esc(prospect.name)}</h1>${message}
     <dl class="definition"><dt>ID</dt><dd>${esc(prospect.publicId)}</dd><dt>Tila</dt><dd>${badge(prospect.status)}</dd>${optional}<dt>Luotu</dt><dd>${formatTime(prospect.createdAt)}</dd><dt>Päivitetty</dt><dd>${formatTime(prospect.updatedAt)}</dd></dl>
+    <h2>BusinessProfile</h2>${profileCard}
     <h2>Vaihda tila</h2>${forms || '<p class="muted">Tästä tilasta ei ole sallittuja siirtymiä.</p>'}`, csrf);
+}
+
+export function intakePage(input: {
+  prospect: Prospect;
+  profile: BusinessProfile;
+  csrf: string;
+  errors?: string[];
+  warnings?: string[];
+}): string {
+  const { prospect, profile, csrf, errors = [], warnings = [] } = input;
+  const errorHtml = errors.length
+    ? `<div class="notice error" role="alert"><strong>Korjaa tiedot</strong><ul>${errors.map((error) => `<li>${esc(error)}</li>`).join('')}</ul></div>`
+    : '';
+  const warningHtml = warnings.length
+    ? `<div class="notice"><strong>Ristiriidat</strong><ul>${warnings.map((warning) => `<li>${esc(warning)}</li>`).join('')}</ul></div>`
+    : '';
+  const identitySource = sourceFor(profile, 'identity.name');
+  const contactSource = sourceFor(profile, 'contact.phone');
+  const hourRows = Array.from({ length: BUSINESS_PROFILE_LIMITS.hours }, (_, index) => {
+    const row = profile.hours[index];
+    return `<tr><td><input aria-label="Päivä ${index + 1}" name="hours_${index}_label" value="${escAttr(row?.label ?? '')}"></td><td><input aria-label="Aukeaa ${index + 1}" name="hours_${index}_open" value="${escAttr(row?.open ?? '')}" placeholder="09:00"></td><td><input aria-label="Sulkeutuu ${index + 1}" name="hours_${index}_close" value="${escAttr(row?.close ?? '')}" placeholder="17:00"></td><td><input aria-label="Suljettu ${index + 1}" name="hours_${index}_closed" type="checkbox"${row?.closed ? ' checked' : ''}></td><td>${sourceSelect(`hours_${index}_source`, sourceFor(profile, `hours.${index}.label`))}</td></tr>`;
+  }).join('');
+  const itemTable = (prefix: 'services' | 'menu', title: string): string => {
+    const items = profile[prefix];
+    const rows = Array.from({ length: BUSINESS_PROFILE_LIMITS[prefix] }, (_, index) => {
+      const item = items[index];
+      return `<tr><td><input aria-label="${escAttr(title)} nimi ${index + 1}" name="${prefix}_${index}_name" value="${escAttr(item?.name ?? '')}"></td><td><input aria-label="${escAttr(title)} hinta ${index + 1}" name="${prefix}_${index}_price" value="${escAttr(item?.price ?? '')}" placeholder="35 €"></td><td><textarea aria-label="${escAttr(title)} kuvaus ${index + 1}" name="${prefix}_${index}_desc">${esc(item?.desc ?? '')}</textarea></td><td>${sourceSelect(`${prefix}_${index}_source`, sourceFor(profile, `${prefix}.${index}.name`), Boolean(item?.desc))}</td></tr>`;
+    }).join('');
+    return `<h2>${esc(title)}</h2><div class="table-wrap"><table><thead><tr><th>Nimi</th><th>Hinta</th><th>Kuvaus</th><th>Lähde</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  };
+  const photoRows = Array.from({ length: BUSINESS_PROFILE_LIMITS.photos }, (_, index) => `<tr><td><input aria-label="Kuvapolku ${index + 1}" name="photos_${index}_src" value="${escAttr(profile.photos[index]?.src ?? '')}" placeholder="/img/sha256"></td><td>${sourceSelect(`photos_${index}_source`, sourceFor(profile, `photos.${index}.src`))}</td></tr>`).join('');
+  const linkKinds = ['', 'website', 'instagram', 'facebook', 'linkedin', 'youtube', 'github', 'x', 'email'];
+  const linkRows = Array.from({ length: BUSINESS_PROFILE_LIMITS.links }, (_, index) => {
+    const link = profile.links[index];
+    return `<tr><td><input aria-label="Linkin nimi ${index + 1}" name="links_${index}_label" value="${escAttr(link?.label ?? '')}"></td><td><input aria-label="Linkin URL ${index + 1}" name="links_${index}_url" type="url" value="${escAttr(link?.url ?? '')}" placeholder="https://"></td><td><select aria-label="Linkin tyyppi ${index + 1}" name="links_${index}_kind">${linkKinds.map((kind) => `<option value="${escAttr(kind)}"${kind === (link?.kind ?? '') ? ' selected' : ''}>${esc(kind || '—')}</option>`).join('')}</select></td><td>${sourceSelect(`links_${index}_source`, sourceFor(profile, `links.${index}.label`))}</td></tr>`;
+  }).join('');
+  const vertical = profile.identity.vertical;
+  const address = profile.contact.address;
+  return layout(`Intake: ${prospect.name}`, `<p><a href="/admin/prospects/${escAttr(prospect.publicId)}">← ${esc(prospect.name)}</a></p><h1>BusinessProfile intake</h1>${errorHtml}${warningHtml}
+    <form class="stack" action="/admin/prospects/${escAttr(prospect.publicId)}/intake" method="post">${formToken(csrf)}
+      <section class="card"><h2>Identiteetti</h2><div class="fields">${valueField('Nimi *', 'name', profile.identity.name)}${valueField('Y-tunnus', 'yTunnus', profile.identity.yTunnus)}${valueField('Toimialakoodi', 'vertical_code', vertical?.code)}${valueField('Toimialan nimi', 'vertical_label', vertical?.label)}<label>Tietolähde${sourceSelect('identity_source', identitySource)}</label></div></section>
+      <section class="card"><h2>Yhteystiedot</h2><div class="fields">${valueField('Puhelin', 'phone', profile.contact.phone)}${valueField('Sähköposti', 'email', profile.contact.email, 'email')}${valueField('Katuosoite', 'street', address?.street)}${valueField('Postinumero', 'postal', address?.postal)}${valueField('Kaupunki', 'city', address?.city)}<label>Tietolähde${sourceSelect('contact_source', contactSource)}</label></div></section>
+      <h2>Aukioloajat</h2><div class="table-wrap"><table><thead><tr><th>Päivä</th><th>Aukeaa</th><th>Sulkeutuu</th><th>Suljettu</th><th>Lähde</th></tr></thead><tbody>${hourRows}</tbody></table></div>
+      ${itemTable('services', 'Palvelut')}${itemTable('menu', 'Ruokalista')}
+      <section class="card"><h2>Tekstit</h2><label>Iskulause<textarea name="tagline">${esc(profile.tagline ?? '')}</textarea>${sourceSelect('tagline_source', sourceFor(profile, 'tagline'), true)}</label><label>Esittely<textarea name="about">${esc(profile.about ?? '')}</textarea>${sourceSelect('about_source', sourceFor(profile, 'about'), true)}</label></section>
+      <h2>Kuvat</h2><div class="table-wrap"><table><thead><tr><th>R2-polku</th><th>Lähde</th></tr></thead><tbody>${photoRows}</tbody></table></div>
+      <h2>Linkit</h2><div class="table-wrap"><table><thead><tr><th>Nimi</th><th>HTTPS-URL</th><th>Tyyppi</th><th>Lähde</th></tr></thead><tbody>${linkRows}</tbody></table></div>
+      <section class="card"><h2>Suostumus</h2><label><span><input name="consent_photos" type="checkbox"${profile.consent.photos ? ' checked' : ''}> Kuvien käyttö vahvistettu</span></label><label><span><input name="consent_texts" type="checkbox"${profile.consent.texts ? ' checked' : ''}> Tekstien käyttö vahvistettu</span></label><label>Huomio<textarea name="consent_note">${esc(profile.consent.note ?? '')}</textarea></label></section>
+      <div><button type="submit">Tallenna BusinessProfile</button></div>
+    </form>`, csrf);
 }
 
 export function sitesPage(sites: SiteListItem[], csrf: string): string {
@@ -158,7 +239,7 @@ export function siteDetailPage(input: {
   const versionRows = versions.map((version) => `<tr><td>${esc(String(version.n))}</td><td>${formatTime(version.at)}</td><td>${esc(version.note ?? '')}</td><td><form action="/admin/sites/${escAttr(site.publicId)}/rollback" method="post">${formToken(csrf)}<input type="hidden" name="to" value="${escAttr(String(version.n))}"><button class="secondary" type="submit">Palauta</button></form></td></tr>`).join('');
   const versionTable = versionRows ? `<div class="table-wrap"><table><thead><tr><th>n</th><th>Aika</th><th>Huomio</th><th></th></tr></thead><tbody>${versionRows}</tbody></table></div>` : '<p class="muted">Ei aiempia versioita.</p>';
   return layout(site.data.name, `<p><a href="/admin/sites">← Sivustot</a></p><h1>${esc(site.data.name)}</h1>${message}
-    <dl class="definition"><dt>ID</dt><dd>${esc(site.publicId)}</dd><dt>Kuvaus</dt><dd>${esc(site.data.tagline ?? '—')}</dd><dt>Tila</dt><dd>${badge(site.status)}</dd><dt>Nykyinen versio</dt><dd>${esc(String(site.currentVersion))}</dd><dt>Kuvia</dt><dd>${esc(String(photoCount))}</dd><dt>Linkki</dt><dd><a href="/b/${escAttr(site.publicId)}">/b/${esc(site.publicId)}</a></dd></dl>
+    <dl class="definition"><dt>ID</dt><dd>${esc(site.publicId)}</dd><dt>Kuvaus</dt><dd>${esc(site.data.tagline ?? '—')}</dd><dt>Tila</dt><dd>${badge(site.status)}</dd><dt>Nykyinen versio</dt><dd>${esc(String(site.currentVersion))}</dd><dt>Kuvia</dt><dd>${esc(String(photoCount))}</dd><dt>Nykyisen esikatselu</dt><dd><a href="/p/${escAttr(site.publicId)}/current">/p/${esc(site.publicId)}/current</a></dd></dl>
     <h2>Avoimet ehdotukset</h2><div class="card">${proposalHtml}</div>
     <h2>Versiot</h2>${versionTable}
     <h2>Tapahtumat</h2>${auditTable(events)}`, csrf);

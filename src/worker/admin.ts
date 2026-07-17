@@ -1,7 +1,13 @@
 import {
   applyProposalDecision,
   rollbackSiteVersion,
+  summarizeChanges,
 } from './biz.js';
+import {
+  businessProfileWarnings,
+  validateBusinessProfile,
+} from './business-profile.js';
+import { compose } from './composer.js';
 import {
   ControlPlane,
   type Prospect,
@@ -12,6 +18,7 @@ import {
 import {
   auditPage,
   dashboardPage,
+  intakePage,
   loginPage,
   messagePage,
   prospectDetailPage,
@@ -19,6 +26,7 @@ import {
   siteDetailPage,
   sitesPage,
 } from './admin-html.js';
+import { emptyBusinessProfile, parseBusinessProfileForm } from './intake-form.js';
 import {
   checkCsrfToken,
   clearSessionCookie,
@@ -29,6 +37,7 @@ import {
   verifySessionCookie,
 } from './session.js';
 import { constantTimeEqual, type Env, sha256Hex } from './shared.js';
+import { validateSiteData } from './validate.js';
 
 const ADMIN_HEADERS = {
   'cache-control': 'no-store',
@@ -114,6 +123,30 @@ async function unusedProspectId(cp: ControlPlane): Promise<string> {
   throw new Error('could not allocate prospect id');
 }
 
+async function unusedProfileId(cp: ControlPlane): Promise<string> {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const id = randomId();
+    if (!(await cp.getBusinessProfileByPublicId(id))) return id;
+  }
+  throw new Error('could not allocate profile id');
+}
+
+async function unusedSiteId(cp: ControlPlane): Promise<string> {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const id = randomId();
+    if (!(await cp.getSiteByPublicId(id))) return id;
+  }
+  throw new Error('could not allocate site id');
+}
+
+async function unusedProposalId(cp: ControlPlane, siteId: number): Promise<string> {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const id = randomId();
+    if (!(await cp.getProposal(siteId, id))) return id;
+  }
+  throw new Error('could not allocate proposal id');
+}
+
 function methodNotAllowed(csrf?: string): Response {
   return html(
     csrf === undefined
@@ -125,13 +158,26 @@ function methodNotAllowed(csrf?: string): Response {
 }
 
 async function prospectDetailResponse(
+  cp: ControlPlane,
   prospect: Prospect,
   csrf: string,
   error?: string,
   status = 200,
 ): Promise<Response> {
+  const [profile, site] = await Promise.all([
+    cp.getBusinessProfileByProspectId(prospect.id),
+    cp.getSiteByProspectId(prospect.id),
+  ]);
   return html(
-    prospectDetailPage(prospect, csrf, PROSPECT_TRANSITIONS[prospect.status], error),
+    prospectDetailPage(
+      prospect,
+      csrf,
+      PROSPECT_TRANSITIONS[prospect.status],
+      error,
+      profile ?? undefined,
+      profile ? businessProfileWarnings(profile.data, prospect) : [],
+      site ?? undefined,
+    ),
     status,
   );
 }
@@ -251,7 +297,7 @@ export async function handleAdminRequest(request: Request, env: Env): Promise<Re
       formString(form!, 'status') ?? '',
       formString(form!, 'statusReason'),
     );
-    if ('error' in validation) return prospectDetailResponse(prospect, csrf, validation.error, 400);
+    if ('error' in validation) return prospectDetailResponse(cp, prospect, csrf, validation.error, 400);
     await cp.updateProspectStatus({
       publicId,
       status: validation.status,
@@ -261,12 +307,86 @@ export async function handleAdminRequest(request: Request, env: Env): Promise<Re
     return redirect(`/admin/prospects/${publicId}`);
   }
 
+  const prospectIntakeMatch = pathname.match(/^\/admin\/prospects\/([^/]+)\/intake$/);
+  if (prospectIntakeMatch) {
+    const prospect = await cp.getProspect(prospectIntakeMatch[1]!);
+    if (!prospect) return html(messagePage('Prospektia ei löytynyt', 'Tuntematon prospekti.', csrf), 404);
+    const existing = await cp.getBusinessProfileByProspectId(prospect.id);
+    if (request.method === 'GET') {
+      const profile = existing?.data ?? emptyBusinessProfile(prospect);
+      return html(intakePage({
+        prospect,
+        profile,
+        csrf,
+        warnings: businessProfileWarnings(profile, prospect),
+      }));
+    }
+    if (request.method !== 'POST') return methodNotAllowed(csrf);
+    const profile = parseBusinessProfileForm(form!, prospect);
+    const errors = validateBusinessProfile(profile);
+    if (errors.length) {
+      return html(intakePage({
+        prospect,
+        profile,
+        csrf,
+        errors,
+        warnings: businessProfileWarnings(profile, prospect),
+      }), 400);
+    }
+    await cp.upsertBusinessProfile({
+      publicId: existing?.publicId ?? await unusedProfileId(cp),
+      prospectId: prospect.id,
+      data: profile,
+      actor: 'operator',
+    });
+    return redirect(`/admin/prospects/${prospect.publicId}`);
+  }
+
+  const prospectComposeMatch = pathname.match(/^\/admin\/prospects\/([^/]+)\/compose$/);
+  if (prospectComposeMatch) {
+    if (request.method !== 'POST') return methodNotAllowed(csrf);
+    const prospect = await cp.getProspect(prospectComposeMatch[1]!);
+    if (!prospect) return html(messagePage('Prospektia ei löytynyt', 'Tuntematon prospekti.', csrf), 404);
+    if (await cp.getSiteByProspectId(prospect.id)) {
+      return prospectDetailResponse(cp, prospect, csrf, 'Prospektilla on jo sivusto.', 400);
+    }
+    const profile = await cp.getBusinessProfileByProspectId(prospect.id);
+    if (!profile) return prospectDetailResponse(cp, prospect, csrf, 'BusinessProfile puuttuu.', 400);
+    const profileErrors = validateBusinessProfile(profile.data);
+    if (profileErrors.length) {
+      return prospectDetailResponse(cp, prospect, csrf, profileErrors.join(' '), 400);
+    }
+    const variants = compose(profile.data, profile.publicId);
+    const invalid = variants.map(validateSiteData).find((error) => error !== null);
+    if (invalid) return prospectDetailResponse(cp, prospect, csrf, `Koostaminen epäonnistui: ${invalid}`, 400);
+    const sitePublicId = await unusedSiteId(cp);
+    await cp.createSite({
+      publicId: sitePublicId,
+      prospectId: prospect.id,
+      approvalKeyHash: await sha256Hex(`${randomId()}${randomId()}`),
+      data: variants[0]!,
+      actor: 'operator',
+    });
+    const site = (await cp.getSiteByPublicId(sitePublicId))!;
+    for (const [index, candidate] of variants.slice(1).entries()) {
+      await cp.createProposal({
+        site,
+        publicId: await unusedProposalId(cp, site.id),
+        candidate,
+        summary: summarizeChanges(site.data, candidate),
+        note: `Koostettu variantti ${index + 2}`,
+        actor: 'operator',
+      });
+    }
+    return redirect(`/admin/sites/${sitePublicId}`);
+  }
+
   const prospectMatch = pathname.match(/^\/admin\/prospects\/([^/]+)$/);
   if (prospectMatch) {
     if (request.method !== 'GET') return methodNotAllowed(csrf);
     const prospect = await cp.getProspect(prospectMatch[1]!);
     return prospect
-      ? prospectDetailResponse(prospect, csrf)
+      ? prospectDetailResponse(cp, prospect, csrf)
       : html(messagePage('Prospektia ei löytynyt', 'Tuntematon prospekti.', csrf), 404);
   }
 

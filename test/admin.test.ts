@@ -208,6 +208,82 @@ describe('operator console', () => {
     expect(dashboardHtml).toContain('<div>Avoimet ehdotukset</div><div class="number">1</div>');
   });
 
+  it('saves an intake, composes one site plus two proposals, and previews all variants', async () => {
+    await cp.createProspect({
+      publicId: 'intake01',
+      name: 'Grilli Testi',
+      status: 'arvioitu',
+      vertical: 'grilli',
+      actor: 'operator',
+    });
+    const intake = await get('/admin/prospects/intake01/intake');
+    expect(intake.status).toBe(200);
+    expect(await intake.text()).toContain('BusinessProfile intake');
+
+    const saved = await post('/admin/prospects/intake01/intake', {
+      name: 'Grilli Testi',
+      yTunnus: '1572860-0',
+      vertical_code: 'grilli',
+      vertical_label: 'Grilli',
+      identity_source: 'prh',
+      phone: '+358 40 123 4567',
+      email: 'hei@example.com',
+      street: 'Testikatu 1',
+      postal: '00100',
+      city: 'Helsinki',
+      contact_source: 'owner',
+      hours_0_label: 'Maanantai',
+      hours_0_open: '09:00',
+      hours_0_close: '17:00',
+      hours_0_source: 'owner',
+      menu_0_name: 'Burgeri',
+      menu_0_price: '12,50 €',
+      menu_0_desc: 'Naudanlihapihvi',
+      menu_0_source: 'owner',
+      tagline: 'Tervetuloa grillille',
+      tagline_source: 'owner',
+      about: 'Paikallinen grilli.',
+      about_source: 'owner',
+      links_0_label: 'Kotisivu',
+      links_0_url: 'https://example.com',
+      links_0_kind: 'website',
+      links_0_source: 'operator',
+      consent_texts: 'on',
+      consent_note: 'Omistaja vahvisti tekstit.',
+    });
+    expect(saved.status).toBe(303);
+    const prospect = (await cp.getProspect('intake01'))!;
+    const profile = (await cp.getBusinessProfileByProspectId(prospect.id))!;
+    expect(profile.data.menu[0]?.name).toBe('Burgeri');
+    expect(profile.data.provenance['identity.name']?.source).toBe('prh');
+    expect(profile.consentNote).toBe('Omistaja vahvisti tekstit.');
+
+    const updated = await post('/admin/prospects/intake01/intake', {
+      name: 'Grilli Testi',
+      vertical_code: 'grilli',
+      vertical_label: 'Grilli',
+    });
+    expect(updated.status).toBe(303);
+    const audit = await cp.listAuditEvents({ entity: 'profile', entityId: profile.publicId, limit: 10 });
+    expect(audit.map((event) => event.action)).toEqual(['profile.update', 'profile.create']);
+
+    const detailHtml = await (await get('/admin/prospects/intake01')).text();
+    expect(detailHtml).toContain('/admin/prospects/intake01/compose');
+    const composed = await post('/admin/prospects/intake01/compose');
+    expect(composed.status).toBe(303);
+    const siteId = composed.headers.get('location')!.split('/').pop()!;
+    const siteRecord = (await cp.getSiteByProspectId(prospect.id))!;
+    expect(siteRecord.publicId).toBe(siteId);
+    expect(siteRecord.status).toBe('draft');
+    const proposals = await cp.listOpenProposals(siteRecord.id);
+    expect(proposals).toHaveLength(2);
+    expect((await get(`/p/${siteId}/current`)).status).toBe(200);
+    for (const proposal of proposals) {
+      expect((await get(`/p/${siteId}/${proposal.proposalId}`)).status).toBe(200);
+    }
+    expect((await post('/admin/prospects/intake01/compose')).status).toBe(400);
+  });
+
   it('returns 404 when the mutation gate is closed', async () => {
     const closed = workerEnv({ MUTATION_API_ENABLED: 'false' });
     const response = await worker.fetch(new Request('https://example.test/admin'), closed);

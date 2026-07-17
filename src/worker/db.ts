@@ -1,4 +1,5 @@
 import type { SiteData } from '../engine/types.js';
+import type { BusinessProfile } from './business-profile.js';
 
 /**
  * Minimal D1 type shim, kept local like the KV/R2 shims so unit tests can run
@@ -62,6 +63,7 @@ export const SITE_STATUSES: readonly SiteStatus[] = [
 export interface Site {
   id: number;
   publicId: string;
+  prospectId?: number;
   approvalKeyHash: string;
   currentVersion: number;
   data: SiteData;
@@ -126,6 +128,7 @@ export const PROSPECT_STATUSES: readonly ProspectStatus[] = [
 ];
 
 export interface Prospect {
+  id: number;
   publicId: string;
   name: string;
   status: ProspectStatus;
@@ -139,6 +142,26 @@ export interface Prospect {
   notes?: string;
   createdAt: number;
   updatedAt: number;
+}
+
+export interface BusinessProfileRecord {
+  id: number;
+  publicId: string;
+  prospectId: number;
+  data: BusinessProfile;
+  consentNote?: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+interface BusinessProfileRow {
+  id: number;
+  public_id: string;
+  prospect_id: number;
+  data: string;
+  consent_note: string | null;
+  created_at: number;
+  updated_at: number;
 }
 
 export interface SiteListItem extends Site {
@@ -211,6 +234,7 @@ export class ControlPlane {
     return {
       id: row.id,
       publicId: row.public_id,
+      ...(row.prospect_id === null ? {} : { prospectId: row.prospect_id }),
       approvalKeyHash: row.approval_key_hash,
       currentVersion: row.current_version,
       data: JSON.parse(row.data) as SiteData,
@@ -258,6 +282,14 @@ export class ControlPlane {
     const row = await this.db
       .prepare('SELECT * FROM sites WHERE public_id = ?')
       .bind(publicId)
+      .first<SiteRow>();
+    return row ? this.rowToSite(row) : null;
+  }
+
+  async getSiteByProspectId(prospectId: number): Promise<Site | null> {
+    const row = await this.db
+      .prepare('SELECT * FROM sites WHERE prospect_id = ?')
+      .bind(prospectId)
       .first<SiteRow>();
     return row ? this.rowToSite(row) : null;
   }
@@ -613,12 +645,81 @@ export class ControlPlane {
     return results.map((row) => this.rowToAuditEvent(row));
   }
 
-  // --- prospects (minimal, S2 fleshes out the console) -------------------
+  // --- business profiles -------------------------------------------------
+
+  private rowToBusinessProfile(row: BusinessProfileRow): BusinessProfileRecord {
+    return {
+      id: row.id,
+      publicId: row.public_id,
+      prospectId: row.prospect_id,
+      data: JSON.parse(row.data) as BusinessProfile,
+      ...(row.consent_note === null ? {} : { consentNote: row.consent_note }),
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  }
+
+  async getBusinessProfileByPublicId(publicId: string): Promise<BusinessProfileRecord | null> {
+    const row = await this.db
+      .prepare('SELECT * FROM business_profiles WHERE public_id = ?')
+      .bind(publicId)
+      .first<BusinessProfileRow>();
+    return row ? this.rowToBusinessProfile(row) : null;
+  }
+
+  async getBusinessProfileByProspectId(prospectId: number): Promise<BusinessProfileRecord | null> {
+    const row = await this.db
+      .prepare('SELECT * FROM business_profiles WHERE prospect_id = ?')
+      .bind(prospectId)
+      .first<BusinessProfileRow>();
+    return row ? this.rowToBusinessProfile(row) : null;
+  }
+
+  async upsertBusinessProfile(input: {
+    publicId: string;
+    prospectId: number;
+    data: BusinessProfile;
+    actor: AuditActor;
+  }): Promise<BusinessProfileRecord> {
+    const existing = await this.getBusinessProfileByProspectId(input.prospectId);
+    const at = this.now();
+    const publicId = existing?.publicId ?? input.publicId;
+    const consentNote = input.data.consent.note ?? null;
+    const mutation = existing
+      ? this.db
+          .prepare(
+            `UPDATE business_profiles
+                SET data = ?, consent_note = ?, updated_at = ?
+              WHERE prospect_id = ?`,
+          )
+          .bind(JSON.stringify(input.data), consentNote, at, input.prospectId)
+      : this.db
+          .prepare(
+            `INSERT INTO business_profiles
+               (public_id, prospect_id, data, consent_note, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+          )
+          .bind(publicId, input.prospectId, JSON.stringify(input.data), consentNote, at, at);
+    await this.db.batch([
+      mutation,
+      this.auditStatement(at, {
+        actor: input.actor,
+        action: existing ? 'profile.update' : 'profile.create',
+        entity: 'profile',
+        entityId: publicId,
+        detail: { prospectId: input.prospectId },
+      }),
+    ]);
+    return (await this.getBusinessProfileByProspectId(input.prospectId))!;
+  }
+
+  // --- prospects ---------------------------------------------------------
 
   private rowToProspect(row: Record<string, unknown>): Prospect {
     const optional = (value: unknown): string | undefined =>
       typeof value === 'string' ? value : undefined;
     return {
+      id: row.id as number,
       publicId: row.public_id as string,
       name: row.name as string,
       status: row.status as ProspectStatus,

@@ -9,6 +9,19 @@ import { type Env, JSON_HEADERS, MAX_BODY, json, sha256Hex } from './shared.js';
 import { validateSiteData } from './validate.js';
 
 export { validateSiteData } from './validate.js';
+export {
+  businessProfileWarnings,
+  contradictionWarnings,
+  validateBusinessProfile,
+  validateFinnishPostalCode,
+  validateHttpsUrl,
+  validatePhone,
+  validatePostalCode,
+  validatePrice,
+  validateYTunnus,
+} from './business-profile.js';
+export { compose, themeFamilyForTheme } from './composer.js';
+export { structureProfileFor, verticalGroupFor } from './structure-profiles.js';
 
 /**
  * Hosted publish (beta). Everything else on this worker is static assets;

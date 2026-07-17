@@ -409,6 +409,14 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
     });
   }
 
+  const currentPreviewMatch = pathname.match(/^\/p\/([a-z0-9]{8})\/current$/);
+  if (currentPreviewMatch) {
+    if (request.method !== 'GET') return methodNotAllowed();
+    const site = await cp.getSiteByPublicId(currentPreviewMatch[1]!);
+    if (!site) return new Response('Not found', { status: 404 });
+    return bizPageResponse(bizHtml(site.data, true));
+  }
+
   const previewMatch = pathname.match(/^\/p\/([a-z0-9]{8})\/([a-z0-9]{8})$/);
   if (previewMatch) {
     if (request.method !== 'GET') return methodNotAllowed();
