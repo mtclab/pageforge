@@ -139,9 +139,13 @@ export function parseBusinessProfileForm(
     identity: {
       name,
       ...(yTunnus === undefined ? {} : { yTunnus }),
+      // Fall back to the prospect's vertical so a submit with the field
+      // cleared (or a non-browser client) keeps the structure group.
       ...(verticalCode || verticalLabel
         ? { vertical: { code: verticalCode ?? verticalLabel!, label: verticalLabel ?? verticalCode! } }
-        : {}),
+        : prospect.vertical
+          ? { vertical: { code: prospect.vertical, label: prospect.vertical } }
+          : {}),
     },
     contact: {
       ...(phone === undefined ? {} : { phone }),
