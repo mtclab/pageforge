@@ -9,6 +9,7 @@ import type {
   BusinessProfileRecord,
   DraftComment,
   OpenProposal,
+  LaunchChecklistRecord,
   PreviewToken,
   Prospect,
   ProspectStatus,
@@ -16,8 +17,10 @@ import type {
   SiteListItem,
   SnapshotMeta,
   StatusCounts,
+  QaRun,
 } from './db.js';
 import { PROSPECT_STATUSES, SITE_STATUSES } from './db.js';
+import { LAUNCH_CHECKLIST_ITEMS } from './qa.js';
 
 function formToken(csrf: string): string {
   return `<input type="hidden" name="csrf" value="${escAttr(csrf)}">`;
@@ -231,25 +234,44 @@ export function siteDetailPage(input: {
   events: AuditEventRecord[];
   tokens: PreviewToken[];
   comments: DraftComment[];
+  qaRun?: QaRun;
+  checklist: LaunchChecklistRecord[];
+  publishGateMessage: string;
   csrf: string;
   error?: string;
 }): string {
-  const { site, versions, proposals, photoCount, events, tokens, comments, csrf, error } = input;
+  const {
+    site, versions, proposals, photoCount, events, tokens, comments,
+    qaRun, checklist, publishGateMessage, csrf, error,
+  } = input;
   const message = error === undefined ? '' : `<p class="notice error" role="alert">${esc(error)}</p>`;
   const proposalHtml = proposals.map((proposal) => {
     const summary = proposal.summary.length ? `<ul class="summary">${proposal.summary.map((item) => `<li>${esc(item)}</li>`).join('')}</ul>` : '<p class="muted">Ei yhteenvetoa.</p>';
     return `<div class="proposal"><strong>${esc(proposal.proposalId)}</strong> · ${formatTime(proposal.at)} · <a href="/p/${escAttr(site.publicId)}/${escAttr(proposal.proposalId)}">Esikatselu</a>${summary}<div class="actions"><form action="/admin/sites/${escAttr(site.publicId)}/proposals/${escAttr(proposal.proposalId)}/approve" method="post">${formToken(csrf)}<button type="submit">Hyväksy</button></form><form action="/admin/sites/${escAttr(site.publicId)}/proposals/${escAttr(proposal.proposalId)}/reject" method="post">${formToken(csrf)}<button class="danger" type="submit">Hylkää</button></form></div></div>`;
   }).join('') || '<p class="muted">Ei avoimia ehdotuksia.</p>';
-  const versionRows = versions.map((version) => `<tr><td>${esc(String(version.n))}</td><td>${formatTime(version.at)}</td><td>${esc(version.note ?? '')}</td><td><div class="actions"><form action="/admin/sites/${escAttr(site.publicId)}/rollback" method="post">${formToken(csrf)}<input type="hidden" name="to" value="${escAttr(String(version.n))}"><button class="secondary" type="submit">Palauta</button></form><form action="/admin/sites/${escAttr(site.publicId)}/publish" method="post">${formToken(csrf)}<input type="hidden" name="n" value="${escAttr(String(version.n))}"><button type="submit">Julkaise versio ${esc(String(version.n))}</button></form></div></td></tr>`).join('');
+  const publishForm = (n: number): string => `<form class="stack" action="/admin/sites/${escAttr(site.publicId)}/publish" method="post">${formToken(csrf)}<input type="hidden" name="n" value="${escAttr(String(n))}"><button type="submit">Julkaise versio ${esc(String(n))}</button><details><summary>Operaattorin ohitus</summary><label><span><input name="override" type="checkbox" value="true"> Ohita julkaisuportti</span></label><label>Syy<input name="reason"></label></details></form>`;
+  const versionRows = versions.map((version) => `<tr><td>${esc(String(version.n))}</td><td>${formatTime(version.at)}</td><td>${esc(version.note ?? '')}</td><td><div class="actions"><form action="/admin/sites/${escAttr(site.publicId)}/rollback" method="post">${formToken(csrf)}<input type="hidden" name="to" value="${escAttr(String(version.n))}"><button class="secondary" type="submit">Palauta</button></form>${publishForm(version.n)}</div></td></tr>`).join('');
   const versionTable = versionRows ? `<div class="table-wrap"><table><thead><tr><th>n</th><th>Aika</th><th>Huomio</th><th></th></tr></thead><tbody>${versionRows}</tbody></table></div>` : '<p class="muted">Ei aiempia versioita.</p>';
   const tokenRows = tokens.map((token) => `<tr><td>${esc(token.label)}</td><td>${esc(token.proposalPublicId ?? 'Koko sivusto')}</td><td>${formatTime(token.expiresAt)}</td><td><form action="/admin/sites/${escAttr(site.publicId)}/tokens/${escAttr(String(token.id))}/revoke" method="post">${formToken(csrf)}<button class="danger" type="submit">Peru</button></form></td></tr>`).join('');
   const tokenTable = tokenRows ? `<div class="table-wrap"><table><thead><tr><th>Nimi</th><th>Rajaus</th><th>Vanhenee</th><th></th></tr></thead><tbody>${tokenRows}</tbody></table></div>` : '<p class="muted">Ei aktiivisia esikatselulinkkejä.</p>';
   const proposalOptions = proposals.map((proposal) => `<option value="${escAttr(proposal.proposalId)}">${esc(proposal.proposalId)}</option>`).join('');
   const commentRows = comments.map((comment) => `<tr><td>${formatTime(comment.createdAt)}</td><td>${esc(comment.proposalPublicId ?? 'Koko sivusto')}</td><td>${esc(comment.author)}</td><td>${esc(comment.body)}</td></tr>`).join('');
   const commentTable = commentRows ? `<div class="table-wrap"><table><thead><tr><th>Aika</th><th>Ehdotus</th><th>Kirjoittaja</th><th>Kommentti</th></tr></thead><tbody>${commentRows}</tbody></table></div>` : '<p class="muted">Ei kommentteja.</p>';
-  const publishControls = `<div class="actions"><form action="/admin/sites/${escAttr(site.publicId)}/publish" method="post">${formToken(csrf)}<button type="submit">Julkaise versio ${esc(String(site.currentVersion))}</button></form>${site.publishedVersion === undefined ? '' : `<form action="/admin/sites/${escAttr(site.publicId)}/unpublish" method="post">${formToken(csrf)}<button class="danger" type="submit">Poista julkaisu</button></form>`}</div>`;
+  const qaRows = qaRun?.results.map((result) => `<tr><td>${esc(result.label)}</td><td>${result.passed ? 'Läpäisi' : 'Hylätty'}</td><td>${esc(result.detail ?? '')}</td></tr>`).join('') ?? '';
+  const qaTable = qaRun
+    ? `<p>Versio ${esc(String(qaRun.version))} · ${formatTime(qaRun.createdAt)} · <strong>${qaRun.passed ? 'Läpäisi' : 'Hylätty'}</strong></p><div class="table-wrap"><table><thead><tr><th>Tarkistus</th><th>Tulos</th><th>Lisätieto</th></tr></thead><tbody>${qaRows}</tbody></table></div>`
+    : '<p class="muted">Tarkistuksia ei ole vielä ajettu.</p>';
+  const checkedIds = new Set(checklist.map((entry) => entry.item));
+  const checklistHtml = LAUNCH_CHECKLIST_ITEMS.map((item) => {
+    const checked = checkedIds.has(item.id);
+    return `<form class="card" action="/admin/sites/${escAttr(site.publicId)}/checklist/${escAttr(item.id)}" method="post">${formToken(csrf)}<label><span><input name="checked" type="checkbox" value="true"${checked ? ' checked' : ''}> ${esc(item.label)}</span></label><button class="secondary" type="submit">Tallenna</button></form>`;
+  }).join('');
+  const gateHint = publishGateMessage ? `<p class="notice">Julkaisuportti ei täyty. ${esc(publishGateMessage)}</p>` : '<p class="notice">Julkaisuportti täyttyy.</p>';
+  const publishControls = `${gateHint}<div class="actions">${publishForm(site.currentVersion)}${site.publishedVersion === undefined ? '' : `<form action="/admin/sites/${escAttr(site.publicId)}/unpublish" method="post">${formToken(csrf)}<button class="danger" type="submit">Poista julkaisu</button></form>`}</div>`;
   return layout(site.data.name, `<p><a href="/admin/sites">← Sivustot</a></p><h1>${esc(site.data.name)}</h1>${message}
     <dl class="definition"><dt>ID</dt><dd>${esc(site.publicId)}</dd><dt>Kuvaus</dt><dd>${esc(site.data.tagline ?? '—')}</dd><dt>Tila</dt><dd>${badge(site.status)}</dd><dt>Nykyinen versio</dt><dd>${esc(String(site.currentVersion))}</dd><dt>Julkaistu versio</dt><dd>${esc(site.publishedVersion === undefined ? '—' : String(site.publishedVersion))}</dd><dt>Kuvia</dt><dd>${esc(String(photoCount))}</dd><dt>Nykyisen esikatselu</dt><dd><a href="/p/${escAttr(site.publicId)}/current">/p/${esc(site.publicId)}/current</a></dd></dl>${publishControls}
+    <h2>QA</h2><form action="/admin/sites/${escAttr(site.publicId)}/qa" method="post">${formToken(csrf)}<button type="submit">Aja tarkistukset</button></form>${qaTable}
+    <h3>Julkaisun tarkistuslista</h3><div class="grid">${checklistHtml}</div>
     <h2>Avoimet ehdotukset</h2><div class="card">${proposalHtml}</div>
     <h2>Versiot</h2>${versionTable}
     <h2>Esikatselulinkit</h2>${tokenTable}

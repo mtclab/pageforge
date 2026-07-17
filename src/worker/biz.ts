@@ -19,6 +19,7 @@ import {
   sha256Hex,
 } from './shared.js';
 import { readSessionCookie, verifySessionCookie } from './session.js';
+import { publishGate, publishGateError } from './qa.js';
 import { validateSiteData } from './validate.js';
 
 export interface ProposalInfo {
@@ -250,6 +251,7 @@ export async function publishSiteVersion(
   site: Site,
   n: number,
   actor: Extract<AuditActor, 'operator' | 'approval-key'>,
+  override?: { requested: boolean; reason?: string },
 ): Promise<Operation<number>> {
   if (!Number.isInteger(n) || n < 0) {
     return { ok: false, status: 400, error: 'Invalid version.' };
@@ -257,7 +259,15 @@ export async function publishSiteVersion(
   if (n !== site.currentVersion && !(await cp.getSnapshot(site.id, n))) {
     return { ok: false, status: 400, error: 'Version not found.' };
   }
-  await cp.publishSiteVersion(site, n, actor);
+  let overrideReason: string | undefined;
+  if (actor === 'operator' && override?.requested) {
+    overrideReason = override.reason?.trim();
+    if (!overrideReason) return { ok: false, status: 400, error: 'Ohituksen syy vaaditaan.' };
+  } else {
+    const gate = await publishGate(cp, site);
+    if (!gate.passed) return { ok: false, status: 409, error: publishGateError(gate) };
+  }
+  await cp.publishSiteVersion(site, n, actor, overrideReason);
   return { ok: true, value: n };
 }
 
@@ -461,10 +471,13 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
       await cp.unpublishSite(site, auth.actor);
       return json(200, { ok: true });
     }
-    const parsed = await readJson<{ n?: number }>(request);
+    const parsed = await readJson<{ n?: number; override?: boolean; reason?: string }>(request);
     if ('error' in parsed) return parsed.error;
     const n = parsed.value.n ?? site.currentVersion;
-    const result = await publishSiteVersion(cp, site, n, auth.actor);
+    const result = await publishSiteVersion(cp, site, n, auth.actor, {
+      requested: parsed.value.override === true,
+      reason: parsed.value.reason,
+    });
     return result.ok
       ? json(200, { ok: true, version: result.value })
       : json(result.status, { error: result.error });

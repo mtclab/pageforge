@@ -4,6 +4,7 @@ import worker from '../src/worker/index.js';
 import { ControlPlane } from '../src/worker/db.js';
 import { sha256Hex } from '../src/worker/shared.js';
 import { signSessionCookie } from '../src/worker/session.js';
+import { LAUNCH_CHECKLIST_ITEMS } from '../src/worker/qa.js';
 import minimal from './fixtures/minimal.json';
 import { jsonRequest, MemoryKV, workerEnv } from './worker-fixture.js';
 
@@ -281,6 +282,13 @@ describe('S5 draft versioning', () => {
     const approved = (await cp.getSiteByPublicId('publish1'))!;
     expect(approved.status).toBe('approved');
     expect(approved.data.name).toBe('Version two');
+
+    await cp.recordQaRun(approved, approved.currentVersion, [
+      { id: 'fixture', label: 'Fixture', passed: true },
+    ]);
+    for (const item of LAUNCH_CHECKLIST_ITEMS) {
+      await cp.checkLaunchChecklist(approved, item.id, 'operator');
+    }
 
     const live = await worker.fetch(new Request('https://example.test/b/publish1'), env);
     expect(await live.text()).toContain('Version two');

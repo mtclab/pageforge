@@ -1,5 +1,6 @@
 import type { SiteData } from '../engine/types.js';
 import type { BusinessProfile } from './business-profile.js';
+import type { CheckResult } from './qa.js';
 
 /**
  * Minimal D1 type shim, kept local like the KV/R2 shims so unit tests can run
@@ -104,6 +105,22 @@ export interface PhotoMeta {
   r2Key: string;
   contentType: string;
   bytes: number;
+}
+
+export interface QaRun {
+  id: number;
+  siteId: number;
+  version: number;
+  results: CheckResult[];
+  passed: boolean;
+  createdAt: number;
+}
+
+export interface LaunchChecklistRecord {
+  siteId: number;
+  item: string;
+  checkedAt: number;
+  checkedBy: string;
 }
 
 export interface PreviewToken {
@@ -769,12 +786,93 @@ export class ControlPlane {
     }));
   }
 
+  // --- QA and launch checklist -----------------------------------------
+
+  async recordQaRun(
+    site: Site,
+    version: number,
+    results: CheckResult[],
+    actor: AuditActor = 'operator',
+  ): Promise<QaRun> {
+    const at = this.now();
+    const passed = results.every((result) => result.passed);
+    const statements = await this.db.batch([
+      this.db
+        .prepare('INSERT INTO qa_runs (site_id, version, results, passed, created_at) VALUES (?, ?, ?, ?, ?)')
+        .bind(site.id, version, JSON.stringify(results), passed ? 1 : 0, at),
+      this.auditStatement(at, {
+        actor,
+        action: 'qa.run',
+        entity: 'site',
+        entityId: site.publicId,
+        detail: { version, passed, failCount: results.filter((result) => !result.passed).length },
+      }),
+    ]);
+    return { id: statements[0]!.meta.last_row_id!, siteId: site.id, version, results, passed, createdAt: at };
+  }
+
+  async latestQaRun(siteId: number): Promise<QaRun | null> {
+    const row = await this.db
+      .prepare('SELECT id, site_id, version, results, passed, created_at FROM qa_runs WHERE site_id = ? ORDER BY created_at DESC, id DESC LIMIT 1')
+      .bind(siteId)
+      .first<{ id: number; site_id: number; version: number; results: string; passed: number; created_at: number }>();
+    if (!row) return null;
+    return {
+      id: row.id,
+      siteId: row.site_id,
+      version: row.version,
+      results: JSON.parse(row.results) as CheckResult[],
+      passed: row.passed === 1,
+      createdAt: row.created_at,
+    };
+  }
+
+  async listLaunchChecklist(siteId: number): Promise<LaunchChecklistRecord[]> {
+    const { results } = await this.db
+      .prepare('SELECT site_id, item, checked_at, checked_by FROM launch_checklist WHERE site_id = ? ORDER BY item')
+      .bind(siteId)
+      .all<{ site_id: number; item: string; checked_at: number; checked_by: string }>();
+    return results.map((row) => ({
+      siteId: row.site_id,
+      item: row.item,
+      checkedAt: row.checked_at,
+      checkedBy: row.checked_by,
+    }));
+  }
+
+  async checkLaunchChecklist(site: Site, item: string, checkedBy: string): Promise<void> {
+    const at = this.now();
+    await this.db.batch([
+      this.db
+        .prepare('INSERT INTO launch_checklist (site_id, item, checked_at, checked_by) VALUES (?, ?, ?, ?) ON CONFLICT(site_id, item) DO UPDATE SET checked_at = excluded.checked_at, checked_by = excluded.checked_by')
+        .bind(site.id, item, at, checkedBy),
+      this.auditStatement(at, {
+        actor: 'operator',
+        action: 'checklist.check',
+        entity: 'site',
+        entityId: site.publicId,
+        detail: { item },
+      }),
+    ]);
+  }
+
+  async uncheckLaunchChecklist(site: Site, item: string): Promise<void> {
+    const at = this.now();
+    await this.db.batch([
+      this.db.prepare('DELETE FROM launch_checklist WHERE site_id = ? AND item = ?').bind(site.id, item),
+      this.db
+        .prepare("INSERT INTO audit_events (at, actor, action, entity, entity_id, detail) SELECT ?, 'operator', 'checklist.uncheck', 'site', ?, ? WHERE changes() > 0")
+        .bind(at, site.publicId, JSON.stringify({ item })),
+    ]);
+  }
+
   // --- publishing -------------------------------------------------------
 
   async publishSiteVersion(
     site: Site,
     n: number,
     actor: Extract<AuditActor, 'operator' | 'approval-key'>,
+    overrideReason?: string,
   ): Promise<void> {
     const at = this.now();
     await this.db.batch([
@@ -789,7 +887,7 @@ export class ControlPlane {
         action: 'site.publish',
         entity: 'site',
         entityId: site.publicId,
-        detail: { n },
+        detail: { n, ...(overrideReason === undefined ? {} : { override: overrideReason }) },
       }),
     ]);
   }

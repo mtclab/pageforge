@@ -1,5 +1,6 @@
 import {
   applyProposalDecision,
+  bizHtml,
   publishSiteVersion,
   randomPreviewToken,
   rollbackSiteVersion,
@@ -40,6 +41,12 @@ import {
   verifySessionCookie,
 } from './session.js';
 import { constantTimeEqual, type Env, sha256Hex } from './shared.js';
+import {
+  LAUNCH_CHECKLIST_ITEMS,
+  publishGate,
+  publishGateError,
+  runQaChecks,
+} from './qa.js';
 import { validateSiteData } from './validate.js';
 
 const ADMIN_HEADERS = {
@@ -192,13 +199,16 @@ async function siteDetailResponse(
   error?: string,
   status = 200,
 ): Promise<Response> {
-  const [versions, proposals, photoCount, events, tokens, comments] = await Promise.all([
+  const [versions, proposals, photoCount, events, tokens, comments, qaRun, checklist, gate] = await Promise.all([
     cp.listSnapshots(site.id),
     cp.listOpenProposals(site.id),
     cp.photoCountForSite(site.id),
     cp.listAuditEventsForSite(site.publicId, 20),
     cp.listActiveTokens(site.id),
     cp.listDraftComments(site.id),
+    cp.latestQaRun(site.id),
+    cp.listLaunchChecklist(site.id),
+    publishGate(cp, site),
   ]);
   return html(siteDetailPage({
     site,
@@ -208,6 +218,9 @@ async function siteDetailResponse(
     events,
     tokens,
     comments,
+    qaRun: qaRun ?? undefined,
+    checklist,
+    publishGateMessage: publishGateError(gate),
     csrf,
     ...(error === undefined ? {} : { error }),
   }), status);
@@ -431,6 +444,30 @@ export async function handleAdminRequest(request: Request, env: Env): Promise<Re
     return redirect(`/admin/sites/${site.publicId}`);
   }
 
+  const qaMatch = pathname.match(/^\/admin\/sites\/([^/]+)\/qa$/);
+  if (qaMatch) {
+    if (request.method !== 'POST') return methodNotAllowed(csrf);
+    const site = await cp.getSiteByPublicId(qaMatch[1]!);
+    if (!site) return html(messagePage('Sivustoa ei löytynyt', 'Tuntematon sivusto.', csrf), 404);
+    const results = await runQaChecks(site.data, bizHtml(site.data, false), cp);
+    await cp.recordQaRun(site, site.currentVersion, results, 'operator');
+    return redirect(`/admin/sites/${site.publicId}`);
+  }
+
+  const checklistMatch = pathname.match(/^\/admin\/sites\/([^/]+)\/checklist\/([^/]+)$/);
+  if (checklistMatch) {
+    if (request.method !== 'POST') return methodNotAllowed(csrf);
+    const site = await cp.getSiteByPublicId(checklistMatch[1]!);
+    if (!site) return html(messagePage('Sivustoa ei löytynyt', 'Tuntematon sivusto.', csrf), 404);
+    const item = checklistMatch[2]!;
+    if (!LAUNCH_CHECKLIST_ITEMS.some((entry) => entry.id === item)) {
+      return siteDetailResponse(cp, site, csrf, 'Tuntematon tarkistuslistan kohta.', 400);
+    }
+    if (formString(form!, 'checked') === 'true') await cp.checkLaunchChecklist(site, item, 'operator');
+    else await cp.uncheckLaunchChecklist(site, item);
+    return redirect(`/admin/sites/${site.publicId}`);
+  }
+
   const tokenRevokeMatch = pathname.match(/^\/admin\/sites\/([^/]+)\/tokens\/(\d+)\/revoke$/);
   if (tokenRevokeMatch) {
     if (request.method !== 'POST') return methodNotAllowed(csrf);
@@ -490,7 +527,10 @@ export async function handleAdminRequest(request: Request, env: Env): Promise<Re
     }
     const rawN = optionalFormString(form!, 'n');
     const n = rawN === undefined ? site.currentVersion : Number(rawN);
-    const result = await publishSiteVersion(cp, site, n, 'operator');
+    const result = await publishSiteVersion(cp, site, n, 'operator', {
+      requested: formString(form!, 'override') === 'true',
+      reason: formString(form!, 'reason'),
+    });
     if (!result.ok) return siteDetailResponse(cp, site, csrf, result.error, result.status);
     return redirect(`/admin/sites/${site.publicId}`);
   }
