@@ -11,16 +11,23 @@ const IMG_SRC_RE = /^\/img\/[a-f0-9]{64}$/;
  * collectImages) or an R2 `{ src: "/img/<sha256>" }` reference. Returns an
  * error string or null.
  */
-function photoRefError(photo: unknown): string | null {
+function photoRefError(photo: unknown, allowR2Photos: boolean): string | null {
   if (!photo || typeof photo !== 'object') return 'bad image';
   const ref = photo as Record<string, unknown>;
-  if (typeof ref.src === 'string') return IMG_SRC_RE.test(ref.src) ? null : 'bad image reference';
+  if (typeof ref.src === 'string') {
+    if (!allowR2Photos) return 'bad image';
+    return IMG_SRC_RE.test(ref.src) ? null : 'bad image reference';
+  }
   if (typeof ref.dataUrl === 'string') return null;
   return 'bad image';
 }
 
 /** Reject anything that is not a sane, size-capped SiteData. Returns an error string or null. */
-export function validateSiteData(data: SiteData): string | null {
+export function validateSiteData(
+  data: SiteData,
+  opts: { allowR2Photos?: boolean } = {},
+): string | null {
+  const allowR2Photos = opts.allowR2Photos === true;
   if (data?.version !== 1) return 'unsupported data version';
   if (typeof data.name !== 'string' || !data.name.trim()) return 'name is required';
   if (data.name.length > 120) return 'name too long';
@@ -55,7 +62,7 @@ export function validateSiteData(data: SiteData): string | null {
       case 'gallery':
         if (!Array.isArray(s.photos) || s.photos.length > 6) return 'too many gallery photos';
         for (const photo of s.photos) {
-          const photoError = photoRefError(photo);
+          const photoError = photoRefError(photo, allowR2Photos);
           if (photoError) return photoError;
         }
         break;
@@ -135,7 +142,7 @@ export function validateSiteData(data: SiteData): string | null {
     }
   }
   if (data.photo) {
-    const photoError = photoRefError(data.photo);
+    const photoError = photoRefError(data.photo, allowR2Photos);
     if (photoError) return photoError;
   }
   for (const [, dataUrl] of collectImages(data)) {

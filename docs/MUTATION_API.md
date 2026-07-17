@@ -27,19 +27,19 @@ Auth surfaces:
 | POST | `/api/biz/sites/:id/proposals` | Operator | Stage a complete validated candidate (returns tokened preview path) |
 | POST | `.../proposals/:pid/approve\|reject` | Operator or approval key | Decide a proposal (approve promotes to a new current version) |
 | POST | `/api/biz/sites/:id/rollback` | Operator or approval key | Restore version n (original = version 0) |
-| POST | `/api/biz/sites/:id/publish` | Operator or approval key | Point `/b/` at exact version n (default: current). Gated: passed QA run for current version + full launch checklist; operator may override with audited reason; approval-key publishes additionally require a paid order and cannot override |
-| POST | `/api/biz/sites/:id/unpublish` | Operator or approval key | Back to live-current serving |
+| POST | `/api/biz/sites/:id/publish` | Operator or approval key | Point `/b/` at exact version n (default: current). Gated: passed QA run for that exact version + full launch checklist; operator may override with audited reason; approval-key publishes additionally require a paid order and cannot override |
+| POST | `/api/biz/sites/:id/unpublish` | Operator or approval key | Remove the site from `/b/` and return it to approved state |
 | POST | `/api/biz/sites/:id/photos` | Operator | Upload photo (R2, sha256 dedup, 2 MB, jpeg/png/webp) -> `/img/<sha>` |
 | POST | `/api/biz/sites/:id/order` | Operator or approval key | Create the 249e + 19e/kk order; returns checkout redirect (mock provider by default) |
-| GET | `/api/biz/sites/:id/export` | Operator or approval key | ZIP: rendered index.html (no credit/banner), site.json, assets, LUEMINUT.txt |
+| GET | `/api/biz/sites/:id/export` | Operator bearer, approval key, or operator session | ZIP: rendered index.html (no credit/banner), site.json, assets, LUEMINUT.txt |
 | POST | `/api/biz/email-ingress` | Operator | Staging simulator for the Email Worker handler |
 | POST | `/api/billing/webhook` | Signature | Provider webhooks (HMAC-verified, drives order state) |
 | GET | `/p/:id/:pid` | Token or operator session | Proposal preview, draft banner, noindex, comment form |
 | POST | `/p/:id/:pid/comments` | Token double-submit | Customer feedback (20/proposal cap) |
-| GET | `/b/:id` | Public (when flag on) | Published pointer if set, else current; archived sites 404 |
+| GET | `/b/:id` | Public (when flag on) | Published pointer for sites in published state; every unpublished or archived site returns 404 |
 | GET/POST | `/panel` | Panel token | Capability-scoped customer update form -> staged proposal |
 
-Proposal creation is limited to 50 per site per UTC day. Snapshots are capped at the newest 20.
+Operator and MCP proposal creation share a limit of 50 per site per UTC day. Customer panel submissions have a separate 20-per-site daily limit and cannot consume the operator/MCP budget. Open proposals expire after 14 days; expired proposals are omitted from lists and previews and cannot be approved. Snapshots are capped at the newest 20, except that the snapshot currently selected for publication is always retained.
 
 ## Versioning semantics
 

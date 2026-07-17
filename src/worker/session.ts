@@ -1,4 +1,4 @@
-import { constantTimeEqual } from './shared.js';
+import { constantTimeEqual, hmacHex } from './shared.js';
 
 export const ADMIN_COOKIE = 'pf_admin';
 export const SESSION_TTL_SECONDS = 12 * 60 * 60;
@@ -7,20 +7,6 @@ const encoder = new TextEncoder();
 
 async function sessionKey(operatorKey: string): Promise<ArrayBuffer> {
   return crypto.subtle.digest('SHA-256', encoder.encode(operatorKey));
-}
-
-async function hmacHex(operatorKey: string, message: string): Promise<string> {
-  const key = await crypto.subtle.importKey(
-    'raw',
-    await sessionKey(operatorKey),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign'],
-  );
-  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(message));
-  return [...new Uint8Array(signature)]
-    .map((byte) => byte.toString(16).padStart(2, '0'))
-    .join('');
 }
 
 /**
@@ -32,7 +18,7 @@ export async function signSessionCookie(
   now = Date.now(),
 ): Promise<{ value: string; expiry: number }> {
   const expiry = Math.floor(now / 1000) + SESSION_TTL_SECONDS;
-  const signature = await hmacHex(operatorKey, String(expiry));
+  const signature = await hmacHex(await sessionKey(operatorKey), String(expiry));
   return { value: `${expiry}.${signature}`, expiry };
 }
 
@@ -47,7 +33,7 @@ export async function verifySessionCookie(
   if (!match) return null;
   const expiry = Number(match[1]);
   if (!Number.isSafeInteger(expiry) || expiry <= Math.floor(now / 1000)) return null;
-  const expected = await hmacHex(operatorKey, String(expiry));
+  const expected = await hmacHex(await sessionKey(operatorKey), String(expiry));
   return constantTimeEqual(match[2]!, expected) ? expiry : null;
 }
 
@@ -74,7 +60,7 @@ export function clearSessionCookie(): string {
 
 /** CSRF is bound to the signed session's expiry-hour bucket and the same rotated key. */
 export async function makeCsrfToken(operatorKey: string, sessionExpiry: number): Promise<string> {
-  return hmacHex(operatorKey, `csrf:${Math.floor(sessionExpiry / 3600)}`);
+  return hmacHex(await sessionKey(operatorKey), `csrf:${Math.floor(sessionExpiry / 3600)}`);
 }
 
 export async function checkCsrfToken(

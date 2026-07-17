@@ -1,4 +1,5 @@
 import { TEL_URL_RE } from '../engine/escape.js';
+import { telHref } from '../engine/phone.js';
 import type { Section, SiteData } from '../engine/types.js';
 import { BUSINESS_LABELS } from '../engine/localization.js';
 import { THEMES } from '../themes/index.js';
@@ -89,7 +90,7 @@ function contentFor(profile: BusinessProfile): Omit<SiteData, 'meta'> {
   const hasBusiness = Boolean(profile.contact.phone || address || profile.identity.yTunnus);
   // The call CTA renders the first tel: link; derive one from the contact
   // phone so the operator never has to type the number twice.
-  const telUrl = profile.contact.phone ? `tel:${profile.contact.phone}` : undefined;
+  const telUrl = profile.contact.phone ? telHref(profile.contact.phone) : undefined;
   const links = telUrl && TEL_URL_RE.test(telUrl)
     && !profile.links.some((link) => link.url.startsWith('tel:'))
     ? [{ label: 'Soita', url: telUrl, kind: 'phone' as const }, ...profile.links]

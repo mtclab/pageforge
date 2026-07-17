@@ -4,6 +4,7 @@ import {
   publishSiteVersion,
   randomPreviewToken,
   rollbackSiteVersion,
+  siteMutable,
   summarizeChanges,
 } from './biz.js';
 import {
@@ -51,7 +52,16 @@ import {
   signSessionCookie,
   verifySessionCookie,
 } from './session.js';
-import { constantTimeEqual, type Env, sha256Hex } from './shared.js';
+import {
+  bizRenderCachePrefix,
+  constantTimeEqual,
+  type Env,
+  formString,
+  optionalFormString,
+  randomId,
+  sha256Hex,
+  unusedId,
+} from './shared.js';
 import {
   LAUNCH_CHECKLIST_ITEMS,
   publishGate,
@@ -70,8 +80,6 @@ const ADMIN_HEADERS = {
   'cache-control': 'no-store',
   'x-robots-tag': 'noindex',
 };
-
-const ID_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyz';
 
 export const PROSPECT_TRANSITIONS: Readonly<Record<ProspectStatus, readonly ProspectStatus[]>> = {
   loytynyt: ['arvioitu', 'hylatty'],
@@ -119,16 +127,6 @@ function redirect(location: string, cookie?: string): Response {
   return new Response(null, { status: 303, headers });
 }
 
-function formString(form: FormData, name: string): string | undefined {
-  const value = form.get(name);
-  return typeof value === 'string' ? value : undefined;
-}
-
-function optionalFormString(form: FormData, name: string): string | undefined {
-  const value = formString(form, name)?.trim();
-  return value ? value : undefined;
-}
-
 async function readForm(request: Request): Promise<FormData | null> {
   try {
     return await request.formData();
@@ -137,41 +135,20 @@ async function readForm(request: Request): Promise<FormData | null> {
   }
 }
 
-function randomId(): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(8));
-  return [...bytes].map((byte) => ID_ALPHABET[byte % ID_ALPHABET.length]).join('');
-}
-
 async function unusedProspectId(cp: ControlPlane): Promise<string> {
-  for (let attempt = 0; attempt < 10; attempt++) {
-    const id = randomId();
-    if (!(await cp.getProspect(id))) return id;
-  }
-  throw new Error('could not allocate prospect id');
+  return unusedId((id) => cp.getProspect(id), 'prospect');
 }
 
 async function unusedProfileId(cp: ControlPlane): Promise<string> {
-  for (let attempt = 0; attempt < 10; attempt++) {
-    const id = randomId();
-    if (!(await cp.getBusinessProfileByPublicId(id))) return id;
-  }
-  throw new Error('could not allocate profile id');
+  return unusedId((id) => cp.getBusinessProfileByPublicId(id), 'profile');
 }
 
 async function unusedSiteId(cp: ControlPlane): Promise<string> {
-  for (let attempt = 0; attempt < 10; attempt++) {
-    const id = randomId();
-    if (!(await cp.getSiteByPublicId(id))) return id;
-  }
-  throw new Error('could not allocate site id');
+  return unusedId((id) => cp.getSiteByPublicId(id), 'site');
 }
 
 async function unusedProposalId(cp: ControlPlane, siteId: number): Promise<string> {
-  for (let attempt = 0; attempt < 10; attempt++) {
-    const id = randomId();
-    if (!(await cp.getProposal(siteId, id))) return id;
-  }
-  throw new Error('could not allocate proposal id');
+  return unusedId((id) => cp.getProposal(siteId, id), 'proposal');
 }
 
 function methodNotAllowed(csrf?: string): Response {
@@ -185,7 +162,7 @@ function methodNotAllowed(csrf?: string): Response {
 }
 
 async function purgeSiteRenderCache(env: Env, sitePublicId: string): Promise<number> {
-  const prefix = `bizhtml:${sitePublicId}:`;
+  const prefix = bizRenderCachePrefix(sitePublicId);
   let cursor: string | undefined;
   let count = 0;
   do {
@@ -230,7 +207,7 @@ async function siteDetailResponse(
   error?: string,
   status = 200,
 ): Promise<Response> {
-  const [versions, proposals, photoCount, events, tokens, panelTokens, updateRequests, comments, qaRun, checklist, gate, order, billingEvents, provisioningRun, renewals] = await Promise.all([
+  const [versions, proposals, photoCount, events, tokens, panelTokens, updateRequests, comments, qaRun, checklist, order, billingEvents, provisioningRun, renewals] = await Promise.all([
     cp.listSnapshots(site.id),
     cp.listOpenProposals(site.id),
     cp.photoCountForSite(site.id),
@@ -241,12 +218,15 @@ async function siteDetailResponse(
     cp.listDraftComments(site.id),
     cp.latestQaRun(site.id),
     cp.listLaunchChecklist(site.id),
-    publishGate(cp, site),
     cp.latestOrderForSite(site.id),
     cp.listBillingEventsForSite(site.id, 20),
     cp.latestProvisioningRunForSite(site.id),
     cp.listRenewalsForSite(site.id),
   ]);
+  const gate = await publishGate(cp, site, site.currentVersion, {
+    run: qaRun,
+    checklist,
+  });
   const provisioningSteps = provisioningRun === null
     ? []
     : await cp.listProvisioningSteps(provisioningRun.id);
@@ -471,7 +451,9 @@ export async function handleAdminRequest(request: Request, env: Env): Promise<Re
       return prospectDetailResponse(cp, prospect, csrf, profileErrors.join(' '), 400);
     }
     const variants = compose(profile.data, profile.publicId);
-    const invalid = variants.map(validateSiteData).find((error) => error !== null);
+    const invalid = variants
+      .map((variant) => validateSiteData(variant, { allowR2Photos: true }))
+      .find((error) => error !== null);
     if (invalid) return prospectDetailResponse(cp, prospect, csrf, `Koostaminen epäonnistui: ${invalid}`, 400);
     const sitePublicId = await unusedSiteId(cp);
     await cp.createSite({
@@ -544,9 +526,11 @@ export async function handleAdminRequest(request: Request, env: Env): Promise<Re
     if (formString(form!, 'confirm') !== site.publicId) {
       return siteDetailResponse(cp, site, csrf, 'Vahvistus ei vastaa sivuston ID:tä.', 400);
     }
-    const photos = await cp.listPhotoMetaForSite(site.id);
-    if (photos.length) await env.PHOTOS.delete(photos.map((photo) => photo.r2Key));
-    await cp.permanentlyDeleteSite(site, 'operator');
+    await cp.permanentlyDeleteSite(
+      site,
+      'operator',
+      (photoKeys) => env.PHOTOS.delete(photoKeys),
+    );
     return redirect('/admin/deletions');
   }
 
@@ -641,6 +625,8 @@ export async function handleAdminRequest(request: Request, env: Env): Promise<Re
     if (request.method !== 'POST') return methodNotAllowed(csrf);
     const site = await cp.getSiteByPublicId(orderMatch[1]!);
     if (!site) return html(messagePage('Sivustoa ei löytynyt', 'Tuntematon sivusto.', csrf), 404);
+    const immutable = siteMutable(site);
+    if (immutable) return siteDetailResponse(cp, site, csrf, immutable.error, immutable.status);
     try {
       const checkout = await createOrderCheckout(
         cp,
@@ -752,6 +738,8 @@ export async function handleAdminRequest(request: Request, env: Env): Promise<Re
     const site = await cp.getSiteByPublicId(publishMatch[1]!);
     if (!site) return html(messagePage('Sivustoa ei löytynyt', 'Tuntematon sivusto.', csrf), 404);
     if (publishMatch[2] === 'unpublish') {
+      const immutable = siteMutable(site);
+      if (immutable) return siteDetailResponse(cp, site, csrf, immutable.error, immutable.status);
       await cp.unpublishSite(site, 'operator');
       return redirect(`/admin/sites/${site.publicId}`);
     }

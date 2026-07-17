@@ -1,4 +1,4 @@
-import { publishSiteVersion, type Operation } from './biz.js';
+import { publishSiteVersion, siteMutable, type Operation } from './biz.js';
 import {
   ControlPlane,
   type ProvisioningRun,
@@ -6,7 +6,7 @@ import {
   type ProvisioningStepStatus,
   type Site,
 } from './db.js';
-import type { Env } from './shared.js';
+import { type Env, unusedId } from './shared.js';
 import { vendorAdapters, type VendorAdapters, type VendorResult } from './vendors.js';
 
 export const PROVISIONING_STEPS = [
@@ -23,24 +23,14 @@ export type ProvisioningStepId = typeof PROVISIONING_STEPS[number]['id'];
 
 export const DOMAIN_RE = /^[a-z0-9][a-z0-9.-]{2,60}\.[a-z]{2,10}$/;
 
-const ID_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyz';
 const HTTP_TIMEOUT_MS = 10_000;
 
 export function validProvisioningDomain(domain: string): boolean {
   return DOMAIN_RE.test(domain);
 }
 
-function randomId(): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(8));
-  return [...bytes].map((byte) => ID_ALPHABET[byte % ID_ALPHABET.length]).join('');
-}
-
 async function unusedRunId(cp: ControlPlane): Promise<string> {
-  for (let attempt = 0; attempt < 10; attempt++) {
-    const id = randomId();
-    if (!(await cp.getProvisioningRunByPublicId(id))) return id;
-  }
-  throw new Error('could not allocate provisioning run id');
+  return unusedId((id) => cp.getProvisioningRunByPublicId(id), 'provisioning run');
 }
 
 export async function startProvisioningRun(
@@ -50,6 +40,8 @@ export async function startProvisioningRun(
   domain: string,
   adapters: VendorAdapters = vendorAdapters(env),
 ): Promise<Operation<ProvisioningRun>> {
+  const immutable = siteMutable(site);
+  if (immutable) return immutable;
   const normalized = domain.trim();
   if (!validProvisioningDomain(normalized)) {
     return { ok: false, status: 400, error: 'Virheellinen verkkotunnus.' };
@@ -118,6 +110,8 @@ export async function transitionProvisioningStep(
   evidence?: string,
   fetcher: typeof fetch = fetch,
 ): Promise<Operation<ProvisioningStep>> {
+  const immutable = siteMutable(site);
+  if (immutable) return immutable;
   if (run.siteId !== site.id) {
     return { ok: false, status: 400, error: 'Provisiointi ei kuulu sivustolle.' };
   }

@@ -80,6 +80,29 @@ describe('S9 provisioning state machine', () => {
     );
   });
 
+  it('rejects provisioning starts and step transitions for archived sites', async () => {
+    const archivedBeforeStart = await seed('archpr01');
+    await cp.archiveSite(archivedBeforeStart, 0, 'operator');
+    const startResult = await startProvisioningRun(cp, env, {
+      ...archivedBeforeStart,
+      status: 'archived',
+    }, 'archived.fi');
+    expect(startResult).toEqual({ ok: false, status: 409, error: 'Sivusto on arkistoitu.' });
+
+    const activeSite = await seed('archpr02');
+    const run = await start(activeSite, 'active.fi');
+    await cp.archiveSite(activeSite, 0, 'operator');
+    const stepResult = await transitionProvisioningStep(
+      cp,
+      env,
+      run,
+      { ...activeSite, status: 'archived' },
+      'domain_register',
+      'ohitettu',
+    );
+    expect(stepResult).toEqual({ ok: false, status: 409, error: 'Sivusto on arkistoitu.' });
+  });
+
   it('enforces ordering in the single transition function, requires evidence, and permits skips', async () => {
     const site = await seed('rules001');
     const run = await start(site);

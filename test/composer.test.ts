@@ -57,6 +57,14 @@ describe('deterministic composer', () => {
     const kept = compose(existing, 'tel2')[0]!;
     expect(kept.links.filter((link) => link.url.startsWith('tel:'))).toHaveLength(1);
     expect(kept.links[0]!.label).toBe('Puhelin');
+
+    const punctuated = profile();
+    punctuated.contact.phone = '09/1234  567';
+    expect(compose(punctuated, 'tel3')[0]!.links[0]).toEqual({
+      label: 'Soita',
+      url: 'tel:091234 567',
+      kind: 'phone',
+    });
   });
 
   it('keeps content identical, emits no empty sections, and passes SiteData validation', () => {
@@ -64,7 +72,7 @@ describe('deterministic composer', () => {
     expect(contentOnly(variants[1]!)).toEqual(contentOnly(variants[0]!));
     expect(contentOnly(variants[2]!)).toEqual(contentOnly(variants[0]!));
     for (const variant of variants) {
-      expect(validateSiteData(variant)).toBeNull();
+      expect(validateSiteData(variant, { allowR2Photos: true })).toBeNull();
       for (const section of variant.sections) {
         if ('items' in section) expect(section.items.length).toBeGreaterThan(0);
         if (section.kind === 'hours') expect(section.days.length).toBeGreaterThan(0);

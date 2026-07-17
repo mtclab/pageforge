@@ -62,6 +62,10 @@ describe('S7 update channels', () => {
     expect(await cp.closeUpdateRequest(created.id)).toBe(true);
     expect(await cp.closeUpdateRequest(created.id)).toBe(false);
     expect((await cp.getUpdateRequest(created.id))?.status).toBe('suljettu');
+    expect(await cp.listUpdateRequests()).toEqual([]);
+    expect(await cp.listUpdateRequests('suljettu')).toEqual([
+      expect.objectContaining({ id: created.id, status: 'suljettu' }),
+    ]);
     const events = await cp.listAuditEvents({ entity: 'update_request', entityId: String(created.id), limit: 10 });
     expect(events.map((event) => event.action)).toEqual([
       'update_request.close',
@@ -156,5 +160,38 @@ describe('S7 update channels', () => {
     const expired = '22222222222222222222222222222222';
     await cp.createPanelToken({ tokenHash: await sha256Hex(expired), site, expiresAt: Date.now() - 1 });
     expect((await worker.fetch(new Request(`https://example.test/panel?t=${expired}`), env)).status).toBe(404);
+  });
+
+  it('gives panel submissions a separate 20/day budget from operator proposals', async () => {
+    const data: SiteData = {
+      ...base,
+      name: 'Kanavakohtainen raja',
+      capabilities: { notice: true },
+      sections: [{ kind: 'notice', text: 'Alku' }],
+    };
+    await seedSite('rate0001', data);
+    const site = (await cp.getSiteByPublicId('rate0001'))!;
+    const token = '33333333333333333333333333333333';
+    await cp.createPanelToken({ tokenHash: await sha256Hex(token), site });
+
+    const panelPost = (): Promise<Response> => worker.fetch(new Request(
+      `https://example.test/panel?t=${token}`,
+      {
+        method: 'POST',
+        body: new URLSearchParams({ t: token, notice_text: 'Päivitetty' }),
+      },
+    ), env);
+    for (let count = 0; count < 20; count++) {
+      expect((await panelPost()).status).toBe(200);
+    }
+    expect((await panelPost()).status).toBe(429);
+
+    const operator = await worker.fetch(
+      jsonRequest('/api/biz/sites/rate0001/proposals', 'POST', {
+        candidate: { ...data, tagline: 'Operaattorin ehdotus' },
+      }, 'operator-secret'),
+      env,
+    );
+    expect(operator.status).toBe(200);
   });
 });

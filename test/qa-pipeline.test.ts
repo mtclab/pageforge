@@ -183,6 +183,26 @@ describe('S6 persistence, checklist, and publish gate', () => {
     expect((await response.json() as { error: string }).error).toContain('FI-kieli tarkastettu');
   });
 
+  it('requires a passed QA run for the exact historical version being published', async () => {
+    let site = await seed('exactqa1');
+    for (let version = 1; version <= 10; version++) {
+      await cp.updateSiteData(site, { ...base, name: `Versio ${version}` }, {
+        actor: 'operator', action: 'fixture.promote', entity: 'site', entityId: site.publicId,
+      });
+      site = (await cp.getSiteByPublicId(site.publicId))!;
+    }
+    await checkAll(site);
+    await cp.recordQaRun(site, 10, [{ id: 'ok', label: 'OK', passed: true }]);
+
+    const response = await worker.fetch(
+      jsonRequest('/api/biz/sites/exactqa1/publish', 'POST', { n: 4 }, 'operator-secret'),
+      env,
+    );
+    expect(response.status).toBe(409);
+    expect((await response.json() as { error: string }).error).toContain('QA-tarkistus versiolle 4');
+    expect((await cp.getSiteByPublicId('exactqa1'))?.publishedVersion).toBeUndefined();
+  });
+
   it('allows and audits an operator override with a reason but never gives approval keys an override', async () => {
     const operatorSite = await seed('override');
     const missingReason = await worker.fetch(

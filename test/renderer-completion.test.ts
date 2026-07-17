@@ -17,7 +17,7 @@ const base = minimal as SiteData;
 describe('renderer completion', () => {
   for (const [sector, data] of Object.entries(fixtures)) {
     it(`renders the ${sector} fixture through the engine and business wrapper`, () => {
-      expect(validateSiteData(data)).toBeNull();
+      expect(validateSiteData(data, { allowR2Photos: true })).toBeNull();
       const rendered = renderSite(data, getTheme(data.meta.themeId));
       const business = bizHtml(data, false);
       expect(rendered.html).toContain(`<title>${data.name}</title>`);

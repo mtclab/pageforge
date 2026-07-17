@@ -147,7 +147,7 @@ async function callTool(env: Env, params: unknown): Promise<ReturnType<typeof to
     const site = await getBizSite(env, siteId);
     if (!site) return toolContent('Site not found.', true);
     return toolContent(
-      (await listOpenProposals(env, siteId)).map(({ proposalId, summary, at }) => ({ proposalId, summary, at })),
+      (await listOpenProposals(env, site)).map(({ proposalId, summary, at }) => ({ proposalId, summary, at })),
     );
   }
 

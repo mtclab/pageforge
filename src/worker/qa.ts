@@ -1,7 +1,7 @@
 import { TEL_URL_RE } from '../engine/escape.js';
 import { jsonLdTime } from '../engine/jsonld.js';
 import type { SiteData } from '../engine/types.js';
-import type { ControlPlane, Site } from './db.js';
+import type { ControlPlane, LaunchChecklistRecord, QaRun, Site } from './db.js';
 
 export interface CheckResult {
   id: string;
@@ -100,10 +100,9 @@ function phoneResult(html: string): boolean | string {
 
 async function photoResult(html: string, cp: ControlPlane): Promise<boolean | string> {
   const hashes = [...new Set([...html.matchAll(/\/img\/([a-f0-9]{64})(?=[^a-f0-9]|$)/gi)].map((match) => match[1]!.toLowerCase()))];
-  const missing: string[] = [];
-  for (const hash of hashes) {
-    if (!(await cp.getPhotoMeta(`photos/${hash}`))) missing.push(hash);
-  }
+  const keys = hashes.map((hash) => `photos/${hash}`);
+  const found = new Set(await cp.listExistingPhotoKeys(keys));
+  const missing = hashes.filter((hash) => !found.has(`photos/${hash}`));
   return missing.length ? `Kuvametadata puuttuu: ${missing.join(', ')}` : true;
 }
 
@@ -191,15 +190,25 @@ export interface PublishGateResult {
   missing: string[];
 }
 
-/** Publishing always gates against the newest run for the site's current version. */
-export async function publishGate(cp: ControlPlane, site: Site): Promise<PublishGateResult> {
+interface PrefetchedPublishGate {
+  run?: QaRun | null;
+  checklist?: LaunchChecklistRecord[];
+}
+
+/** Publishing gates against a passed QA run for the exact selected version. */
+export async function publishGate(
+  cp: ControlPlane,
+  site: Site,
+  n: number,
+  prefetched: PrefetchedPublishGate = {},
+): Promise<PublishGateResult> {
   const [run, checked] = await Promise.all([
-    cp.latestQaRun(site.id),
-    cp.listLaunchChecklist(site.id),
+    prefetched.run === undefined ? cp.latestQaRun(site.id) : prefetched.run,
+    prefetched.checklist === undefined ? cp.listLaunchChecklist(site.id) : prefetched.checklist,
   ]);
   const missing: string[] = [];
-  if (!run || run.version !== site.currentVersion) missing.push(`QA-tarkistus versiolle ${site.currentVersion}`);
-  else if (!run.passed) missing.push(`läpäisty QA-tarkistus versiolle ${site.currentVersion}`);
+  if (!run || run.version !== n) missing.push(`QA-tarkistus versiolle ${n}`);
+  else if (!run.passed) missing.push(`läpäisty QA-tarkistus versiolle ${n}`);
   const checkedIds = new Set(checked.map((entry) => entry.item));
   for (const item of LAUNCH_CHECKLIST_ITEMS) {
     if (!checkedIds.has(item.id)) missing.push(item.label);

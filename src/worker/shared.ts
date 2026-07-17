@@ -1,4 +1,4 @@
-import type { D1Database } from './db.js';
+import type { D1Database, Site } from './db.js';
 
 export interface KVNamespace {
   get(key: string): Promise<string | null>;
@@ -65,6 +65,10 @@ export interface Env {
 
 export const MAX_BODY = 6 * 1024 * 1024;
 export const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8' };
+export const BIZ_RENDER_CACHE_PREFIX = 'bizhtml:';
+
+const ID_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyz';
+const encoder = new TextEncoder();
 
 export function json(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: JSON_HEADERS });
@@ -89,9 +93,58 @@ export async function readJson<T>(request: Request): Promise<{ value: T } | { er
   }
 }
 
-export async function sha256Hex(s: string): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
-  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
+export function bytesToHex(bytes: ArrayBuffer): string {
+  return [...new Uint8Array(bytes)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+export async function sha256Hex(value: string | ArrayBuffer): Promise<string> {
+  const bytes = typeof value === 'string' ? encoder.encode(value) : value;
+  return bytesToHex(await crypto.subtle.digest('SHA-256', bytes));
+}
+
+export async function hmacHex(secret: string | ArrayBuffer, message: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    typeof secret === 'string' ? encoder.encode(secret) : secret,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  return bytesToHex(await crypto.subtle.sign('HMAC', key, encoder.encode(message)));
+}
+
+export function randomId(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(8));
+  return [...bytes].map((byte) => ID_ALPHABET[byte % ID_ALPHABET.length]).join('');
+}
+
+export async function unusedId(
+  exists: (id: string) => Promise<unknown>,
+  label: string,
+): Promise<string> {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const id = randomId();
+    if (!(await exists(id))) return id;
+  }
+  throw new Error(`could not allocate ${label} id`);
+}
+
+export function formString(form: FormData, name: string): string | undefined {
+  const value = form.get(name);
+  return typeof value === 'string' ? value : undefined;
+}
+
+export function optionalFormString(form: FormData, name: string): string | undefined {
+  const value = formString(form, name)?.trim();
+  return value ? value : undefined;
+}
+
+export function bizRenderCachePrefix(sitePublicId: string): string {
+  return `${BIZ_RENDER_CACHE_PREFIX}${sitePublicId}:`;
+}
+
+export function bizRenderCacheKey(site: Site, noindex: boolean): string {
+  return `${bizRenderCachePrefix(site.publicId)}${site.currentVersion}:${site.publishedVersion ?? 'live'}:${noindex ? 'noindex' : 'index'}`;
 }
 
 export function constantTimeEqual(a: string, b: string): boolean {

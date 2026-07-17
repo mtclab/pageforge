@@ -417,6 +417,7 @@ interface AuditRow {
 
 /** Newest-first snapshots are capped, matching the documented KV-era behavior. */
 const MAX_SNAPSHOTS = 20;
+export const PROPOSAL_TTL_MS = 14 * 24 * 60 * 60 * 1000;
 
 /**
  * Repository over the D1 control plane. All multi-statement mutations run
@@ -548,19 +549,18 @@ export class ControlPlane {
   }
 
   async countsByStatus(): Promise<StatusCounts> {
-    const [prospectRows, siteRows, proposalRow, updateRequestRow, orderRows] = await Promise.all([
+    const [prospectRows, siteRows, openProposals, openUpdateRequests, orderRows] = await Promise.all([
       this.db
         .prepare('SELECT status, COUNT(*) AS count FROM prospects GROUP BY status')
         .all<{ status: ProspectStatus; count: number }>(),
       this.db
         .prepare('SELECT status, COUNT(*) AS count FROM sites GROUP BY status')
         .all<{ status: SiteStatus; count: number }>(),
-      this.db
-        .prepare("SELECT COUNT(*) AS count FROM draft_versions WHERE kind = 'proposal' AND status = 'open'")
-        .first<{ count: number }>(),
-      this.db
-        .prepare("SELECT COUNT(*) AS count FROM update_requests WHERE status != 'suljettu'")
-        .first<{ count: number }>(),
+      this.count(
+        "SELECT COUNT(*) AS count FROM draft_versions WHERE kind = 'proposal' AND status = 'open' AND created_at >= ?",
+        this.now() - PROPOSAL_TTL_MS,
+      ),
+      this.count("SELECT COUNT(*) AS count FROM update_requests WHERE status != 'suljettu'"),
       this.db
         .prepare('SELECT status, COUNT(*) AS count FROM orders GROUP BY status')
         .all<{ status: OrderStatus; count: number }>(),
@@ -577,8 +577,8 @@ export class ControlPlane {
     return {
       prospects,
       sites,
-      openProposals: proposalRow?.count ?? 0,
-      openUpdateRequests: updateRequestRow?.count ?? 0,
+      openProposals,
+      openUpdateRequests,
       orders,
     };
   }
@@ -588,13 +588,14 @@ export class ControlPlane {
     const { results } = await this.db
       .prepare(
         `SELECT s.*,
-                SUM(CASE WHEN d.kind = 'proposal' AND d.status = 'open' THEN 1 ELSE 0 END)
+                SUM(CASE WHEN d.kind = 'proposal' AND d.status = 'open' AND d.created_at >= ? THEN 1 ELSE 0 END)
                   AS open_proposal_count
            FROM sites s
            LEFT JOIN draft_versions d ON d.site_id = s.id
           GROUP BY s.id
           ORDER BY s.updated_at DESC, s.id DESC`,
       )
+      .bind(this.now() - PROPOSAL_TTL_MS)
       .all<SiteRow & { open_proposal_count: number }>();
     return results.map((row) => ({
       ...this.rowToSite(row),
@@ -685,9 +686,9 @@ export class ControlPlane {
       this.db
         .prepare(
           `DELETE FROM draft_versions
-             WHERE site_id = ? AND kind = 'snapshot' AND n <= ?`,
+             WHERE site_id = ? AND kind = 'snapshot' AND n <= ? AND n != ?`,
         )
-        .bind(site.id, newN - MAX_SNAPSHOTS),
+        .bind(site.id, newN - MAX_SNAPSHOTS, site.publishedVersion ?? -1),
     ];
     if (opts.closeProposalPublicId !== undefined) {
       statements.push(
@@ -755,7 +756,7 @@ export class ControlPlane {
     id: number;
     site_id: number;
     site_public_id: string;
-    site_data: string;
+    site_name: string;
     channel: UpdateRequestChannel;
     from_addr: string | null;
     subject: string | null;
@@ -764,12 +765,11 @@ export class ControlPlane {
     proposal_public_id: string | null;
     created_at: number;
   }): UpdateRequest {
-    const data = JSON.parse(row.site_data) as SiteData;
     return {
       id: row.id,
       siteId: row.site_id,
       sitePublicId: row.site_public_id,
-      siteName: data.name,
+      siteName: row.site_name,
       channel: row.channel,
       ...(row.from_addr === null ? {} : { fromAddr: row.from_addr }),
       ...(row.subject === null ? {} : { subject: row.subject }),
@@ -828,6 +828,8 @@ export class ControlPlane {
     if (status !== undefined) {
       where.push('u.status = ?');
       values.push(status);
+    } else {
+      where.push("u.status != 'suljettu'");
     }
     if (siteId !== undefined) {
       where.push('u.site_id = ?');
@@ -835,11 +837,13 @@ export class ControlPlane {
     }
     const { results } = await this.db
       .prepare(
-        `SELECT u.*, s.public_id AS site_public_id, s.data AS site_data
+        `SELECT u.*, s.public_id AS site_public_id,
+                json_extract(s.data, '$.name') AS site_name
            FROM update_requests u
            JOIN sites s ON s.id = u.site_id
           ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
-          ORDER BY u.created_at DESC, u.id DESC`,
+          ORDER BY u.created_at DESC, u.id DESC
+          LIMIT 100`,
       )
       .bind(...values)
       .all<Parameters<ControlPlane['rowToUpdateRequest']>[0]>();
@@ -849,7 +853,8 @@ export class ControlPlane {
   async getUpdateRequest(id: number): Promise<UpdateRequest | null> {
     const row = await this.db
       .prepare(
-        `SELECT u.*, s.public_id AS site_public_id, s.data AS site_data
+        `SELECT u.*, s.public_id AS site_public_id,
+                json_extract(s.data, '$.name') AS site_name
            FROM update_requests u
            JOIN sites s ON s.id = u.site_id
           WHERE u.id = ?`,
@@ -1022,11 +1027,14 @@ export class ControlPlane {
         created_at: number;
       }>();
     if (!row) return null;
+    const status = row.status === 'open' && row.created_at < this.now() - PROPOSAL_TTL_MS
+      ? 'superseded'
+      : row.status;
     return {
       publicId: row.public_id,
       candidate: JSON.parse(row.data) as SiteData,
       summary: row.summary ? (JSON.parse(row.summary) as string[]) : [],
-      status: row.status,
+      status,
       at: row.created_at,
       ...(row.note === null ? {} : { note: row.note }),
     };
@@ -1036,10 +1044,10 @@ export class ControlPlane {
     const { results } = await this.db
       .prepare(
         `SELECT public_id, summary, created_at FROM draft_versions
-           WHERE site_id = ? AND kind = 'proposal' AND status = 'open'
+           WHERE site_id = ? AND kind = 'proposal' AND status = 'open' AND created_at >= ?
            ORDER BY created_at ASC, public_id ASC`,
       )
-      .bind(siteId)
+      .bind(siteId, this.now() - PROPOSAL_TTL_MS)
       .all<{ public_id: string; summary: string | null; created_at: number }>();
     return results.map((row) => ({
       proposalId: row.public_id,
@@ -1501,7 +1509,17 @@ export class ControlPlane {
   }
 
   async siteIsEntitled(siteId: number): Promise<boolean> {
-    return (await this.latestOrderForSite(siteId))?.status === 'maksettu';
+    const row = await this.db
+      .prepare(
+        `SELECT status FROM orders
+          WHERE site_id = ?
+            AND status IN ('maksettu', 'maksu_epaonnistui', 'irtisanottu')
+          ORDER BY created_at DESC, id DESC
+          LIMIT 1`,
+      )
+      .bind(siteId)
+      .first<{ status: OrderStatus }>();
+    return row?.status === 'maksettu';
   }
 
   private orderAuditAction(status: OrderStatus): 'order.paid' | 'order.failed' | 'order.cancel' {
@@ -1836,7 +1854,7 @@ export class ControlPlane {
 
   async getPhotoMeta(r2Key: string): Promise<PhotoMeta | null> {
     const row = await this.db
-      .prepare('SELECT r2_key, content_type, bytes FROM photos WHERE r2_key = ?')
+      .prepare('SELECT r2_key, content_type, bytes FROM photos WHERE r2_key = ? ORDER BY id ASC LIMIT 1')
       .bind(r2Key)
       .first<{ r2_key: string; content_type: string; bytes: number }>();
     if (!row) return null;
@@ -1854,26 +1872,37 @@ export class ControlPlane {
     await this.db.batch([
       this.db
         .prepare(
-          `INSERT INTO photos (r2_key, site_id, content_type, bytes, created_at)
+          `INSERT OR IGNORE INTO photos (r2_key, site_id, content_type, bytes, created_at)
            VALUES (?, ?, ?, ?, ?)`,
         )
         .bind(input.r2Key, input.siteId ?? null, input.contentType, input.bytes, at),
-      this.auditStatement(at, {
-        actor: input.actor,
-        action: 'photo.upload',
-        entity: 'photo',
-        entityId: input.r2Key,
-        detail: { bytes: input.bytes, contentType: input.contentType },
-      }),
+      this.db
+        .prepare(
+          `INSERT INTO audit_events (at, actor, action, entity, entity_id, detail)
+           SELECT ?, ?, 'photo.upload', 'photo', ?, ? WHERE changes() > 0`,
+        )
+        .bind(
+          at,
+          input.actor,
+          input.r2Key,
+          JSON.stringify({ bytes: input.bytes, contentType: input.contentType }),
+        ),
     ]);
   }
 
   async photoCountForSite(siteId: number): Promise<number> {
-    const row = await this.db
-      .prepare('SELECT COUNT(*) AS count FROM photos WHERE site_id = ?')
-      .bind(siteId)
-      .first<{ count: number }>();
-    return row?.count ?? 0;
+    return this.count('SELECT COUNT(*) AS count FROM photos WHERE site_id = ?', siteId);
+  }
+
+  async listExistingPhotoKeys(r2Keys: string[]): Promise<string[]> {
+    const keys = [...new Set(r2Keys)].slice(0, 40);
+    if (!keys.length) return [];
+    const placeholders = keys.map(() => '?').join(', ');
+    const { results } = await this.db
+      .prepare(`SELECT DISTINCT r2_key FROM photos WHERE r2_key IN (${placeholders})`)
+      .bind(...keys)
+      .all<{ r2_key: string }>();
+    return results.map((row) => row.r2_key);
   }
 
   async listPhotoMetaForSite(siteId: number): Promise<PhotoMeta[]> {
@@ -1886,6 +1915,23 @@ export class ControlPlane {
       contentType: row.content_type,
       bytes: row.bytes,
     }));
+  }
+
+  async listExclusivePhotoKeysForSite(siteId: number): Promise<string[]> {
+    const { results } = await this.db
+      .prepare(
+        `SELECT DISTINCT p.r2_key
+           FROM photos p
+          WHERE p.site_id = ?
+            AND NOT EXISTS (
+              SELECT 1 FROM photos other
+               WHERE other.r2_key = p.r2_key AND other.site_id != ?
+            )
+          ORDER BY p.r2_key ASC`,
+      )
+      .bind(siteId, siteId)
+      .all<{ r2_key: string }>();
+    return results.map((row) => row.r2_key);
   }
 
   // --- offboarding ------------------------------------------------------
@@ -1901,7 +1947,7 @@ export class ControlPlane {
       this.db.prepare('UPDATE preview_tokens SET revoked_at = ? WHERE site_id = ? AND revoked_at IS NULL').bind(at, site.id),
       this.db.prepare('UPDATE panel_tokens SET revoked_at = ? WHERE site_id = ? AND revoked_at IS NULL').bind(at, site.id),
       this.db.prepare("UPDATE draft_versions SET status = 'superseded' WHERE site_id = ? AND kind = 'proposal' AND status = 'open'").bind(site.id),
-      this.db.prepare("UPDATE sites SET status = 'archived', updated_at = ? WHERE id = ?").bind(at, site.id),
+      this.db.prepare("UPDATE sites SET status = 'archived', published_version = NULL, updated_at = ? WHERE id = ?").bind(at, site.id),
       this.deletionStatement(at, site, 'cache_purged', actor, { count: cachePurged }),
       this.deletionStatement(at, site, 'tokens_revoked', actor, {
         count: previewTokens + panelTokens,
@@ -1922,7 +1968,7 @@ export class ControlPlane {
   async restoreSite(site: Site, actor: AuditActor = 'operator'): Promise<void> {
     const at = this.now();
     await this.db.batch([
-      this.db.prepare("UPDATE sites SET status = 'approved', updated_at = ? WHERE id = ? AND status = 'archived'").bind(at, site.id),
+      this.db.prepare("UPDATE sites SET status = 'approved', published_version = NULL, updated_at = ? WHERE id = ? AND status = 'archived'").bind(at, site.id),
       this.deletionStatement(at, site, 'site_restored', actor),
       this.auditStatement(at, {
         actor,
@@ -1933,11 +1979,16 @@ export class ControlPlane {
     ]);
   }
 
-  async permanentlyDeleteSite(site: Site, actor: AuditActor = 'operator'): Promise<Record<string, number>> {
+  async permanentlyDeleteSite(
+    site: Site,
+    actor: AuditActor = 'operator',
+    deletePhotoObjects?: (r2Keys: string[]) => Promise<void>,
+  ): Promise<Record<string, number>> {
     const profileWhere = site.prospectId === undefined ? 'WHERE 0' : 'WHERE prospect_id = ?';
     const profileValues = site.prospectId === undefined ? [] : [site.prospectId];
-    const [photos, profiles, updates, comments, qaRuns, checklist, previewTokens,
+    const [photoKeys, photos, profiles, updates, comments, qaRuns, checklist, previewTokens,
       panelTokens, provisioningSteps, provisioningRuns, renewals, versions, orders] = await Promise.all([
+      this.listExclusivePhotoKeysForSite(site.id),
       this.count('SELECT COUNT(*) AS count FROM photos WHERE site_id = ?', site.id),
       this.count(`SELECT COUNT(*) AS count FROM business_profiles ${profileWhere}`, ...profileValues),
       this.count('SELECT COUNT(*) AS count FROM update_requests WHERE site_id = ?', site.id),
@@ -1952,6 +2003,7 @@ export class ControlPlane {
       this.count('SELECT COUNT(*) AS count FROM draft_versions WHERE site_id = ?', site.id),
       this.count('SELECT COUNT(*) AS count FROM orders WHERE site_id = ?', site.id),
     ]);
+    if (photoKeys.length && deletePhotoObjects) await deletePhotoObjects(photoKeys);
     const counts = {
       photos,
       businessProfiles: profiles,

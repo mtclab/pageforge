@@ -7,6 +7,7 @@ import {
   type ProvenanceSource,
 } from './business-profile.js';
 import type { Prospect } from './db.js';
+import { formString, optionalFormString } from './shared.js';
 
 const SOURCES: readonly ProvenanceSource[] = ['prh', 'places', 'owner', 'operator'];
 const COPY_SOURCES: readonly ProvenanceSource[] = ['owner', 'operator'];
@@ -14,13 +15,8 @@ const LINK_KINDS: readonly LinkKind[] = [
   'email', 'github', 'instagram', 'linkedin', 'youtube', 'facebook', 'x', 'phone', 'website',
 ];
 
-function formString(form: FormData, name: string): string | undefined {
-  const value = form.get(name);
-  return typeof value === 'string' ? value : undefined;
-}
-
 function optional(form: FormData, name: string): string | undefined {
-  return formString(form, name)?.trim() || undefined;
+  return optionalFormString(form, name);
 }
 
 function sourceFor(

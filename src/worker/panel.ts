@@ -3,7 +3,7 @@ import type { Section, SiteData } from '../engine/types.js';
 import { createProposal } from './biz.js';
 import { BUSINESS_PROFILE_LIMITS } from './business-profile.js';
 import { ControlPlane, type Site } from './db.js';
-import { constantTimeEqual, type Env, sha256Hex } from './shared.js';
+import { constantTimeEqual, type Env, formString, sha256Hex } from './shared.js';
 
 type PanelKind = 'hours' | 'services' | 'notice';
 
@@ -64,8 +64,7 @@ function panelForm(site: Site, token: string, error?: string): string {
 }
 
 function formValue(form: FormData, name: string): string {
-  const value = form.get(name);
-  return typeof value === 'string' ? value.trim() : '';
+  return formString(form, name)?.trim() ?? '';
 }
 
 function replaceSection(data: SiteData, kind: PanelKind, replacement: Section): SiteData {

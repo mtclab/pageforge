@@ -37,7 +37,7 @@ Sitemap: https://pageforge.mtclab.net/sitemap.xml`;
 
 function robotsTxt(origin: string, enabled: boolean): string {
   if (!enabled) return ROBOTS_DISABLED;
-  return `User-agent: *\nAllow: /b/\nDisallow: /p/\nDisallow: /admin\nSitemap: ${origin}/biz-sitemap.xml`;
+  return `User-agent: *\nAllow: /b/\nDisallow: /p/\nDisallow: /admin\nSitemap: ${origin}/sitemap.xml\nSitemap: ${origin}/biz-sitemap.xml`;
 }
 
 function xmlEscape(value: string): string {

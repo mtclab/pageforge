@@ -1,6 +1,7 @@
 import { esc, escAttr, safeUrl, textToHtml } from '../escape.js';
 import { obfuscatedEmailLink } from '../links.js';
 import { businessLabels } from '../localization.js';
+import { telHref } from '../phone.js';
 import { galleryPath, type Section, type SiteData } from '../types.js';
 
 /**
@@ -173,7 +174,7 @@ function renderLocation(
   const phone = s.phone?.trim() || business?.phone?.trim();
   const parts: string[] = [];
   if (address) parts.push(`<p class="location-address">${esc(address)}</p>`);
-  if (phone) parts.push(`<p><a href="${escAttr(`tel:${phone}`)}">${esc(phone)}</a></p>`);
+  if (phone) parts.push(`<p><a href="${escAttr(telHref(phone))}">${esc(phone)}</a></p>`);
   const mapUrl = s.mapUrl ? safeUrl(s.mapUrl) : null;
   if (mapUrl && /^https?:/.test(mapUrl)) {
     parts.push(`<p><a href="${escAttr(mapUrl)}">${labels.map}</a></p>`);

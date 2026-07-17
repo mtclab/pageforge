@@ -5,7 +5,7 @@ import {
   type OrderStatus,
   type Site,
 } from './db.js';
-import { constantTimeEqual, type Env } from './shared.js';
+import { constantTimeEqual, type Env, hmacHex, unusedId } from './shared.js';
 
 export interface CheckoutUrls {
   successUrl: string;
@@ -29,23 +29,6 @@ export interface PaymentsProvider {
 }
 
 type Fetcher = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
-
-const encoder = new TextEncoder();
-
-function bytesToHex(bytes: ArrayBuffer): string {
-  return [...new Uint8Array(bytes)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
-}
-
-async function hmacHex(secret: string, message: string): Promise<string> {
-  const key = await crypto.subtle.importKey(
-    'raw',
-    encoder.encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign'],
-  );
-  return bytesToHex(await crypto.subtle.sign('HMAC', key, encoder.encode(message)));
-}
 
 function signatureParts(header: string | null): { timestamp: number; signatures: string[] } | null {
   if (!header) return null;
@@ -305,15 +288,6 @@ export class OpenOrderError extends Error {
   }
 }
 
-const ORDER_ID_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyz';
-
 export async function unusedOrderId(cp: ControlPlane): Promise<string> {
-  for (let attempt = 0; attempt < 10; attempt++) {
-    const bytes = crypto.getRandomValues(new Uint8Array(8));
-    const id = [...bytes]
-      .map((byte) => ORDER_ID_ALPHABET[byte % ORDER_ID_ALPHABET.length])
-      .join('');
-    if (!(await cp.getOrderByPublicId(id))) return id;
-  }
-  throw new Error('could not allocate order id');
+  return unusedId((id) => cp.getOrderByPublicId(id), 'order');
 }

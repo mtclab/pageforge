@@ -62,9 +62,9 @@ export interface LocalBusinessJsonLd {
   openingHoursSpecification?: OpeningHoursJsonLd[];
 }
 
-/** Convert an HH or HH:MM value to schema.org's zero-padded HH:MM form. */
+/** Convert an HH, HH:MM, or Finnish HH.MM value to zero-padded HH:MM form. */
 export function jsonLdTime(value: string | undefined): string | null {
-  const match = value?.trim().match(/^(\d{1,2})(?::(\d{2}))?$/);
+  const match = value?.trim().match(/^(\d{1,2})(?:[:.](\d{2}))?$/);
   if (!match) return null;
   const hour = Number(match[1]);
   const minute = Number(match[2] ?? '0');

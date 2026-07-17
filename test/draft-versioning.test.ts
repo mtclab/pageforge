@@ -268,7 +268,7 @@ describe('S5 draft versioning', () => {
     ]));
   });
 
-  it('serves the selected immutable snapshot, invalidates cache keys, and unpublishes to current', async () => {
+  it('serves the selected immutable snapshot, invalidates cache keys, and takes unpublishing offline', async () => {
     await seedSite('publish1', 'Version one');
     await seedProposal('publish1', 'publishp', 'Version two');
     const v1Site = (await cp.getSiteByPublicId('publish1'))!;
@@ -298,9 +298,12 @@ describe('S5 draft versioning', () => {
       actor: 'operator',
     });
     await cp.transitionOrder(paidOrder, 'maksettu');
+    await cp.recordQaRun(approved, 0, [
+      { id: 'fixture', label: 'Fixture', passed: true },
+    ]);
 
     const live = await worker.fetch(new Request('https://example.test/b/publish1'), env);
-    expect(await live.text()).toContain('Version two');
+    expect(live.status).toBe(404);
     const published = await worker.fetch(
       jsonRequest('/api/biz/sites/publish1/publish', 'POST', { n: 0 }, 'approval-secret'),
       env,
@@ -311,7 +314,6 @@ describe('S5 draft versioning', () => {
     const exactHtml = await exact.text();
     expect(exactHtml).toContain('Version one');
     expect(exactHtml).not.toContain('Version two');
-    expect((env.SITES as MemoryKV).values.has('bizhtml:publish1:1:live:noindex')).toBe(true);
     expect((env.SITES as MemoryKV).values.has('bizhtml:publish1:1:0:noindex')).toBe(true);
 
     const unpublished = await worker.fetch(
@@ -319,7 +321,7 @@ describe('S5 draft versioning', () => {
       env,
     );
     expect(unpublished.status).toBe(200);
-    expect(await (await worker.fetch(new Request('https://example.test/b/publish1'), env)).text()).toContain('Version two');
+    expect((await worker.fetch(new Request('https://example.test/b/publish1'), env)).status).toBe(404);
     const current = (await cp.getSiteByPublicId('publish1'))!;
     expect(current.publishedVersion).toBeUndefined();
     expect(current.status).toBe('approved');
@@ -343,6 +345,44 @@ describe('S5 draft versioning', () => {
     const html = await (await worker.fetch(new Request('https://example.test/b/pubcur01'), env)).text();
     expect(html).toContain('Second content');
     expect(html).not.toContain('First content');
+  });
+
+  it('never prunes the snapshot selected by the published pointer', async () => {
+    await seedSite('prune001', 'Version zero');
+    let site = (await cp.getSiteByPublicId('prune001'))!;
+    await cp.updateSiteData(site, data('Published v1'), {
+      actor: 'operator', action: 'fixture.promote', entity: 'site', entityId: site.publicId,
+    });
+    site = (await cp.getSiteByPublicId('prune001'))!;
+    await cp.publishSiteVersion(site, 1, 'operator');
+
+    for (let version = 2; version <= 26; version++) {
+      site = (await cp.getSiteByPublicId('prune001'))!;
+      await cp.updateSiteData(site, data(`Version ${version}`), {
+        actor: 'operator', action: 'fixture.promote', entity: 'site', entityId: site.publicId,
+      });
+    }
+
+    expect(await cp.getSnapshot(site.id, 1)).not.toBeNull();
+    const page = await worker.fetch(new Request('https://example.test/b/prune001'), env);
+    expect(page.status).toBe(200);
+    expect(await page.text()).toContain('Published v1');
+  });
+
+  it('returns a render-cache hit before resolving the published snapshot', async () => {
+    await seedSite('cacheptr', 'Current data');
+    await env.DB.prepare(
+      "UPDATE sites SET published_version = 99, status = 'published' WHERE public_id = 'cacheptr'",
+    ).run();
+    (env.SITES as MemoryKV).values.set('bizhtml:cacheptr:0:99:noindex', '<p>cached</p>');
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    try {
+      const response = await worker.fetch(new Request('https://example.test/b/cacheptr'), env);
+      expect(await response.text()).toBe('<p>cached</p>');
+      expect(logged).not.toHaveBeenCalled();
+    } finally {
+      logged.mockRestore();
+    }
   });
 
   it('logs a dangling published pointer and safely falls back to current data', async () => {

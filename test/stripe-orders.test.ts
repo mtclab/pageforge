@@ -128,6 +128,32 @@ describe('S8 orders and mock billing lifecycle', () => {
     expect(audit[0]).toEqual(expect.objectContaining({ action: 'order.failed' }));
   });
 
+  it('ignores newer undecided orders when resolving the latest entitlement decision', async () => {
+    const site = await seedSite('entdec01');
+    const paid = await cp.createOrder({
+      publicId: 'paid0001',
+      site,
+      provider: 'mock',
+      amountBuildCents: 24_900,
+      amountMonthlyCents: 1_900,
+      actor: 'operator',
+    });
+    await cp.transitionOrder(paid, 'maksettu');
+    expect(await cp.siteIsEntitled(site.id)).toBe(true);
+
+    const undecided = await cp.createOrder({
+      publicId: 'new00001',
+      site,
+      provider: 'mock',
+      amountBuildCents: 24_900,
+      amountMonthlyCents: 1_900,
+      actor: 'operator',
+    });
+    expect(await cp.siteIsEntitled(site.id)).toBe(true);
+    await cp.transitionOrder(undecided, 'irtisanottu');
+    expect(await cp.siteIsEntitled(site.id)).toBe(false);
+  });
+
   it('rejects a second open order with 409 and reads prices from environment', async () => {
     await seedSite('oneopen1');
     env.PRICE_BUILD_CENTS = '30000';

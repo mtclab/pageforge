@@ -1,4 +1,5 @@
 import { TEL_URL_RE } from '../engine/escape.js';
+import { jsonLdTime } from '../engine/jsonld.js';
 import type { LinkKind, Section } from '../engine/types.js';
 
 export type ProvenanceSource = 'prh' | 'places' | 'owner' | 'operator';
@@ -57,8 +58,6 @@ export const BUSINESS_PROFILE_LIMITS = {
 const PHOTO_SRC_RE = /^\/img\/[a-f0-9]{64}$/;
 const PHONE_CHARS_RE = /^\+?[0-9][0-9 ()/.\-]*$/;
 const PRICE_RE = /^(?:alkaen\s+)?\d{1,6}(?:[,.]\d{1,2})?\s*(?:€|eur)?$/i;
-/** Operators type "9", "9.30" or "09:30" - accept hour-only and dot forms. */
-const TIME_RE = /^([01]?\d|2[0-3])(?:[:.]([0-5]\d))?$/;
 const SOURCES: readonly ProvenanceSource[] = ['prh', 'places', 'owner', 'operator'];
 
 /** Finnish business-id checksum (mod-11). */
@@ -99,12 +98,6 @@ export function validatePrice(value: string): boolean {
   return value.length <= 100 && PRICE_RE.test(value);
 }
 
-function normalizedTime(value: string): string | null {
-  const match = value.match(TIME_RE);
-  if (!match) return null;
-  return `${match[1]!.padStart(2, '0')}:${match[2] ?? '00'}`;
-}
-
 /** Pure, single-point hard validation for BusinessProfile v1. */
 export function validateBusinessProfile(profile: BusinessProfile): string[] {
   const errors: string[] = [];
@@ -138,8 +131,8 @@ export function validateBusinessProfile(profile: BusinessProfile): string[] {
       errors.push(`Aukiolorivillä ${index + 1} tarvitaan avaus- ja sulkemisaika.`);
       continue;
     }
-    const open = normalizedTime(day.open);
-    const close = normalizedTime(day.close);
+    const open = jsonLdTime(day.open);
+    const close = jsonLdTime(day.close);
     if (!open || !close) errors.push(`Aukiolorivin ${index + 1} kellonaika on virheellinen.`);
     else if (open >= close) errors.push(`Aukiolorivin ${index + 1} avausajan pitää olla ennen sulkemisaikaa.`);
   }

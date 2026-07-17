@@ -45,7 +45,7 @@ describe('business indexing', () => {
     env.BIZ_INDEXING_ENABLED = 'true';
     const robots = await worker.fetch(new Request('https://example.test/robots.txt'), env);
     expect(await robots.text()).toBe(
-      'User-agent: *\nAllow: /b/\nDisallow: /p/\nDisallow: /admin\nSitemap: https://example.test/biz-sitemap.xml',
+      'User-agent: *\nAllow: /b/\nDisallow: /p/\nDisallow: /admin\nSitemap: https://example.test/sitemap.xml\nSitemap: https://example.test/biz-sitemap.xml',
     );
 
     const published = await worker.fetch(new Request('https://example.test/b/publish1'), env);
@@ -53,8 +53,7 @@ describe('business indexing', () => {
     expect(await published.text()).not.toContain('<meta name="robots" content="noindex">');
 
     const draft = await worker.fetch(new Request('https://example.test/b/draft001'), env);
-    expect(draft.headers.get('x-robots-tag')).toBe('noindex');
-    expect(await draft.text()).toContain('<meta name="robots" content="noindex">');
+    expect(draft.status).toBe(404);
 
     const session = await signSessionCookie('operator-secret');
     const preview = await worker.fetch(new Request('https://example.test/p/publish1/current', {
@@ -71,5 +70,13 @@ describe('business indexing', () => {
     const xml = await sitemap.text();
     expect(xml).toContain('<loc>https://example.test/b/publish1</loc><lastmod>2026-07-16</lastmod>');
     expect(xml).not.toContain('draft001');
+  });
+
+  it('takes a published page down immediately when it is unpublished', async () => {
+    const cp = new ControlPlane(env.DB);
+    const site = (await cp.getSiteByPublicId('publish1'))!;
+    expect((await worker.fetch(new Request('https://example.test/b/publish1'), env)).status).toBe(200);
+    await cp.unpublishSite(site, 'operator');
+    expect((await worker.fetch(new Request('https://example.test/b/publish1'), env)).status).toBe(404);
   });
 });

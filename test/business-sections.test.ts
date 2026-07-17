@@ -77,7 +77,13 @@ describe('business sections', () => {
     expect(html).not.toContain('href="javascript:');
     expect(html).toContain('&lt;script&gt;notice&lt;/script&gt;');
     expect(html).toContain('5 &amp; 6');
-    expect(html).toContain('href="tel:&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;"');
+    expect(html).toContain('href="tel:&quot;&gt;&lt;script&gt;alert(1)&lt;script&gt;"');
+  });
+
+  it('normalizes intake-valid punctuation in location phone links', () => {
+    const data = businessSite();
+    data.sections = [{ kind: 'location', phone: '09/1234  567' }];
+    expect(renderSite(data, THEMES[0]!).html).toContain('href="tel:091234 567"');
   });
 });
 

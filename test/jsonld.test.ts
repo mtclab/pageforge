@@ -46,12 +46,20 @@ describe('LocalBusiness JSON-LD', () => {
         postalCode: '00100',
         addressLocality: 'Helsinki',
       },
-      openingHoursSpecification: [{
-        '@type': 'OpeningHoursSpecification',
-        dayOfWeek: 'Monday',
-        opens: '09:00',
-        closes: '17:30',
-      }],
+      openingHoursSpecification: [
+        {
+          '@type': 'OpeningHoursSpecification',
+          dayOfWeek: 'Monday',
+          opens: '09:00',
+          closes: '17:30',
+        },
+        {
+          '@type': 'OpeningHoursSpecification',
+          dayOfWeek: 'Tuesday',
+          opens: '09:00',
+          closes: '17:00',
+        },
+      ],
     });
   });
 
@@ -78,8 +86,9 @@ describe('LocalBusiness JSON-LD', () => {
     });
     expect(jsonLdAddress(' ')).toBeNull();
     expect(jsonLdTime('0')).toBe('00:00');
+    expect(jsonLdTime('9.30')).toBe('09:30');
     expect(jsonLdTime('23:59')).toBe('23:59');
-    for (const invalid of ['09.00', '24', '9:5', '12:60', 'noon']) {
+    for (const invalid of ['24', '9.5', '12:60', 'noon']) {
       expect(jsonLdTime(invalid)).toBeNull();
     }
   });

@@ -147,8 +147,11 @@ describe('Mikoshi MCP endpoint', () => {
     const result = await callTool('approve', { siteId: id, proposalId: '12345678' });
     expect(result.isError).toBe(true);
     expect(result.content[0]!.text).toContain('human approval outside MCP');
-    const current = await worker.fetch(new Request(`https://example.test/b/${id}`), env);
-    expect(await current.text()).toContain('MCP Site');
+    const current = await worker.fetch(
+      jsonRequest(`/api/biz/sites/${id}`, 'GET', undefined, operatorKey),
+      env,
+    );
+    expect((await current.json() as { data: SiteData }).data.name).toBe('MCP Site');
   });
 
   it('accepts the initialized notification and rejects unknown methods', async () => {

@@ -149,6 +149,13 @@ describe('S10 export and offboarding', () => {
     );
     expect(approval.status).toBe(200);
     expect(new Uint8Array(await approval.arrayBuffer())).toEqual(firstZip);
+    const { cookie } = await operatorSession(env);
+    const sessionExport = await worker.fetch(new Request(
+      'https://example.test/api/biz/sites/export01/export',
+      { headers: { cookie } },
+    ), env);
+    expect(sessionExport.status).toBe(200);
+    expect(new Uint8Array(await sessionExport.arrayBuffer())).toEqual(firstZip);
     expect(await cp.listAuditEvents({ entity: 'site', entityId: 'export01', limit: 20 }))
       .toEqual(expect.arrayContaining([
         expect.objectContaining({ action: 'site.export', actor: 'operator' }),
@@ -158,6 +165,7 @@ describe('S10 export and offboarding', () => {
 
   it('archives, revokes capabilities, purges cache, logs actions, and restores', async () => {
     const site = await createSite('archive1');
+    await cp.publishSiteVersion(site, 0, 'operator');
     await cp.createProposal({
       site,
       publicId: 'openprop',
@@ -207,10 +215,127 @@ describe('S10 export and offboarding', () => {
     ), env);
     expect(restored.status).toBe(303);
     expect((await cp.getSiteByPublicId('archive1'))?.status).toBe('approved');
-    expect((await worker.fetch(new Request('https://example.test/b/archive1'), env)).status).toBe(200);
+    expect((await cp.getSiteByPublicId('archive1'))?.publishedVersion).toBeUndefined();
+    expect((await worker.fetch(new Request('https://example.test/b/archive1'), env)).status).toBe(404);
     expect((await cp.listDeletionLog({ limit: 20 }))[0]).toEqual(
       expect.objectContaining({ item: 'site_restored', actor: 'operator' }),
     );
+  });
+
+  it('blocks every named mutation while archived and keeps restored approvals unpublished', async () => {
+    let site = await createSite('hardgrd1', siteData('Alku'));
+    await cp.updateSiteData(site, siteData('Nykyinen'), {
+      actor: 'operator', action: 'fixture.promote', entity: 'site', entityId: site.publicId,
+    });
+    site = (await cp.getSiteByPublicId(site.publicId))!;
+    await cp.publishSiteVersion(site, site.currentVersion, 'operator');
+    await cp.archiveSite(site, 0, 'operator');
+    const archived = (await cp.getSiteByPublicId(site.publicId))!;
+    expect(archived.status).toBe('archived');
+    expect(archived.publishedVersion).toBeUndefined();
+
+    const requests = [
+      jsonRequest('/api/biz/sites/hardgrd1/unpublish', 'POST', {}, operatorKey),
+      jsonRequest('/api/biz/sites/hardgrd1/publish', 'POST', {
+        override: true, reason: 'Ei sallittu',
+      }, operatorKey),
+      jsonRequest('/api/biz/sites/hardgrd1/rollback', 'POST', { to: 0 }, operatorKey),
+      jsonRequest('/api/biz/sites/hardgrd1/proposals', 'POST', {
+        candidate: siteData('Ei sallittu'),
+      }, operatorKey),
+      jsonRequest('/api/biz/sites/hardgrd1/order', 'POST', {}, operatorKey),
+    ];
+    for (const request of requests) {
+      const response = await worker.fetch(request, env);
+      expect(response.status).toBe(409);
+      expect(await response.json()).toEqual({ error: 'Sivusto on arkistoitu.' });
+    }
+    const photo = await worker.fetch(new Request(
+      'https://example.test/api/biz/sites/hardgrd1/photos',
+      {
+        method: 'POST',
+        headers: { authorization: `Bearer ${operatorKey}`, 'content-type': 'image/png' },
+        body: new Uint8Array([1, 2, 3]),
+      },
+    ), env);
+    expect(photo.status).toBe(409);
+
+    await cp.createProposal({
+      site: archived,
+      publicId: 'stale001',
+      candidate: siteData('Vanha ehdotus'),
+      summary: [],
+      actor: 'operator',
+    });
+    const decision = await worker.fetch(
+      jsonRequest(
+        '/api/biz/sites/hardgrd1/proposals/stale001/approve',
+        'POST',
+        {},
+        approvalKey,
+      ),
+      env,
+    );
+    expect(decision.status).toBe(409);
+
+    await cp.restoreSite(archived, 'operator');
+    const proposal = await worker.fetch(
+      jsonRequest('/api/biz/sites/hardgrd1/proposals', 'POST', {
+        candidate: siteData('Palautettu ja hyväksytty'),
+      }, operatorKey),
+      env,
+    );
+    expect(proposal.status).toBe(200);
+    const proposalId = (await proposal.json() as { proposalId: string }).proposalId;
+    expect((await worker.fetch(
+      jsonRequest(
+        `/api/biz/sites/hardgrd1/proposals/${proposalId}/approve`,
+        'POST',
+        {},
+        approvalKey,
+      ),
+      env,
+    )).status).toBe(200);
+    const approved = (await cp.getSiteByPublicId('hardgrd1'))!;
+    expect(approved.status).toBe('approved');
+    expect(approved.publishedVersion).toBeUndefined();
+    expect((await worker.fetch(new Request('https://example.test/b/hardgrd1'), env)).status).toBe(404);
+  });
+
+  it('retains a shared R2 photo when one tenant is permanently deleted', async () => {
+    const siteA = await createSite('photoa01');
+    const siteB = await createSite('photob01');
+    const bytes = new Uint8Array([9, 8, 7, 6]);
+    const upload = async (publicId: string): Promise<string> => {
+      const response = await worker.fetch(new Request(
+        `https://example.test/api/biz/sites/${publicId}/photos`,
+        {
+          method: 'POST',
+          headers: { authorization: `Bearer ${operatorKey}`, 'content-type': 'image/png' },
+          body: bytes,
+        },
+      ), env);
+      expect(response.status).toBe(200);
+      return (await response.json() as { path: string }).path;
+    };
+    const path = await upload(siteA.publicId);
+    expect(await upload(siteB.publicId)).toBe(path);
+    const r2Key = `photos/${path.slice('/img/'.length)}`;
+    expect(await env.DB.prepare('SELECT COUNT(*) AS count FROM photos WHERE r2_key = ?')
+      .bind(r2Key).first<{ count: number }>()).toEqual({ count: 2 });
+
+    await cp.archiveSite(siteA, 0, 'operator');
+    const { cookie, csrf } = await operatorSession(env);
+    const removed = await worker.fetch(formRequest(
+      '/admin/sites/photoa01/delete',
+      { csrf, confirm: 'photoa01' },
+      cookie,
+    ), env);
+    expect(removed.status).toBe(303);
+    expect((env.PHOTOS as MemoryR2).objects.has(r2Key)).toBe(true);
+    expect((await worker.fetch(new Request(`https://example.test${path}`), env)).status).toBe(200);
+    expect(await env.DB.prepare('SELECT site_id FROM photos WHERE r2_key = ?')
+      .bind(r2Key).first<{ site_id: number }>()).toEqual({ site_id: siteB.id });
   });
 
   it('requires exact confirmation, permanently deletes site data, and retains orders and logs', async () => {

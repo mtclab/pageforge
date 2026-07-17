@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SiteData } from '../src/engine/types.js';
 import worker from '../src/worker/index.js';
 import minimal from './fixtures/minimal.json';
@@ -21,6 +21,10 @@ describe('business mutation API', () => {
 
   beforeEach(() => {
     env = workerEnv();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   async function create(data = site()): Promise<{ id: string; approvalKey: string }> {
@@ -85,6 +89,17 @@ describe('business mutation API', () => {
     expect(approved.status).toBe(200);
     expect(await approved.json()).toEqual({ ok: true, version: 1 });
 
+    const publish = await worker.fetch(
+      jsonRequest(
+        `/api/biz/sites/${id}/publish`,
+        'POST',
+        { override: true, reason: 'Testijulkaisu' },
+        operatorKey,
+      ),
+      env,
+    );
+    expect(publish.status).toBe(200);
+
     const published = await worker.fetch(new Request(`https://example.test/b/${id}`), env);
     const publishedHtml = await published.text();
     expect(published.status).toBe(200);
@@ -115,8 +130,12 @@ describe('business mutation API', () => {
     );
     expect(rejected.status).toBe(200);
     expect(await rejected.json()).toEqual({ ok: true });
-    const page = await worker.fetch(new Request(`https://example.test/b/${id}`), env);
-    expect(await page.text()).toContain('Alkuperäinen');
+    expect((await worker.fetch(new Request(`https://example.test/b/${id}`), env)).status).toBe(404);
+    const detail = await worker.fetch(
+      jsonRequest(`/api/biz/sites/${id}`, 'GET', undefined, approvalKey),
+      env,
+    );
+    expect((await detail.json() as { data: SiteData }).data.name).toBe('Alkuperäinen');
     expect((await worker.fetch(new Request(`https://example.test${proposal.previewPath}`), env)).status).toBe(404);
   });
 
@@ -134,11 +153,11 @@ describe('business mutation API', () => {
     );
     expect(rollback.status).toBe(200);
     expect(await rollback.json()).toEqual({ ok: true, version: 2 });
-    const page = await worker.fetch(new Request(`https://example.test/b/${id}`), env);
-    expect(await page.text()).toContain('Alkuperäinen');
+    expect((await worker.fetch(new Request(`https://example.test/b/${id}`), env)).status).toBe(404);
 
     const detail = await worker.fetch(jsonRequest(`/api/biz/sites/${id}`, 'GET', undefined, approvalKey), env);
-    const body = await detail.json() as { versions: { n: number }[] };
+    const body = await detail.json() as { data: SiteData; versions: { n: number }[] };
+    expect(body.data.name).toBe('Alkuperäinen');
     expect(body.versions.map(({ n }) => n)).toEqual([1, 0]);
   });
 
@@ -181,5 +200,49 @@ describe('business mutation API', () => {
       env,
     );
     expect(response.status).toBe(429);
+  });
+
+  it('expires open proposals after 14 days across approve, list, and preview', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
+    const { id, approvalKey } = await create();
+    const proposal = await propose(id, site('Vanhentuva'));
+
+    vi.setSystemTime(new Date('2026-01-16T00:00:00Z'));
+    const approved = await worker.fetch(
+      jsonRequest(
+        `/api/biz/sites/${id}/proposals/${proposal.proposalId}/approve`,
+        'POST',
+        {},
+        approvalKey,
+      ),
+      env,
+    );
+    expect(approved.status).toBe(404);
+    expect(await approved.json()).toEqual({ error: 'Open proposal not found.' });
+
+    const detail = await worker.fetch(
+      jsonRequest(`/api/biz/sites/${id}`, 'GET', undefined, approvalKey),
+      env,
+    );
+    expect((await detail.json() as { openProposals: string[] }).openProposals).toEqual([]);
+    expect((await worker.fetch(
+      new Request(`https://example.test${proposal.previewPath}`),
+      env,
+    )).status).toBe(404);
+  });
+
+  it('rejects R2 photo references on the personal publish path', async () => {
+    env.PUBLISH_ENABLED = 'true';
+    const response = await worker.fetch(new Request('https://example.test/api/publish', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'cf-connecting-ip': '192.0.2.1' },
+      body: JSON.stringify({
+        slug: 'personal-photo',
+        data: { ...site('Oma sivu'), photo: { src: `/img/${'a'.repeat(64)}` } },
+      }),
+    }), env);
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: 'bad image' });
   });
 });

@@ -17,11 +17,13 @@ import {
 } from './db.js';
 import {
   bearerToken,
+  bizRenderCacheKey,
   constantTimeEqual,
   type Env,
   json,
   readJson,
   requireOperator,
+  unusedId,
   sha256Hex,
 } from './shared.js';
 import { readSessionCookie, verifySessionCookie } from './session.js';
@@ -51,8 +53,8 @@ export interface SiteView {
 
 export type Operation<T> = { ok: true; value: T } | { ok: false; status: number; error: string };
 
-const ID_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyz';
 const PROPOSALS_PER_DAY = 50;
+const PANEL_PROPOSALS_PER_DAY = 20;
 const RENDER_CACHE_TTL = 7 * 24 * 60 * 60;
 const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
 const PREVIEW_TOKEN_TTL = 14 * 24 * 60 * 60 * 1000;
@@ -62,30 +64,25 @@ const PHOTO_TYPES = new Map<string, true>([
   ['image/webp', true],
 ]);
 
-function randomId(): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(8));
-  return [...bytes].map((byte) => ID_ALPHABET[byte % ID_ALPHABET.length]).join('');
-}
-
 export function randomPreviewToken(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(16));
   return [...bytes].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
 async function unusedSiteId(cp: ControlPlane): Promise<string> {
-  for (let attempt = 0; attempt < 10; attempt++) {
-    const id = randomId();
-    if (!(await cp.getSiteByPublicId(id))) return id;
-  }
-  throw new Error('could not allocate id');
+  return unusedId((id) => cp.getSiteByPublicId(id), 'site');
 }
 
 async function unusedProposalId(cp: ControlPlane, siteId: number): Promise<string> {
-  for (let attempt = 0; attempt < 10; attempt++) {
-    const id = randomId();
-    if (!(await cp.getProposal(siteId, id))) return id;
-  }
-  throw new Error('could not allocate id');
+  return unusedId((id) => cp.getProposal(siteId, id), 'proposal');
+}
+
+type OperationError = Extract<Operation<never>, { ok: false }>;
+
+export function siteMutable(site: Site): OperationError | null {
+  return site.status === 'archived'
+    ? { ok: false, status: 409, error: 'Sivusto on arkistoitu.' }
+    : null;
 }
 
 function stableValue(value: unknown): unknown {
@@ -137,8 +134,10 @@ export async function getBizSite(env: Env, siteId: string): Promise<Site | null>
 /** Shared read model for GET /api/biz/sites/:id and the MCP get_site tool. */
 export async function siteView(env: Env, site: Site): Promise<SiteView> {
   const cp = new ControlPlane(env.DB);
-  const snapshots = await cp.listSnapshots(site.id);
-  const openProposals = await cp.listOpenProposals(site.id);
+  const [snapshots, openProposals] = await Promise.all([
+    cp.listSnapshots(site.id),
+    cp.listOpenProposals(site.id),
+  ]);
   return {
     data: site.data,
     versions: snapshots.map(({ n, at, note }) => ({ n, at, ...(note === undefined ? {} : { note }) })),
@@ -149,18 +148,15 @@ export async function siteView(env: Env, site: Site): Promise<SiteView> {
 }
 
 /** Open proposal metadata for the MCP list_proposals tool. */
-export async function listOpenProposals(env: Env, siteId: string): Promise<OpenProposal[]> {
-  const cp = new ControlPlane(env.DB);
-  const site = await cp.getSiteByPublicId(siteId);
-  if (!site) return [];
-  return cp.listOpenProposals(site.id);
+export async function listOpenProposals(env: Env, site: Site): Promise<OpenProposal[]> {
+  return new ControlPlane(env.DB).listOpenProposals(site.id);
 }
 
-async function proposalRateLimit(env: Env, siteId: string): Promise<boolean> {
+async function proposalRateLimit(env: Env, siteId: string, panel: boolean): Promise<boolean> {
   const day = new Date().toISOString().slice(0, 10);
-  const key = `bizrl:${siteId}:${day}`;
+  const key = `${panel ? 'bizrl-panel' : 'bizrl'}:${siteId}:${day}`;
   const count = Number((await env.SITES.get(key)) ?? '0');
-  if (count >= PROPOSALS_PER_DAY) return false;
+  if (count >= (panel ? PANEL_PROPOSALS_PER_DAY : PROPOSALS_PER_DAY)) return false;
   await env.SITES.put(key, String(count + 1), { expirationTtl: 90_000 });
   return true;
 }
@@ -176,12 +172,14 @@ export async function createProposal(
   const cp = new ControlPlane(env.DB);
   const site = await cp.getSiteByPublicId(siteId);
   if (!site) return { ok: false, status: 404, error: 'Site not found.' };
-  const invalid = validateSiteData(candidate);
+  const immutable = siteMutable(site);
+  if (immutable) return immutable;
+  const invalid = validateSiteData(candidate, { allowR2Photos: true });
   if (invalid) return { ok: false, status: 400, error: invalid };
   if (note !== undefined && (typeof note !== 'string' || note.length > 300)) {
     return { ok: false, status: 400, error: 'bad proposal note' };
   }
-  if (!(await proposalRateLimit(env, siteId))) {
+  if (!(await proposalRateLimit(env, siteId, detail?.channel === 'panel'))) {
     return { ok: false, status: 429, error: 'Too many proposals today.' };
   }
   const proposalId = await unusedProposalId(cp, site.id);
@@ -236,6 +234,8 @@ export async function applyProposalDecision(
   decision: 'approve' | 'reject',
   actor: Extract<AuditActor, 'operator' | 'approval-key'>,
 ): Promise<Operation<number | null>> {
+  const immutable = siteMutable(site);
+  if (immutable) return immutable;
   const proposal = await cp.getProposal(site.id, proposalId);
   if (!proposal || proposal.status !== 'open') {
     return { ok: false, status: 404, error: 'Open proposal not found.' };
@@ -267,6 +267,8 @@ export async function rollbackSiteVersion(
   to: number,
   actor: Extract<AuditActor, 'operator' | 'approval-key'>,
 ): Promise<Operation<number>> {
+  const immutable = siteMutable(site);
+  if (immutable) return immutable;
   const version = await cp.rollbackSite(site, to, {
     actor,
     action: 'site.rollback',
@@ -286,6 +288,8 @@ export async function publishSiteVersion(
   actor: Extract<AuditActor, 'operator' | 'approval-key'>,
   override?: { requested: boolean; reason?: string },
 ): Promise<Operation<number>> {
+  const immutable = siteMutable(site);
+  if (immutable) return immutable;
   if (!Number.isInteger(n) || n < 0) {
     return { ok: false, status: 400, error: 'Invalid version.' };
   }
@@ -297,7 +301,7 @@ export async function publishSiteVersion(
     overrideReason = override.reason?.trim();
     if (!overrideReason) return { ok: false, status: 400, error: 'Ohituksen syy vaaditaan.' };
   } else {
-    const gate = await publishGate(cp, site);
+    const gate = await publishGate(cp, site, n);
     if (!gate.passed) return { ok: false, status: 409, error: publishGateError(gate) };
     if (actor === 'approval-key' && !(await cp.siteIsEntitled(site.id))) {
       return { ok: false, status: 409, error: 'Tilaus ei ole maksettu.' };
@@ -309,14 +313,26 @@ export async function publishSiteVersion(
 
 type SiteAuth = { actor: Extract<AuditActor, 'operator' | 'approval-key'> };
 
-async function siteAuth(request: Request, env: Env, site: Site): Promise<SiteAuth | Response> {
+async function siteAuth(
+  request: Request,
+  env: Env,
+  site: Site,
+  allowSession = false,
+): Promise<SiteAuth | Response> {
   const token = bearerToken(request);
-  if (!token) return json(401, { error: 'Authorization required.' });
-  const tokenHash = await sha256Hex(token);
-  const operatorHash = await sha256Hex(env.OPERATOR_KEY ?? '');
-  if (constantTimeEqual(tokenHash, operatorHash)) return { actor: 'operator' };
-  if (constantTimeEqual(tokenHash, site.approvalKeyHash)) return { actor: 'approval-key' };
-  return json(403, { error: 'Forbidden.' });
+  if (token) {
+    const tokenHash = await sha256Hex(token);
+    const operatorHash = await sha256Hex(env.OPERATOR_KEY ?? '');
+    if (constantTimeEqual(tokenHash, operatorHash)) return { actor: 'operator' };
+    if (constantTimeEqual(tokenHash, site.approvalKeyHash)) return { actor: 'approval-key' };
+  }
+  if (allowSession) {
+    const session = await verifySessionCookie(readSessionCookie(request), env.OPERATOR_KEY ?? '');
+    if (session !== null) return { actor: 'operator' };
+  }
+  return json(token ? 403 : 401, {
+    error: token ? 'Forbidden.' : 'Authorization required.',
+  });
 }
 
 function methodNotAllowed(): Response {
@@ -463,11 +479,6 @@ function bizPageResponse(html: string, noindex = true): Response {
   });
 }
 
-async function sha256HexBytes(bytes: ArrayBuffer): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', bytes);
-  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
-}
-
 function photoContentType(request: Request): string | null {
   const raw = request.headers.get('content-type')?.split(';')[0]?.trim().toLowerCase() ?? '';
   return PHOTO_TYPES.has(raw) ? raw : null;
@@ -487,7 +498,7 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
     const parsed = await readJson<{ data?: SiteData }>(request);
     if ('error' in parsed) return parsed.error;
     if (!parsed.value.data) return json(400, { error: 'Missing page data.' });
-    const invalid = validateSiteData(parsed.value.data);
+    const invalid = validateSiteData(parsed.value.data, { allowR2Photos: true });
     if (invalid) return json(400, { error: invalid });
     const id = await unusedSiteId(cp);
     const approvalKey = crypto.randomUUID();
@@ -505,7 +516,7 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
     if (request.method !== 'GET') return methodNotAllowed();
     const site = await cp.getSiteByPublicId(exportMatch[1]!);
     if (!site) return json(404, { error: 'Site not found.' });
-    const auth = await siteAuth(request, env, site);
+    const auth = await siteAuth(request, env, site, true);
     if (auth instanceof Response) return auth;
     const data = await publishedSiteData(cp, site);
     const zip = buildStoreZip(await exportFiles(env, cp, data));
@@ -613,6 +624,8 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
     if (!site) return json(404, { error: 'Site not found.' });
     const auth = await siteAuth(request, env, site);
     if (auth instanceof Response) return auth;
+    const immutable = siteMutable(site);
+    if (immutable) return json(immutable.status, { error: immutable.error });
     try {
       const checkout = await createOrderCheckout(
         cp,
@@ -638,6 +651,8 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
     const auth = await siteAuth(request, env, site);
     if (auth instanceof Response) return auth;
     if (action === 'unpublish') {
+      const immutable = siteMutable(site);
+      if (immutable) return json(immutable.status, { error: immutable.error });
       await cp.unpublishSite(site, auth.actor);
       return json(200, { ok: true });
     }
@@ -660,6 +675,8 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
     if (denied) return denied;
     const site = await cp.getSiteByPublicId(photosMatch[1]!);
     if (!site) return json(404, { error: 'Site not found.' });
+    const immutable = siteMutable(site);
+    if (immutable) return json(immutable.status, { error: immutable.error });
     const contentType = photoContentType(request);
     if (!contentType) return json(415, { error: 'Photo must be image/jpeg, image/png, or image/webp.' });
     const declared = Number(request.headers.get('content-length') ?? '0');
@@ -667,19 +684,18 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
     const bytes = await request.arrayBuffer();
     if (bytes.byteLength === 0) return json(400, { error: 'Empty photo.' });
     if (bytes.byteLength > MAX_PHOTO_BYTES) return json(413, { error: 'Photo is too large.' });
-    const hex = await sha256HexBytes(bytes);
+    const hex = await sha256Hex(bytes);
     const r2Key = `photos/${hex}`;
-    const existing = await cp.getPhotoMeta(r2Key);
-    if (!existing) {
+    if (!(await env.PHOTOS.head(r2Key))) {
       await env.PHOTOS.put(r2Key, bytes, { httpMetadata: { contentType } });
-      await cp.putPhotoMeta({
-        r2Key,
-        siteId: site.id,
-        contentType,
-        bytes: bytes.byteLength,
-        actor: 'operator',
-      });
     }
+    await cp.putPhotoMeta({
+      r2Key,
+      siteId: site.id,
+      contentType,
+      bytes: bytes.byteLength,
+      actor: 'operator',
+    });
     return json(200, { path: `/img/${hex}` });
   }
 
@@ -775,16 +791,16 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
   if (publicMatch) {
     if (request.method !== 'GET') return methodNotAllowed();
     const site = await cp.getSiteByPublicId(publicMatch[1]!);
-    if (!site || site.status === 'archived') return new Response('Not found', { status: 404 });
-    const noindex = env.BIZ_INDEXING_ENABLED !== 'true' || site.status !== 'published';
-    const data = await publishedSiteData(cp, site);
+    if (!site || site.status !== 'published') return new Response('Not found', { status: 404 });
+    const noindex = env.BIZ_INDEXING_ENABLED !== 'true';
     // Publishing changes the pointer without changing currentVersion, so the
     // exact published pointer (or "live" current data) is part of the key.
     // noindex is baked into the cached HTML meta, so a BIZ_INDEXING_ENABLED
     // flip must miss the cache too.
-    const cacheKey = `bizhtml:${site.publicId}:${site.currentVersion}:${site.publishedVersion ?? 'live'}:${noindex ? 'noindex' : 'index'}`;
+    const cacheKey = bizRenderCacheKey(site, noindex);
     const cached = await env.SITES.get(cacheKey);
     if (cached !== null) return bizPageResponse(cached, noindex);
+    const data = await publishedSiteData(cp, site);
     const html = bizHtml(data, false, noindex);
     await env.SITES.put(cacheKey, html, { expirationTtl: RENDER_CACHE_TTL });
     return bizPageResponse(html, noindex);
