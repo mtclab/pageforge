@@ -4,6 +4,7 @@ import { PROSPECT_TRANSITIONS } from '../src/worker/admin.js';
 import { ControlPlane, type ProspectStatus } from '../src/worker/db.js';
 import worker from '../src/worker/index.js';
 import { signSessionCookie } from '../src/worker/session.js';
+import { sha256Hex } from '../src/worker/shared.js';
 import minimal from './fixtures/minimal.json';
 import { workerEnv } from './worker-fixture.js';
 
@@ -292,7 +293,7 @@ describe('operator console', () => {
     const prospect = (await cp.getProspect('intake01'))!;
     const profile = (await cp.getBusinessProfileByProspectId(prospect.id))!;
     expect(profile.data.menu[0]?.name).toBe('Burgeri');
-    expect(profile.data.provenance['identity.name']?.source).toBe('prh');
+    expect(profile.data.provenance['identity.name']?.source).toBe('operator');
     expect(profile.consentNote).toBe('Omistaja vahvisti tekstit.');
 
     const updated = await post('/admin/prospects/intake01/intake', {
@@ -340,6 +341,76 @@ describe('operator console', () => {
     expect(html).toContain('name="services_0_name" value="Leikkaus"');
     expect(html).toContain('name="services_4_name" value=""');
     expect(await cp.getBusinessProfileByProspectId((await cp.getProspect('addrows1'))!.id)).toBeNull();
+  });
+
+  it('uploads a multipart site photo through the shared store and displays its copy-ready path', async () => {
+    await seedSite('photos01');
+    const bytes = Uint8Array.from([137, 80, 78, 71, 13, 10, 26, 10]);
+    const expectedPath = `/img/${await sha256Hex(bytes.buffer as ArrayBuffer)}`;
+    const form = new FormData();
+    form.set('csrf', csrf);
+    form.set('photo', new Blob([bytes], { type: 'image/png' }), 'kuva.png');
+
+    const uploaded = await worker.fetch(new Request('https://example.test/admin/sites/photos01/photos', {
+      method: 'POST',
+      headers: { cookie },
+      body: form,
+    }), env);
+    expect(uploaded.status).toBe(303);
+    expect(uploaded.headers.get('location')).toBe('/admin/sites/photos01#photos');
+    expect(await cp.listPhotoMetaForSite((await cp.getSiteByPublicId('photos01'))!.id)).toEqual([
+      expect.objectContaining({ r2Key: `photos/${expectedPath.slice(5)}`, contentType: 'image/png', bytes: 8 }),
+    ]);
+
+    const detailHtml = await (await get('/admin/sites/photos01')).text();
+    expect(detailHtml).toContain('enctype="multipart/form-data"');
+    expect(detailHtml).toContain(`<code>${expectedPath}</code>`);
+    expect(detailHtml).toContain('Kopioi /img/-polku ehdotukseen');
+  });
+
+  it('renders escaped proposal summaries and keeps update request raw bodies collapsed', async () => {
+    await seedSite('summary1');
+    const siteRecord = (await cp.getSiteByPublicId('summary1'))!;
+    await cp.createProposal({
+      site: siteRecord,
+      publicId: 'sum00001',
+      candidate: { ...siteRecord.data, tagline: 'Muutos' },
+      summary: ['Nimi <img src=x onerror=alert(1)>'],
+      actor: 'operator',
+    });
+    const update = await cp.createUpdateRequest({
+      site: siteRecord,
+      channel: 'panel',
+      body: '{"sections":"<script>alert(1)</script>"}',
+    });
+    await cp.linkUpdateRequestProposal(update.id, 'sum00001', 'operator');
+
+    const html = await (await get('/admin/sites/summary1')).text();
+    expect(html).toContain('<span class="badge">panel</span>');
+    expect(html).toContain('Nimi &lt;img src=x onerror=alert(1)&gt;');
+    expect(html).not.toContain('Nimi <img src=x onerror=alert(1)>');
+    expect(html).toContain('<details><summary>Raaka</summary><pre>{"sections":"&lt;script&gt;alert(1)&lt;/script&gt;"}</pre></details>');
+    expect(html).not.toContain('<script>alert(1)</script>');
+  });
+
+  it('renders the sticky site navigation and collapses versions beyond the newest five', async () => {
+    await seedSite('history1');
+    let siteRecord = (await cp.getSiteByPublicId('history1'))!;
+    for (let index = 1; index <= 6; index++) {
+      await cp.updateSiteData(
+        siteRecord,
+        { ...siteRecord.data, tagline: `Versio ${index}` },
+        { actor: 'operator', action: 'test.update', entity: 'site', entityId: siteRecord.publicId },
+      );
+      siteRecord = (await cp.getSiteByPublicId('history1'))!;
+    }
+
+    const html = await (await get('/admin/sites/history1')).text();
+    expect(html).toContain('<nav class="anchor-nav"');
+    for (const anchor of ['yleiskuva', 'sisalto', 'kaupallinen', 'julkaisu', 'loki']) {
+      expect(html).toContain(`href="#${anchor}"`);
+    }
+    expect(html).toContain('<details><summary>Vanhemmat versiot (1)</summary>');
   });
 
   it('returns 404 when the mutation gate is closed', async () => {

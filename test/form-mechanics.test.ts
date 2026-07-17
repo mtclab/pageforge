@@ -51,13 +51,17 @@ describe('S13 form mechanics', () => {
       profile: emptyBusinessProfile(prospect),
       csrf: 'csrf',
     });
-    for (const prefix of ['hours', 'exceptions', 'services', 'menu', 'photos', 'links']) {
+    for (const prefix of ['hours', 'exceptions', 'services', 'menu', 'links']) {
       const section = html.match(new RegExp(`<section data-repeat="${prefix}">([\\s\\S]*?)</section>`))?.[1];
       expect(section).toBeDefined();
       expect(section).toContain('Ei rivejä vielä - lisää ensimmäinen.');
       expect(section?.match(/<tr data-repeat-row>/g)).toHaveLength(3); // two rows + inert template
       expect(section).toContain(`name="add_rows" value="${prefix}"`);
     }
+    expect(html).toContain('Kuvat lisätään sivustonäkymässä sivuston luonnin jälkeen.');
+    expect(html).toContain('<details><summary>Näytä myös Palvelut</summary>');
+    expect(html).not.toMatch(/<select[^>]+name="[^"]+_source"/);
+    expect(html).toContain('>Automaattinen</option>');
     expect(html.match(/<script src="\/rows\.js"><\/script>/g)).toHaveLength(1);
   });
 
@@ -176,6 +180,7 @@ describe('S13 form mechanics', () => {
     form.set('exceptions_19_text', 'suljettu');
     form.set('services_39_name', 'Leikkaus');
     form.set('services_39_group', 'Hiukset');
+    form.set('services_39_desc', 'x'.repeat(2100));
     const candidate = panelCandidate(current, form);
     expect(candidate.sections).toContainEqual({
       kind: 'hours',
@@ -184,7 +189,7 @@ describe('S13 form mechanics', () => {
     });
     expect(candidate.sections).toContainEqual({
       kind: 'services',
-      items: [{ name: 'Leikkaus', group: 'Hiukset' }],
+      items: [{ name: 'Leikkaus', group: 'Hiukset', desc: 'x'.repeat(2000) }],
     });
   });
 });

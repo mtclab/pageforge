@@ -4,29 +4,16 @@ import {
   type BusinessProfile,
   type BusinessProfileItem,
   type ProvenanceEntry,
-  type ProvenanceSource,
 } from './business-profile.js';
 import type { Prospect } from './db.js';
-import { formString, optionalFormString } from './shared.js';
+import { optionalFormString } from './shared.js';
 
-const SOURCES: readonly ProvenanceSource[] = ['prh', 'places', 'owner', 'operator'];
-const COPY_SOURCES: readonly ProvenanceSource[] = ['owner', 'operator'];
 const LINK_KINDS: readonly LinkKind[] = [
   'email', 'github', 'instagram', 'linkedin', 'youtube', 'facebook', 'x', 'phone', 'website',
 ];
 
 function optional(form: FormData, name: string): string | undefined {
   return optionalFormString(form, name);
-}
-
-function sourceFor(
-  form: FormData,
-  name: string,
-  copyOnly: boolean,
-): ProvenanceSource {
-  const value = formString(form, name) as ProvenanceSource | undefined;
-  const allowed = copyOnly ? COPY_SOURCES : SOURCES;
-  return value && allowed.includes(value) ? value : 'operator';
 }
 
 /** Parse numbered zero-JS intake fields, ignoring parsed rows beyond the documented caps. */
@@ -36,19 +23,19 @@ export function parseBusinessProfileForm(
   at = Date.now(),
 ): BusinessProfile {
   const provenance: Record<string, ProvenanceEntry> = {};
-  const mark = (path: string, sourceName: string, copyOnly = false): void => {
-    provenance[path] = { source: sourceFor(form, sourceName, copyOnly), at };
+  const mark = (path: string): void => {
+    provenance[path] = { source: 'operator', at };
   };
 
   const name = optional(form, 'name') ?? '';
   const yTunnus = optional(form, 'yTunnus');
   const verticalCode = optional(form, 'vertical_code');
   const verticalLabel = optional(form, 'vertical_label');
-  if (name) mark('identity.name', 'identity_source');
-  if (yTunnus) mark('identity.yTunnus', 'identity_source');
+  if (name) mark('identity.name');
+  if (yTunnus) mark('identity.yTunnus');
   if (verticalCode || verticalLabel) {
-    mark('identity.vertical.code', 'identity_source');
-    mark('identity.vertical.label', 'identity_source');
+    mark('identity.vertical.code');
+    mark('identity.vertical.label');
   }
 
   const phone = optional(form, 'phone');
@@ -56,12 +43,12 @@ export function parseBusinessProfileForm(
   const street = optional(form, 'street');
   const postal = optional(form, 'postal');
   const city = optional(form, 'city');
-  if (phone) mark('contact.phone', 'contact_source');
-  if (email) mark('contact.email', 'contact_source');
+  if (phone) mark('contact.phone');
+  if (email) mark('contact.email');
   if (street || postal || city) {
-    mark('contact.address.street', 'contact_source');
-    mark('contact.address.postal', 'contact_source');
-    mark('contact.address.city', 'contact_source');
+    mark('contact.address.street');
+    mark('contact.address.postal');
+    mark('contact.address.city');
   }
 
   const hours: BusinessProfile['hours'] = [];
@@ -78,7 +65,7 @@ export function parseBusinessProfileForm(
       ...(closed ? { closed: true } : {}),
     };
     hours.push(row);
-    for (const key of Object.keys(row)) mark(`hours.${hours.length - 1}.${key}`, `hours_${index}_source`);
+    for (const key of Object.keys(row)) mark(`hours.${hours.length - 1}.${key}`);
     if (hours.length >= BUSINESS_PROFILE_LIMITS.hours) break;
   }
 
@@ -88,8 +75,8 @@ export function parseBusinessProfileForm(
     const text = optional(form, `exceptions_${index}_text`);
     if (!date && !text) continue;
     exceptions.push({ date: date ?? '', text: text ?? '' });
-    mark(`exceptions.${exceptions.length - 1}.date`, `exceptions_${index}_source`);
-    mark(`exceptions.${exceptions.length - 1}.text`, `exceptions_${index}_source`);
+    mark(`exceptions.${exceptions.length - 1}.date`);
+    mark(`exceptions.${exceptions.length - 1}.text`);
     if (exceptions.length >= BUSINESS_PROFILE_LIMITS.exceptions) break;
   }
 
@@ -109,7 +96,7 @@ export function parseBusinessProfileForm(
       };
       items.push(item);
       for (const key of Object.keys(item)) {
-        mark(`${prefix}.${items.length - 1}.${key}`, `${prefix}_${index}_source`, key === 'desc');
+        mark(`${prefix}.${items.length - 1}.${key}`);
       }
       if (items.length >= limit) break;
     }
@@ -118,15 +105,15 @@ export function parseBusinessProfileForm(
 
   const about = optional(form, 'about');
   const tagline = optional(form, 'tagline');
-  if (about) mark('about', 'about_source', true);
-  if (tagline) mark('tagline', 'tagline_source', true);
+  if (about) mark('about');
+  if (tagline) mark('tagline');
 
   const photos: BusinessProfile['photos'] = [];
   for (let index = 0; index < BUSINESS_PROFILE_LIMITS.photos * 2; index++) {
     const src = optional(form, `photos_${index}_src`);
     if (!src) continue;
     photos.push({ src });
-    mark(`photos.${photos.length - 1}.src`, `photos_${index}_source`);
+    mark(`photos.${photos.length - 1}.src`);
     if (photos.length >= BUSINESS_PROFILE_LIMITS.photos) break;
   }
 
@@ -143,7 +130,7 @@ export function parseBusinessProfileForm(
       ...(kind === undefined ? {} : { kind }),
     };
     links.push(link);
-    for (const key of Object.keys(link)) mark(`links.${links.length - 1}.${key}`, `links_${index}_source`);
+    for (const key of Object.keys(link)) mark(`links.${links.length - 1}.${key}`);
     if (links.length >= BUSINESS_PROFILE_LIMITS.links) break;
   }
 

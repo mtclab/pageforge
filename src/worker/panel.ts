@@ -14,7 +14,7 @@ const PANEL_HEADERS = {
 };
 
 function response(content: string, status = 200): Response {
-  return new Response(`<!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Päivitä sivustoa · Mikoshi</title><style>:root{font-family:system-ui,sans-serif;line-height:1.5;color:#1b2430;background:#f5f7fa}*{box-sizing:border-box}main{max-width:60rem;margin:auto;padding:2rem 1rem}section{background:#fff;border:1px solid #d8dee8;border-radius:.5rem;padding:1rem;margin:1rem 0}label{display:grid;gap:.25rem;font-weight:600;margin:.7rem 0}input,textarea,button{font:inherit;padding:.5rem}input,textarea{width:100%}textarea{min-height:6rem}table{width:100%;border-collapse:collapse}th,td{padding:.45rem;border:1px solid #d8dee8;text-align:left}button{background:#174ea6;color:#fff;border:0;border-radius:.3rem}.repeat-empty{color:#5d6878}.repeat-actions{margin-top:.6rem}.repeat-remove{border:1px solid #a12828;background:#fff;color:#a12828;white-space:nowrap}.notice{padding:.8rem;background:#fff1d6;border:1px solid #e1b85b;border-radius:.4rem}.error{background:#fde8e8;border-color:#d78888}a{color:#174ea6}@media(max-width:42rem){.table-wrap{overflow-x:auto}}</style></head><body><main>${content}</main><script src="/rows.js"></script></body></html>`, {
+  return new Response(`<!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Päivitä sivustoa · Mikoshi</title><style>:root{font-family:system-ui,sans-serif;line-height:1.5;color:#1b2430;background:#f5f7fa}*{box-sizing:border-box}main{max-width:60rem;margin:auto;padding:2rem 1rem}section{background:#fff;border:1px solid #d8dee8;border-radius:.5rem;padding:1rem;margin:1rem 0}label{display:grid;gap:.25rem;font-weight:600;margin:.7rem 0}input,textarea,button{font:inherit;padding:.5rem}input,textarea{width:100%}textarea{min-height:6rem}table{width:100%;border-collapse:collapse}th,td{padding:.45rem;border:1px solid #d8dee8;text-align:left}button{background:#174ea6;color:#fff;border:0;border-radius:.3rem}.small,.repeat-empty{color:#5d6878}.small{font-size:.9rem}.repeat-actions{margin-top:.6rem}.repeat-remove{border:1px solid #a12828;background:#fff;color:#a12828;white-space:nowrap}.notice{padding:.8rem;background:#fff1d6;border:1px solid #e1b85b;border-radius:.4rem}.error{background:#fde8e8;border-color:#d78888}a{color:#174ea6}@media(max-width:42rem){.table-wrap{overflow-x:auto}}</style></head><body><main>${content}</main><script src="/rows.js"></script></body></html>`, {
     status,
     headers: PANEL_HEADERS,
   });
@@ -56,7 +56,7 @@ function panelForm(site: Site, token: string, error?: string, rowCounts: Record<
     const limit = BUSINESS_PROFILE_LIMITS[prefix];
     const count = Math.min(limit * 2, Math.max(filled + 2, rowCounts[prefix] ?? 0));
     const rows = Array.from({ length: count }, (_, index) => row(index)).join('');
-    return `<section data-repeat="${prefix}"><h2>${esc(title)}</h2>${filled ? '' : '<p class="repeat-empty">Ei rivejä vielä - lisää ensimmäinen.</p>'}<div class="table-wrap"><table><thead><tr>${headings.map((heading) => `<th>${esc(heading)}</th>`).join('')}<th>Toiminnot</th></tr></thead><tbody data-repeat-rows>${rows}</tbody></table></div><template>${row(0, true)}</template><div class="repeat-actions"><button type="submit" name="add_rows" value="${prefix}" data-repeat-add>Lisää rivejä</button></div></section>`;
+    return `<section data-repeat="${prefix}"><h2>${esc(title)}</h2>${count ? '' : '<p class="repeat-empty">Ei rivejä vielä - lisää ensimmäinen.</p>'}<div class="table-wrap"><table><thead><tr>${headings.map((heading) => `<th>${esc(heading)}</th>`).join('')}<th>Toiminnot</th></tr></thead><tbody data-repeat-rows>${rows}</tbody></table></div><template>${row(0, true)}</template><div class="repeat-actions"><button type="submit" name="add_rows" value="${prefix}" data-repeat-add>Lisää rivejä</button></div></section>`;
   };
   const hourRow = (index: number, blank = false): string => {
     const row = blank ? undefined : hours?.days[index];
@@ -68,15 +68,15 @@ function panelForm(site: Site, token: string, error?: string, rowCounts: Record<
   };
   const serviceRow = (index: number, blank = false): string => {
     const item = blank ? undefined : services?.items[index];
-    return `<tr data-repeat-row><td><input aria-label="Palvelun nimi ${index + 1}" name="services_${index}_name" value="${escAttr(item?.name ?? '')}"></td><td><input aria-label="Palvelun ryhmä ${index + 1}" name="services_${index}_group" value="${escAttr(item?.group ?? '')}"></td><td><input aria-label="Palvelun hinta ${index + 1}" name="services_${index}_price" value="${escAttr(item?.price ?? '')}" placeholder="35 €"></td><td><button class="repeat-remove" type="button" data-repeat-remove>Poista</button></td></tr>`;
+    return `<tr data-repeat-row><td><input aria-label="Palvelun nimi ${index + 1}" name="services_${index}_name" value="${escAttr(item?.name ?? '')}"></td><td><input aria-label="Palvelun ryhmä ${index + 1}" name="services_${index}_group" value="${escAttr(item?.group ?? '')}"></td><td><input aria-label="Palvelun hinta ${index + 1}" name="services_${index}_price" value="${escAttr(item?.price ?? '')}" placeholder="35 €"></td><td><textarea aria-label="Palvelun kuvaus ${index + 1}" name="services_${index}_desc" maxlength="2000">${esc(item?.desc ?? '')}</textarea></td><td><button class="repeat-remove" type="button" data-repeat-remove>Poista</button></td></tr>`;
   };
   const sections = [
     permitted.has('hours') ? `${repeatTable('hours', 'Aukioloajat', ['Päivä', 'Aukeaa', 'Sulkeutuu', 'Suljettu'], hours?.days.length ?? 0, hourRow)}${repeatTable('exceptions', 'Poikkeusaukiolot', ['Päivä', 'Teksti'], hours?.exceptions?.length ?? 0, exceptionRow)}` : '',
     permitted.has('notice') ? `<section><h2>Tiedote</h2><label>Otsikko<input name="notice_title" value="${escAttr(notice?.title ?? '')}"></label><label>Teksti<textarea name="notice_text">${esc(notice?.text ?? '')}</textarea></label><label>Voimassa asti<input name="notice_until" type="date" value="${escAttr(notice?.until ?? '')}"></label></section>` : '',
-    permitted.has('services') ? repeatTable('services', 'Palvelut', ['Nimi', 'Ryhmä', 'Hinta'], services?.items.length ?? 0, serviceRow) : '',
+    permitted.has('services') ? repeatTable('services', services?.title ?? 'Palvelut', ['Nimi', 'Ryhmä', 'Hinta', 'Kuvaus'], services?.items.length ?? 0, serviceRow) : '',
   ].join('');
   const message = error === undefined ? '' : `<p class="notice error" role="alert">${esc(error)}</p>`;
-  return `<h1>Päivitä sivuston tietoja</h1><p>${esc(site.data.name)}</p>${message}<form action="/panel?t=${escAttr(encodeURIComponent(token))}" method="post"><input type="hidden" name="t" value="${escAttr(token)}">${sections}<button type="submit">Lähetä ehdotus</button></form>`;
+  return `<h1>Päivitä sivuston tietoja</h1><p>${esc(site.data.name)}</p>${message}<form action="/panel?t=${escAttr(encodeURIComponent(token))}" method="post"><input type="hidden" name="t" value="${escAttr(token)}">${sections}<button type="submit">Lähetä ehdotus</button><p class="small">Saat esikatselulinkin vahvistusta varten - muutokset näkyvät sivulla vasta hyväksynnän jälkeen.</p></form>`;
 }
 
 function formValue(form: FormData, name: string): string {
@@ -143,8 +143,9 @@ export function panelCandidate(current: SiteData, form: FormData): SiteData {
       const name = formValue(form, `services_${index}_name`);
       const price = formValue(form, `services_${index}_price`);
       const group = formValue(form, `services_${index}_group`);
-      if (!name && !price && !group) continue;
-      items.push({ name, ...(price ? { price } : {}), ...(group ? { group } : {}) });
+      const desc = formValue(form, `services_${index}_desc`).slice(0, 2000);
+      if (!name && !price && !group && !desc) continue;
+      items.push({ name, ...(price ? { price } : {}), ...(group ? { group } : {}), ...(desc ? { desc } : {}) });
       if (items.length >= BUSINESS_PROFILE_LIMITS.services) break;
     }
     candidate = replaceSection(candidate, 'services', {

@@ -104,7 +104,18 @@ describe('S11 outbound draft claim flow', () => {
       env,
     );
     expect(scopedPage.status).toBe(200);
-    expect(await scopedPage.text()).toContain('name="domain_wish"');
+    const scopedHtml = await scopedPage.text();
+    expect(scopedHtml).toContain('name="domain_wish"');
+    expect(scopedHtml).toContain('249 € kertamaksu + 19 €/kk ylläpito. Ei määräaikaista sitoutumista.');
+    expect(scopedHtml).toContain('<h2>Mitä saat</h2>');
+    expect(scopedHtml).toContain('oma verkkotunnus (esim. yritys.fi)');
+    expect(scopedHtml).toContain('sähköpostien ohjaus');
+    expect(scopedHtml).toContain('nopeat ja turvalliset sivut');
+    expect(scopedHtml).toContain('pienet päivitykset kuukausittain');
+    expect(scopedHtml).toContain('sivut saa aina mukaansa (ZIP)');
+    expect(scopedHtml).toContain(`/p/gate0001/current?t=${scoped}`);
+    expect(scopedHtml).toContain('Katso sivusi vielä kerran');
+    expect(scopedHtml).toContain('Siirry maksamaan');
 
     const session = await signSessionCookie(operatorKey);
     const operatorPage = await worker.fetch(
@@ -205,7 +216,10 @@ describe('S11 outbound draft claim flow', () => {
       new Request(`https://example.test/order/${order!.publicId}/kiitos`),
       env,
     );
-    expect(await thanks.text()).toContain('Kiitos! Otamme yhteyttä ja julkaisemme sivun pian.');
+    const thanksHtml = await thanks.text();
+    expect(thanksHtml).toContain('Testimaksu vahvistettu');
+    expect(thanksHtml).toContain('Otamme yhteyttä ja julkaisemme sivusi pian.');
+    expect(thanksHtml).toContain('Saat kuitin sähköpostiisi kun laskutus on käytössä.');
   });
 
   it('returns a friendly 409 for duplicate claims and cancels claims from webhooks', async () => {

@@ -238,9 +238,11 @@ describe('S8 orders and mock billing lifecycle', () => {
       new Request('https://example.test/admin/sites/console8', { headers }),
       env,
     )).text();
-    expect(detailHtml).toContain('<h2>Tilaus</h2>');
+    expect(detailHtml).toContain('<h3>Tilaus</h3>');
     expect(detailHtml).toContain('<span class="badge">Maksettu</span>');
     expect(detailHtml).toContain('checkout.session.completed');
+    expect(detailHtml).toContain('<details open><summary>Laskutustapahtumat</summary>');
+    expect(detailHtml).toContain('<section id="loki"><h2>Loki</h2><details open><summary>Tapahtumat</summary>');
     expect(detailHtml).toContain('Luo tilaus');
     const dashboardHtml = await (await worker.fetch(
       new Request('https://example.test/admin', { headers }),

@@ -213,4 +213,26 @@ describe('S7 update channels', () => {
     );
     expect(operator.status).toBe(200);
   });
+
+  it('uses the site section title, shows spare rows without an empty message, and renders descriptions', async () => {
+    const data: SiteData = {
+      ...base,
+      capabilities: { services: true },
+      sections: [{ kind: 'services', title: 'Ruokalista', items: [] }],
+    };
+    await seedSite('menupnl1', data);
+    const site = (await cp.getSiteByPublicId('menupnl1'))!;
+    const token = '44444444444444444444444444444444';
+    await cp.createPanelToken({ tokenHash: await sha256Hex(token), site });
+
+    const html = await (await worker.fetch(
+      new Request(`https://example.test/panel?t=${token}`),
+      env,
+    )).text();
+    expect(html).toContain('<h2>Ruokalista</h2>');
+    expect(html).toContain('name="services_0_desc"');
+    expect(html).not.toContain('Ei rivejä vielä - lisää ensimmäinen.');
+    expect(html).toContain('Saat esikatselulinkin vahvistusta varten');
+    expect(html).not.toMatch(/<select[^>]+name="[^"]+_source"/);
+  });
 });

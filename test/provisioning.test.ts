@@ -335,7 +335,8 @@ describe('S9 provisioning state machine', () => {
       headers: { cookie },
     }), env);
     const detailHtml = await detail.text();
-    expect(detailHtml).toContain('<h2>Provisiointi</h2>');
+    expect(detailHtml).toContain('<h3>Provisiointi</h3>');
+    expect(detailHtml).toContain('<details><summary>Uusi provisiointi</summary>');
     expect(detailHtml).toContain('Domainin rekisteröinti');
     expect(detailHtml).toContain('console.example');
     expect(detailHtml).toContain('Merkitse tehdyksi');

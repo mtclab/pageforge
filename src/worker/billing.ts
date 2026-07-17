@@ -1,4 +1,5 @@
 import { esc, escAttr } from '../engine/escape.js';
+import { claimPage } from './biz.js';
 import { ControlPlane } from './db.js';
 import {
   MockProvider,
@@ -7,18 +8,8 @@ import {
 } from './payments.js';
 import { type Env, JSON_HEADERS } from './shared.js';
 
-const HTML_HEADERS = {
-  'content-type': 'text/html; charset=utf-8',
-  'cache-control': 'no-store',
-  'x-robots-tag': 'noindex',
-};
-
 function page(title: string, content: string): Response {
-  return new Response(`<!doctype html>
-<html lang="fi">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>${esc(title)}</title></head>
-<body><main><h1>${esc(title)}</h1>${content}</main></body>
-</html>`, { headers: HTML_HEADERS });
+  return claimPage(title, `<section class="card"><h1>${esc(title)}</h1>${content}</section>`);
 }
 
 async function mockCheckout(orderRef: string, env: Env): Promise<Response> {
@@ -48,7 +39,7 @@ async function mockCheckout(orderRef: string, env: Env): Promise<Response> {
   };
   return page(
     'Testimaksu',
-    `<p>Tämä on paikallinen testikassa. Maksua ei veloiteta.</p>${form('Maksa (testi)', payBody, paySignature)}${form('Peruuta', cancelBody, cancelSignature)}`,
+    `<p class="small">Tämä on paikallinen testikassa. Maksua ei veloiteta.</p>${form('Maksa (testi)', payBody, paySignature)}${form('Peruuta', cancelBody, cancelSignature)}`,
   );
 }
 
@@ -93,12 +84,12 @@ export async function handleBillingRequest(request: Request, env: Env): Promise<
     const claim = order ? await cp.getClaimByOrderId(order.id) : null;
     return resultMatch[2] === 'kiitos'
       ? page(
-          'Kiitos tilauksesta',
+          order?.provider === 'mock' ? 'Testimaksu vahvistettu' : 'Maksu vahvistettu',
           claim
-            ? '<p>Kiitos! Otamme yhteyttä ja julkaisemme sivun pian.</p>'
-            : '<p>Maksun tila päivittyy automaattisesti.</p>',
+            ? `<p>Otamme yhteyttä ja julkaisemme sivusi pian. Saat kuitin sähköpostiisi kun laskutus on käytössä.</p>${order?.provider === 'mock' ? '<p class="small">Testiympäristö: kyseessä oli testimaksu.</p>' : ''}`
+            : '<p class="small">Maksun tila päivittyy automaattisesti.</p>',
         )
-      : page('Tilaus peruutettu', '<p>Maksua ei suoritettu.</p>');
+      : page('Tilaus peruutettu', '<p>Maksua ei suoritettu.</p><p class="small">Voit palata sivulle ja yrittää uudelleen.</p>');
   }
   return new Response('Not found', { status: 404 });
 }

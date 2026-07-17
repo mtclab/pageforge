@@ -5,6 +5,7 @@ import {
   randomPreviewToken,
   rollbackSiteVersion,
   siteMutable,
+  storeSitePhoto,
   summarizeChanges,
 } from './biz.js';
 import {
@@ -185,10 +186,10 @@ async function siteDetailResponse(
   error?: string,
   status = 200,
 ): Promise<Response> {
-  const [versions, proposals, photoCount, events, tokens, panelTokens, updateRequests, comments, qaRun, checklist, order, claim, billingEvents, provisioningRun, renewals] = await Promise.all([
+  const [versions, proposals, photos, events, tokens, panelTokens, updateRequests, comments, qaRun, checklist, order, claim, billingEvents, provisioningRun, renewals] = await Promise.all([
     cp.listSnapshots(site.id),
     cp.listOpenProposals(site.id),
-    cp.photoCountForSite(site.id),
+    cp.listPhotoMetaForSite(site.id),
     cp.listAuditEventsForSite(site.publicId, 20),
     cp.listActiveTokens(site.id),
     cp.listActivePanelTokens(site.id),
@@ -213,7 +214,7 @@ async function siteDetailResponse(
     site,
     versions,
     proposals,
-    photoCount,
+    photos,
     events,
     tokens,
     panelTokens,
@@ -395,13 +396,17 @@ export async function handleAdminRequest(request: Request, env: Env): Promise<Re
   if (prospectIntakeMatch) {
     const prospect = await cp.getProspect(prospectIntakeMatch[1]!);
     if (!prospect) return html(messagePage('Prospektia ei löytynyt', 'Tuntematon prospekti.', csrf), 404);
-    const existing = await cp.getBusinessProfileByProspectId(prospect.id);
+    const [existing, existingSite] = await Promise.all([
+      cp.getBusinessProfileByProspectId(prospect.id),
+      cp.getSiteByProspectId(prospect.id),
+    ]);
     if (request.method === 'GET') {
       const profile = existing?.data ?? emptyBusinessProfile(prospect);
       return html(intakePage({
         prospect,
         profile,
         csrf,
+        hasSite: existingSite !== null,
         warnings: businessProfileWarnings(profile, prospect),
       }));
     }
@@ -420,6 +425,7 @@ export async function handleAdminRequest(request: Request, env: Env): Promise<Re
         prospect,
         profile,
         csrf,
+        hasSite: existingSite !== null,
         warnings: businessProfileWarnings(profile, prospect),
         rowCounts: { [prefix]: Math.min(BUSINESS_PROFILE_LIMITS[prefix] * 2, rendered + 3) },
       }));
@@ -430,6 +436,7 @@ export async function handleAdminRequest(request: Request, env: Env): Promise<Re
         prospect,
         profile,
         csrf,
+        hasSite: existingSite !== null,
         errors,
         warnings: businessProfileWarnings(profile, prospect),
       }), 400);
@@ -541,6 +548,20 @@ export async function handleAdminRequest(request: Request, env: Env): Promise<Re
     return redirect('/admin/deletions');
   }
 
+  const photoUploadMatch = pathname.match(/^\/admin\/sites\/([^/]+)\/photos$/);
+  if (photoUploadMatch) {
+    if (request.method !== 'POST') return methodNotAllowed(csrf);
+    const site = await cp.getSiteByPublicId(photoUploadMatch[1]!);
+    if (!site) return html(messagePage('Sivustoa ei löytynyt', 'Tuntematon sivusto.', csrf), 404);
+    const photo = form!.get('photo');
+    if (photo === null || typeof photo === 'string') {
+      return siteDetailResponse(cp, site, csrf, 'Valitse ladattava kuva.', 400);
+    }
+    const stored = await storeSitePhoto(env, cp, site, await photo.arrayBuffer(), photo.type);
+    if (!stored.ok) return siteDetailResponse(cp, site, csrf, stored.error, stored.status);
+    return redirect(`/admin/sites/${site.publicId}#photos`);
+  }
+
   const provisioningStartMatch = pathname.match(/^\/admin\/sites\/([^/]+)\/provisioning\/start$/);
   if (provisioningStartMatch) {
     if (request.method !== 'POST') return methodNotAllowed(csrf);
@@ -650,6 +671,26 @@ export async function handleAdminRequest(request: Request, env: Env): Promise<Re
       }
       throw error;
     }
+  }
+
+  const checklistCombinedMatch = pathname.match(/^\/admin\/sites\/([^/]+)\/checklist$/);
+  if (checklistCombinedMatch) {
+    if (request.method !== 'POST') return methodNotAllowed(csrf);
+    const site = await cp.getSiteByPublicId(checklistCombinedMatch[1]!);
+    if (!site) return html(messagePage('Sivustoa ei löytynyt', 'Tuntematon sivusto.', csrf), 404);
+    const checked = new Set((await cp.listLaunchChecklist(site.id)).map((entry) => entry.item));
+    const selected = new Set([
+      ...form!.getAll('items').filter((value): value is string => typeof value === 'string'),
+      ...LAUNCH_CHECKLIST_ITEMS.filter((item) => formString(form!, item.id) === 'true').map((item) => item.id),
+    ]);
+    for (const item of LAUNCH_CHECKLIST_ITEMS) {
+      if (selected.has(item.id) && !checked.has(item.id)) {
+        await cp.checkLaunchChecklist(site, item.id, 'operator');
+      } else if (!selected.has(item.id) && checked.has(item.id)) {
+        await cp.uncheckLaunchChecklist(site, item.id);
+      }
+    }
+    return redirect(`/admin/sites/${site.publicId}#julkaisu`);
   }
 
   const checklistMatch = pathname.match(/^\/admin\/sites\/([^/]+)\/checklist\/([^/]+)$/);

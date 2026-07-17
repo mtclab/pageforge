@@ -32,6 +32,7 @@ import { publishGate, publishGateError } from './qa.js';
 import {
   createOrderCheckout,
   OpenOrderError,
+  paymentProvider,
   paymentPrices,
   unusedOrderId,
 } from './payments.js';
@@ -500,6 +501,39 @@ function photoContentType(request: Request): string | null {
   return PHOTO_TYPES.has(raw) ? raw : null;
 }
 
+/** Shared operator photo pipeline for the raw API and multipart console form. */
+export async function storeSitePhoto(
+  env: Env,
+  cp: ControlPlane,
+  site: Site,
+  bytes: ArrayBuffer,
+  rawContentType: string,
+): Promise<Operation<string>> {
+  const immutable = siteMutable(site);
+  if (immutable) return immutable;
+  const contentType = rawContentType.trim().toLowerCase();
+  if (!PHOTO_TYPES.has(contentType)) {
+    return { ok: false, status: 415, error: 'Photo must be image/jpeg, image/png, or image/webp.' };
+  }
+  if (bytes.byteLength === 0) return { ok: false, status: 400, error: 'Empty photo.' };
+  if (bytes.byteLength > MAX_PHOTO_BYTES) {
+    return { ok: false, status: 413, error: 'Photo is too large.' };
+  }
+  const hex = await sha256Hex(bytes);
+  const r2Key = `photos/${hex}`;
+  if (!(await env.PHOTOS.head(r2Key))) {
+    await env.PHOTOS.put(r2Key, bytes, { httpMetadata: { contentType } });
+  }
+  await cp.putPhotoMeta({
+    r2Key,
+    siteId: site.id,
+    contentType,
+    bytes: bytes.byteLength,
+    actor: 'operator',
+  });
+  return { ok: true, value: `/img/${hex}` };
+}
+
 interface ClaimFormValues {
   name: string;
   email: string;
@@ -516,10 +550,10 @@ const EMPTY_CLAIM_FORM: ClaimFormValues = {
   message: '',
 };
 
-function claimPage(title: string, body: string): Response {
+export function claimPage(title: string, body: string): Response {
   return new Response(`<!doctype html>
 <html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>${esc(title)}</title>
-<style>:root{font-family:system-ui,sans-serif;line-height:1.5;color:#172033;background:#f5f7fa}body{margin:0}main{max-width:42rem;margin:2rem auto;padding:1.25rem}section{padding:1.25rem;border:1px solid #d8dee8;border-radius:.6rem;background:#fff}form{display:grid;gap:.9rem}label{display:grid;gap:.3rem;font-weight:650}input,textarea,button{box-sizing:border-box;width:100%;padding:.65rem;font:inherit}textarea{min-height:7rem}button{border:0;border-radius:.35rem;background:#174ea6;color:#fff;font-weight:700;cursor:pointer}.price{font-size:1.35rem;font-weight:750}.notice{padding:.75rem;background:#fff1d6;border:1px solid #e1b85b}.error{background:#fde8e8;border-color:#d78888;color:#791f1f}.small{font-size:.9rem;color:#5d6878}</style></head><body><main>${body}</main></body></html>`, {
+<style>:root{font-family:system-ui,sans-serif;line-height:1.5;color:#172033;background:#f5f7fa}body{margin:0}main{max-width:42rem;margin:2rem auto;padding:1.25rem}.card,section{padding:1.25rem;border:1px solid #d8dee8;border-radius:.6rem;background:#fff}form{display:grid;gap:.9rem}label{display:grid;gap:.3rem;font-weight:650}input,textarea,button{box-sizing:border-box;width:100%;padding:.65rem;font:inherit}textarea{min-height:7rem}button{border:0;border-radius:.35rem;background:#174ea6;color:#fff;font-weight:700;cursor:pointer}.price{font-size:1.35rem;font-weight:750;margin-bottom:.2rem}.notice{padding:.75rem;background:#fff1d6;border:1px solid #e1b85b}.error{background:#fde8e8;border-color:#d78888;color:#791f1f}.small{font-size:.9rem;color:#5d6878}</style></head><body><main>${body}</main></body></html>`, {
     headers: {
       'content-type': 'text/html; charset=utf-8',
       'cache-control': 'no-store',
@@ -532,25 +566,29 @@ function claimFormPage(
   site: Site,
   token: string,
   prices: { buildCents: number; monthlyCents: number },
+  mock: boolean,
   values: ClaimFormValues = EMPTY_CLAIM_FORM,
   error?: string,
 ): Response {
   const price = `${prices.buildCents / 100} € + ${prices.monthlyCents / 100} €/kk`;
   const action = `/claim/${site.publicId}${token ? `?t=${encodeURIComponent(token)}` : ''}`;
+  const preview = `/p/${site.publicId}/current${token ? `?t=${encodeURIComponent(token)}` : ''}`;
   const errorHtml = error === undefined
     ? ''
     : `<p class="notice error" role="alert">${esc(error)}</p>`;
   return claimPage(
     `Ota ${site.data.name} käyttöön`,
-    `<section><h1>Ota ${esc(site.data.name)} käyttöön</h1><p class="price">${esc(price)}</p><p>Katso ensin, maksa vasta sitten.</p>${errorHtml}
+    `<section><h1>Ota ${esc(site.data.name)} käyttöön</h1><p class="price">${esc(price)}</p><p>249 € kertamaksu + 19 €/kk ylläpito. Ei määräaikaista sitoutumista.</p>
+    <h2>Mitä saat</h2><ul><li>oma verkkotunnus (esim. yritys.fi)</li><li>sähköpostien ohjaus</li><li>nopeat ja turvalliset sivut</li><li>pienet päivitykset kuukausittain</li><li>sivut saa aina mukaansa (ZIP)</li></ul>
+    <p><a href="${escAttr(preview)}">Katso sivusi vielä kerran</a></p>${errorHtml}
     <form action="${escAttr(action)}" method="post"><input type="hidden" name="t" value="${escAttr(token)}">
       <label>Nimi *<input name="name" required maxlength="200" autocomplete="name" value="${escAttr(values.name)}"></label>
       <label>Sähköposti *<input name="email" type="email" required maxlength="322" autocomplete="email" value="${escAttr(values.email)}"></label>
       <label>Puhelin<input name="phone" type="tel" maxlength="100" autocomplete="tel" value="${escAttr(values.phone)}"></label>
       <label>Toivottu verkkotunnus<input name="domain_wish" maxlength="72" pattern="${escAttr(DOMAIN_RE.source)}" placeholder="yritys.fi" value="${escAttr(values.domainWish)}"></label>
       <label>Viesti<textarea name="message" maxlength="2000">${esc(values.message)}</textarea></label>
-      <button type="submit">Siirry testimaksuun</button>
-    </form><p class="small">Testiympäristö: maksua ei veloiteta.</p></section>`,
+      <button type="submit">Siirry maksamaan</button>
+    </form>${mock ? '<p class="small">Testiympäristö: maksua ei veloiteta.</p>' : ''}</section>`,
   );
 }
 
@@ -611,7 +649,7 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
     if (!access) return new Response('Not found', { status: 404 });
     if (request.method === 'GET') {
       return (await cp.siteClaimEligible(site))
-        ? claimFormPage(site, access.token, paymentPrices(env))
+        ? claimFormPage(site, access.token, paymentPrices(env), paymentProvider(env).name === 'mock')
         : claimReservedPage(site);
     }
 
@@ -633,7 +671,7 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
     const values = claimFormValues(form);
     const invalid = validateClaimForm(values);
     if (invalid) {
-      const response = claimFormPage(site, access.token, paymentPrices(env), values, invalid);
+      const response = claimFormPage(site, access.token, paymentPrices(env), paymentProvider(env).name === 'mock', values, invalid);
       return new Response(response.body, { status: 400, headers: response.headers });
     }
     if (!(await claimRateLimit(env, site.publicId))) {
@@ -641,6 +679,7 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
         site,
         access.token,
         paymentPrices(env),
+        paymentProvider(env).name === 'mock',
         values,
         'Liian monta yritystä tänään. Yritä huomenna uudelleen.',
       );
@@ -875,28 +914,13 @@ export async function handleBizRequest(request: Request, env: Env): Promise<Resp
     if (denied) return denied;
     const site = await cp.getSiteByPublicId(photosMatch[1]!);
     if (!site) return json(404, { error: 'Site not found.' });
-    const immutable = siteMutable(site);
-    if (immutable) return json(immutable.status, { error: immutable.error });
     const contentType = photoContentType(request);
     if (!contentType) return json(415, { error: 'Photo must be image/jpeg, image/png, or image/webp.' });
     const declared = Number(request.headers.get('content-length') ?? '0');
     if (declared > MAX_PHOTO_BYTES) return json(413, { error: 'Photo is too large.' });
     const bytes = await request.arrayBuffer();
-    if (bytes.byteLength === 0) return json(400, { error: 'Empty photo.' });
-    if (bytes.byteLength > MAX_PHOTO_BYTES) return json(413, { error: 'Photo is too large.' });
-    const hex = await sha256Hex(bytes);
-    const r2Key = `photos/${hex}`;
-    if (!(await env.PHOTOS.head(r2Key))) {
-      await env.PHOTOS.put(r2Key, bytes, { httpMetadata: { contentType } });
-    }
-    await cp.putPhotoMeta({
-      r2Key,
-      siteId: site.id,
-      contentType,
-      bytes: bytes.byteLength,
-      actor: 'operator',
-    });
-    return json(200, { path: `/img/${hex}` });
+    const stored = await storeSitePhoto(env, cp, site, bytes, contentType);
+    return stored.ok ? json(200, { path: stored.value }) : json(stored.status, { error: stored.error });
   }
 
   const imgMatch = pathname.match(/^\/img\/([a-f0-9]{64})$/);

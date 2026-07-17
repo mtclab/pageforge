@@ -271,20 +271,29 @@ describe('S6 persistence, checklist, and publish gate', () => {
     expect(run.status).toBe(303);
     expect((await cp.latestQaRun(site.id))?.passed).toBe(true);
 
+    expect(detailHtml.match(/action="\/admin\/sites\/consoleq\/checklist"/g)).toHaveLength(1);
     const checked = await worker.fetch(formRequest(
-      '/admin/sites/consoleq/checklist/copy_reviewed',
-      { csrf, checked: 'true' },
+      '/admin/sites/consoleq/checklist',
+      {
+        csrf,
+        copy_reviewed: 'true',
+        owner_facts_confirmed: 'true',
+        browser_check: 'true',
+        domain_ready: 'true',
+      },
       cookie,
     ), env);
     expect(checked.status).toBe(303);
-    expect((await cp.listLaunchChecklist(site.id)).map((item) => item.item)).toEqual(['copy_reviewed']);
+    expect((await cp.listLaunchChecklist(site.id)).map((item) => item.item).sort()).toEqual(
+      LAUNCH_CHECKLIST_ITEMS.map((item) => item.id).sort(),
+    );
 
     const unchecked = await worker.fetch(formRequest(
-      '/admin/sites/consoleq/checklist/copy_reviewed',
-      { csrf },
+      '/admin/sites/consoleq/checklist',
+      { csrf, copy_reviewed: 'true' },
       cookie,
     ), env);
     expect(unchecked.status).toBe(303);
-    expect(await cp.listLaunchChecklist(site.id)).toEqual([]);
+    expect((await cp.listLaunchChecklist(site.id)).map((item) => item.item)).toEqual(['copy_reviewed']);
   });
 });
