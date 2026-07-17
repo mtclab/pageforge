@@ -7,9 +7,11 @@ import type { BusinessProfile } from './business-profile.js';
 import { structureProfileFor, type StructureSectionKind } from './structure-profiles.js';
 
 export const THEME_FAMILIES = [
-  { id: 'quiet', themeIds: ['slate', 'nordic', 'linen', 'letterpress', 'gazette'] },
-  { id: 'graphic', themeIds: ['meadow', 'scrapbook', 'zine', 'ink'] },
-  { id: 'modern', themeIds: ['atelier', 'studio', 'blueprint', 'aurora', 'midnight', 'terminal'] },
+  { id: 'kyltti', themeIds: ['kyltti'] },
+  { id: 'ruutu', themeIds: ['ruutu'] },
+  { id: 'pehmo', themeIds: ['pehmo'] },
+  { id: 'yo', themeIds: ['yo'] },
+  { id: 'arkki', themeIds: ['arkki'] },
 ] as const;
 
 function seedHash(seed: string): number {
@@ -108,6 +110,7 @@ function contentFor(profile: BusinessProfile): Omit<SiteData, 'meta'> {
           business: {
             ...(profile.contact.phone === undefined ? {} : { phone: profile.contact.phone }),
             ...(address === undefined ? {} : { address }),
+            ...(profile.contact.address?.city === undefined ? {} : { city: profile.contact.address.city }),
             ...(profile.identity.yTunnus === undefined ? {} : { yTunnus: profile.identity.yTunnus }),
           },
         }
@@ -130,13 +133,13 @@ export function compose(profile: BusinessProfile, seed: string): SiteData[] {
     [families[index], families[swap]] = [families[swap]!, families[index]!];
   }
   const content = contentFor(profile);
-  return families.map((family) => {
+  return families.slice(0, 3).map((family) => {
     const themeId = family.themeIds[Math.floor(random() * family.themeIds.length)]!;
     const theme = THEMES.find((candidate) => candidate.id === themeId)!;
     const paletteId = theme.palettes[Math.floor(random() * theme.palettes.length)]!.id;
     return {
       ...content,
-      meta: { themeId, paletteId, fontId: 'system' },
+      meta: { themeId, paletteId, fontId: theme.defaults.fontId },
     };
   });
 }

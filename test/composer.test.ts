@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { SiteData } from '../src/engine/types.js';
 import type { BusinessProfile } from '../src/worker/business-profile.js';
 import { compose, themeFamilyForTheme } from '../src/worker/composer.js';
+import { getTheme } from '../src/themes/index.js';
 import { structureProfileFor, verticalGroupFor } from '../src/worker/structure-profiles.js';
 import { validateSiteData } from '../src/worker/validate.js';
 
@@ -41,12 +42,15 @@ describe('structure profiles', () => {
 });
 
 describe('deterministic composer', () => {
-  it('returns deterministic variants from three distinct theme families', () => {
+  it('returns deterministic variants from three distinct business voices', () => {
     const first = compose(profile(), 'profile1');
     const second = compose(profile(), 'profile1');
     expect(first).toEqual(second);
     expect(first).toHaveLength(3);
     expect(new Set(first.map((variant) => themeFamilyForTheme(variant.meta.themeId))).size).toBe(3);
+    expect(new Set(first.map((variant) => variant.meta.themeId)).size).toBe(3);
+    expect(first.every((variant) => getTheme(variant.meta.themeId).biz === true)).toBe(true);
+    expect(first.every((variant) => variant.business?.city === 'Helsinki')).toBe(true);
   });
 
   it('derives a Soita tel link from the contact phone without duplicating one', () => {

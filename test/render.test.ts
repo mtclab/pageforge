@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { renderSite } from '../src/engine/render.js';
 import type { SiteData } from '../src/engine/types.js';
-import { THEMES } from '../src/themes/index.js';
+import { getTheme, THEMES } from '../src/themes/index.js';
+import food from './fixtures/biz-food.json';
 import full from './fixtures/full.json';
 import hostile from './fixtures/hostile.json';
 import minimal from './fixtures/minimal.json';
@@ -21,6 +22,16 @@ describe('renderSite', () => {
         expect(css).toMatchSnapshot('css');
       });
     }
+  }
+
+  for (const themeId of ['kyltti', 'yo']) {
+    it(`business voice snapshot: ${themeId} x food`, () => {
+      const data = {
+        ...food as SiteData,
+        meta: { ...(food as SiteData).meta, themeId, paletteId: getTheme(themeId).defaults.paletteId },
+      };
+      expect(renderSite(data, getTheme(themeId), { heroCta: true, bizHero: true })).toMatchSnapshot();
+    });
   }
 
   it('is deterministic (byte-identical on repeat renders)', () => {

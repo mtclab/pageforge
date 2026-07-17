@@ -163,6 +163,8 @@ export interface RenderOptions {
   hosted?: boolean;
   /** Business wrappers may promote the first phone link in the hero. */
   heroCta?: boolean;
+  /** Enable evidence-driven business hero and story markup. */
+  bizHero?: boolean;
 }
 
 /**
@@ -177,7 +179,7 @@ export function renderSite(data: SiteData, theme: ThemePack, opts: RenderOptions
 
   const name = data.name.trim();
   const sections = data.sections
-    .map((s, i) => renderSection(s, i + 1, data.lang, data.business))
+    .map((s, i) => renderSection(s, i + 1, data.lang, data.business, opts.bizHero === true))
     .filter(Boolean);
 
   const description = data.tagline?.trim();
@@ -213,7 +215,7 @@ export function renderSite(data: SiteData, theme: ThemePack, opts: RenderOptions
 `
     : '';
 
-  let body = `${renderHero(data, opts.heroCta)}
+  let body = `${renderHero(data, { heroCta: opts.heroCta, bizHero: opts.bizHero })}
 ${sections.length ? `<main>\n${sections.join('\n')}\n</main>` : '<main></main>'}
 ${renderFooter(data, opts.hosted)}`;
 

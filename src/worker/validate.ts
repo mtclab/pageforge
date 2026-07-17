@@ -131,6 +131,9 @@ export function validateSiteData(
     if (data.business.address !== undefined && (typeof data.business.address !== 'string' || data.business.address.length > 200)) {
       return 'bad business address';
     }
+    if (data.business.city !== undefined && (typeof data.business.city !== 'string' || data.business.city.length > 60)) {
+      return 'bad business city';
+    }
     if (data.business.yTunnus !== undefined && (typeof data.business.yTunnus !== 'string' || data.business.yTunnus.length > 100)) {
       return 'bad business identifier';
     }

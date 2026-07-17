@@ -357,7 +357,7 @@ export function bizHtml(
   claim?: { siteId: string; token: string },
 ): string {
   const theme = getTheme(data.meta.themeId);
-  const rendered = renderSite(data, theme, { heroCta: true });
+  const rendered = renderSite(data, theme, { heroCta: true, bizHero: true });
   let html = rendered.html
     .replace('<link rel="stylesheet" href="style.css">', `<style>\n${rendered.css}</style>`);
   if (noindex) {

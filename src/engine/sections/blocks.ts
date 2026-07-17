@@ -13,10 +13,11 @@ export function renderSection(
   idx: number,
   lang?: string,
   business?: SiteData['business'],
+  bizPath = false,
 ): string {
   switch (section.kind) {
     case 'about':
-      return renderAbout(section, idx, lang);
+      return renderAbout(section, idx, lang, bizPath);
     case 'projects':
       return renderProjects(section, idx);
     case 'hobbies':
@@ -46,8 +47,25 @@ ${body}
 </section>`;
 }
 
-function renderAbout(s: Extract<Section, { kind: 'about' }>, idx: number, lang?: string): string {
-  const body = textToHtml(s.text);
+function businessAboutToHtml(text: string): string {
+  const normalized = text.replaceAll('\r\n', '\n').trim();
+  const chars = [...normalized];
+  const first = chars.shift();
+  if (first === undefined) return '';
+  const escaped = `<span class="initial-cap">${esc(first)}</span>${esc(chars.join(''))}`;
+  return escaped
+    .split(/\n{2,}/)
+    .map((paragraph) => `<p>${paragraph.replaceAll('\n', '<br>')}</p>`)
+    .join('\n');
+}
+
+function renderAbout(
+  s: Extract<Section, { kind: 'about' }>,
+  idx: number,
+  lang?: string,
+  bizPath = false,
+): string {
+  const body = bizPath ? businessAboutToHtml(s.text) : textToHtml(s.text);
   if (!body) return '';
   return wrap('about', idx, businessLabels(lang).about, body);
 }
@@ -148,7 +166,7 @@ function renderServices(s: Extract<Section, { kind: 'services' }>, idx: number, 
     'services',
     idx,
     s.title?.trim() || businessLabels(lang).services,
-    `<ul class="services">\n${items.join('\n')}\n</ul>`,
+    `<ul class="services menu-board">\n${items.join('\n')}\n</ul>`,
   );
 }
 

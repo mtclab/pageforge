@@ -14,6 +14,7 @@ let shuffleCounter = 0;
 
 export function renderThemeStep(pane: HTMLElement, ctx: StepCtx): void {
   const { data, onChange } = ctx;
+  const personalThemes = THEMES.filter((theme) => !theme.biz);
   pane.append(el('h2', { text: 'Pick a look' }));
   pane.append(
     el('p', { class: 'step-intro', text: 'Each preview shows your own page. You can fine-tune colors in the next step.' }),
@@ -21,7 +22,7 @@ export function renderThemeStep(pane: HTMLElement, ctx: StepCtx): void {
 
   // mood filter + deterministic shuffle
   const filterRow = el('div', { class: 'chips-row filter-row' });
-  const cats = [{ id: 'all', label: 'All', themeIds: THEMES.map((t) => t.id) }, ...THEME_CATEGORIES];
+  const cats = [{ id: 'all', label: 'All', themeIds: personalThemes.map((t) => t.id) }, ...THEME_CATEGORIES];
   for (const cat of cats) {
     const chip = el('button', {
       type: 'button',
@@ -39,7 +40,7 @@ export function renderThemeStep(pane: HTMLElement, ctx: StepCtx): void {
   shuffle.addEventListener('click', () => {
     shuffleCounter += 1;
     const combos: { themeId: string; paletteId: string }[] = [];
-    for (const t of THEMES) for (const p of t.palettes) combos.push({ themeId: t.id, paletteId: p.id });
+    for (const t of personalThemes) for (const p of t.palettes) combos.push({ themeId: t.id, paletteId: p.id });
     // deterministic stride walk so consecutive shuffles feel varied
     const pick = combos[(shuffleCounter * 7) % combos.length]!;
     const t = getTheme(pick.themeId);
@@ -50,8 +51,8 @@ export function renderThemeStep(pane: HTMLElement, ctx: StepCtx): void {
   filterRow.append(shuffle);
   pane.append(filterRow);
 
-  const shownIds = cats.find((c) => c.id === activeCategory)?.themeIds ?? THEMES.map((t) => t.id);
-  const shownThemes = THEMES.filter((t) => shownIds.includes(t.id) || t.id === data.meta.themeId);
+  const shownIds = cats.find((c) => c.id === activeCategory)?.themeIds ?? personalThemes.map((t) => t.id);
+  const shownThemes = personalThemes.filter((t) => shownIds.includes(t.id));
 
   const grid = el('div', { class: 'theme-grid', role: 'radiogroup', 'aria-label': 'Theme' });
   for (const theme of shownThemes) {

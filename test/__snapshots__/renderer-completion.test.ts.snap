@@ -234,7 +234,7 @@ footer { text-align: center; }
 <body class="layout-centered-column photo-circle">
 <div class="page">
 <header class="hero">
-<h1>Kampaamo Hilla</h1>
+<h1 class="hero-stack"><span class="hero-line"><span class="hero-initial">K</span>ampaamo</span><span class="hero-line">Hilla</span></h1>
 <p class="tagline">Rauhallinen korttelikampaamo kaikenikäisille.</p>
 <a class="cta-call" href="tel:+358 44 555 0190">Varaa puhelimitse</a>
 <nav class="links" aria-label="Links">
@@ -244,7 +244,7 @@ footer { text-align: center; }
 <main>
 <section class="section section-services" aria-labelledby="sec-1-h">
 <h2 id="sec-1-h">Palvelut</h2>
-<ul class="services">
+<ul class="services menu-board">
 <li class="service"><h3>Hiustenleikkaus</h3>
 <p class="desc">Sisältää pesun ja viimeistelyn</p>
 <p class="service-price">alkaen 42 €</p></li>
@@ -307,7 +307,7 @@ footer { text-align: center; }
 <main>
 <section class="section section-services" aria-labelledby="sec-1-h">
 <h2 id="sec-1-h">Palvelut</h2>
-<ul class="services">
+<ul class="services menu-board">
 <li class="service"><h3>Hiustenleikkaus</h3>
 <p class="desc">Sisältää pesun ja viimeistelyn</p>
 <p class="service-price">alkaen 42 €</p></li>
@@ -581,14 +581,15 @@ footer { text-align: center; }
 <body class="layout-centered-column photo-circle">
 <div class="page">
 <header class="hero">
-<h1>Sataman Grillikioski</h1>
+<p class="eyebrow-locality">Kuopio</p>
+<h1 class="hero-stack"><span class="hero-line"><span class="hero-initial">S</span>ataman</span><span class="hero-line">Grillikioski</span></h1>
 <p class="tagline">Burgerit ja grilliruoat tuoreena sataman kupeessa.</p>
 <a class="cta-call" href="tel:+358 40 123 4567">Soita ja tilaa</a>
 </header>
 <main>
 <section class="section section-services" aria-labelledby="sec-1-h">
 <h2 id="sec-1-h">Ruokalista</h2>
-<ul class="services">
+<ul class="services menu-board">
 <li class="service"><h3>Sataman burgeri</h3>
 <p class="desc">Naudanlihapihvi, cheddar ja talon kastike</p>
 <p class="service-price">12,50 €</p></li>
@@ -645,7 +646,7 @@ footer { text-align: center; }
 <main>
 <section class="section section-services" aria-labelledby="sec-1-h">
 <h2 id="sec-1-h">Ruokalista</h2>
-<ul class="services">
+<ul class="services menu-board">
 <li class="service"><h3>Sataman burgeri</h3>
 <p class="desc">Naudanlihapihvi, cheddar ja talon kastike</p>
 <p class="service-price">12,50 €</p></li>
@@ -914,7 +915,7 @@ footer { text-align: center; }
 <body class="layout-centered-column photo-circle">
 <div class="page">
 <header class="hero">
-<h1>Koivulan Palvelu</h1>
+<h1 class="hero-stack"><span class="hero-line"><span class="hero-initial">K</span>oivulan</span><span class="hero-line">Palvelu</span></h1>
 <p class="tagline">Paikallista apua pieniin arjen töihin.</p>
 </header>
 <main></main>
@@ -1189,14 +1190,14 @@ footer { text-align: center; }
 <body class="layout-centered-column photo-circle">
 <div class="page">
 <header class="hero">
-<h1>Korjaamo Rautio</h1>
+<h1 class="hero-stack"><span class="hero-line"><span class="hero-initial">K</span>orjaamo</span><span class="hero-line">Rautio</span></h1>
 <p class="tagline">Luotettava autohuolto ja korjaus saman katon alta.</p>
 <a class="cta-call" href="tel:050 765 4321">Soita korjaamolle</a>
 </header>
 <main>
 <section class="section section-services" aria-labelledby="sec-1-h">
 <h2 id="sec-1-h">Palvelut</h2>
-<ul class="services">
+<ul class="services menu-board">
 <li class="service"><h3>Määräaikaishuolto</h3>
 <p class="desc">Valmistajan huolto-ohjelman mukaan</p></li>
 <li class="service"><h3>Jarruhuolto</h3>
@@ -1258,7 +1259,7 @@ document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link
 <main>
 <section class="section section-services" aria-labelledby="sec-1-h">
 <h2 id="sec-1-h">Palvelut</h2>
-<ul class="services">
+<ul class="services menu-board">
 <li class="service"><h3>Määräaikaishuolto</h3>
 <p class="desc">Valmistajan huolto-ohjelman mukaan</p></li>
 <li class="service"><h3>Jarruhuolto</h3>

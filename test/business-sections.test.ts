@@ -85,6 +85,33 @@ describe('business sections', () => {
     data.sections = [{ kind: 'location', phone: '09/1234  567' }];
     expect(renderSite(data, THEMES[0]!).html).toContain('href="tel:091234 567"');
   });
+
+  it('renders evidence-driven business hero and story markup only on the business path', () => {
+    const data = businessSite();
+    data.name = 'Sataman Grillikioski';
+    data.business = { ...data.business, city: '<Kuopio>' };
+    data.sections = [{ kind: 'about', text: '& Vuodesta 1987\n\nToinen kappale.' }];
+    const personal = renderSite(data, THEMES[0]!).html;
+    expect(personal).not.toContain('eyebrow-locality');
+    expect(personal).not.toContain('initial-cap');
+
+    const html = renderSite(data, THEMES[0]!, { bizHero: true }).html;
+    expect(html).toContain('<p class="eyebrow-locality">&lt;Kuopio&gt;</p>');
+    expect(html).toContain('<h1 class="hero-stack"><span class="hero-line"><span class="hero-initial">S</span>ataman</span><span class="hero-line">Grillikioski</span></h1>');
+    expect(html).toContain('<span class="badge-year">Vuodesta 1987</span>');
+    expect(html).toContain('<p><span class="initial-cap">&amp;</span> Vuodesta 1987</p>');
+  });
+
+  it('uses deterministic one-line and default business-name compositions', () => {
+    const short = { ...businessSite(), name: 'Kahvila' };
+    expect(renderSite(short, THEMES[0]!, { bizHero: true }).html).toContain(
+      '<h1 class="hero-one"><span class="hero-initial">K</span>ahvila</h1>',
+    );
+    const manyWords = { ...businessSite(), name: 'Kolmen Sanan Korjaamo' };
+    expect(renderSite(manyWords, THEMES[0]!, { bizHero: true }).html).toContain(
+      '<h1><span class="hero-initial">K</span>olmen Sanan Korjaamo</h1>',
+    );
+  });
 });
 
 describe('business SiteData validation', () => {
@@ -102,7 +129,12 @@ describe('business SiteData validation', () => {
       { ...businessSite(), sections: [{ kind: 'location', phone: 'x'.repeat(201) }] },
       { ...businessSite(), sections: [{ kind: 'location', mapUrl: 'javascript:alert(1)' }] },
       { ...businessSite(), sections: [{ kind: 'location', mapUrl: `https://example.com/${'x'.repeat(501)}` }] },
+      { ...businessSite(), business: { city: 'x'.repeat(61) } },
     ];
     for (const variant of variants) expect(validateSiteData(variant)).not.toBeNull();
+  });
+
+  it('accepts a city up to 60 characters', () => {
+    expect(validateSiteData({ ...businessSite(), business: { city: 'x'.repeat(60) } })).toBeNull();
   });
 });

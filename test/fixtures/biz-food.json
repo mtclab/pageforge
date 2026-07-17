@@ -33,6 +33,7 @@
   "business": {
     "phone": "+358 40 123 4567",
     "address": "Rantakatu 8, 70100 Kuopio",
+    "city": "Kuopio",
     "yTunnus": "1234567-8"
   },
   "capabilities": { "hours": true, "services": true, "location": true },

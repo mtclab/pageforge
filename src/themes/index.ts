@@ -14,6 +14,11 @@ import { slate } from './slate/theme.js';
 import { studio } from './studio/theme.js';
 import { terminal } from './terminal/theme.js';
 import { zine } from './zine/theme.js';
+import { arkki } from './biz/arkki/theme.js';
+import { kyltti } from './biz/kyltti/theme.js';
+import { pehmo } from './biz/pehmo/theme.js';
+import { ruutu } from './biz/ruutu/theme.js';
+import { yo } from './biz/yo/theme.js';
 
 export const THEMES: ThemePack[] = [
   slate,
@@ -31,6 +36,11 @@ export const THEMES: ThemePack[] = [
   midnight,
   zine,
   terminal,
+  kyltti,
+  ruutu,
+  pehmo,
+  yo,
+  arkki,
 ];
 
 /** Look-step filter chips. A theme may appear under several moods. */

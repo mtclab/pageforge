@@ -61,7 +61,7 @@ export interface SiteData {
   favicon?: { dataUrl: string };
   links: Link[];
   sections: Section[];
-  business?: { phone?: string; address?: string; yTunnus?: string };
+  business?: { phone?: string; address?: string; city?: string; yTunnus?: string };
   capabilities?: {
     hours?: boolean;
     services?: boolean;
@@ -136,6 +136,8 @@ export interface ThemePack {
   id: string;
   name: string;
   tagline: string;
+  /** Business design voices are excluded from the personal-site gallery. */
+  biz?: boolean;
   layout: Layout;
   photoShape: PhotoShape;
   fonts: Font[];
