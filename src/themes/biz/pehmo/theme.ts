@@ -4,13 +4,18 @@ const css = `/* business voice: pehmo — warm craft */
 .page { margin: 0 auto; padding: clamp(1.25rem, 4vw, 3.5rem) 1rem 4rem; }
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 1rem 2rem;
+  grid-template-columns: 1fr;
+  gap: .8rem;
   padding: clamp(1.5rem, 4vw, 3rem);
   border-radius: 28px 14px 28px 14px;
   background: var(--surface);
   box-shadow: 0 16px 38px color-mix(in srgb, var(--text) 12%, transparent);
+}
+/* Two-column composition only when a photo actually occupies column 2. */
+.hero:has(.photo) {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem 2rem;
 }
 .hero .photo { grid-column: 2; grid-row: 1 / span 4; width: clamp(8rem, 22vw, 15rem); aspect-ratio: 4 / 5; filter: sepia(.5) saturate(1.3) hue-rotate(-9deg); }
 .hero h1 { font-size: clamp(2.6rem, 7vw, 5.2rem); font-weight: 700; line-height: 1.02; }
@@ -51,6 +56,8 @@ const css = `/* business voice: pehmo — warm craft */
   box-shadow: 0 1px 2px color-mix(in srgb, var(--text) 20%, transparent);
 }
 .hours-list { gap: .5rem; }
+.hours-row { align-items: baseline; }
+.hours-row dt, .hours-row dd { margin: 0; line-height: 1.4; }
 .gallery img { border-radius: 14px; filter: sepia(.5) saturate(1.3) hue-rotate(-9deg); }
 .section-location { border-radius: 28px 14px 28px 14px; }
 footer { text-align: center; }
