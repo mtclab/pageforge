@@ -1,7 +1,7 @@
 name = "pageforge"
 main = "src/worker/index.ts"
 compatibility_date = "2026-07-01"
-workers_dev = true
+workers_dev = false  # workers.dev disabled 2026-07-25: pageforge.mtclab.net is canonical
 routes = [
   { pattern = "pageforge.mtclab.net", custom_domain = true },
 ]
