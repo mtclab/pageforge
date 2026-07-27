@@ -48,23 +48,33 @@ export function iconSvg(kind: LinkKind): string {
  * Email targets are split across attributes and assembled only on activation.
  * No complete address exists in page source, DOM text, or any one attribute.
  */
-export function obfuscatedEmailLink(url: string, label: string, prefix = ''): string {
+export function obfuscatedEmailLink(
+  url: string,
+  label: string,
+  prefix = '',
+  /** ` lang="en"` when the label is ours and not in the page's language. */
+  labelLangAttr = '',
+  /** Shown when the caller has no label, or the label leaks the address. */
+  fallback = 'Email',
+): string {
   const addressEnd = url.indexOf('?') === -1 ? url.length : url.indexOf('?');
   const addressLength = addressEnd - 'mailto:'.length;
   if (!url.startsWith('mailto:') || addressLength < 2) return '';
   const splitAt = 'mailto:'.length + Math.floor(addressLength / 2);
   const first = url.slice(0, splitAt);
   const second = url.slice(splitAt);
-  let shown = label.trim() || 'Email';
+  let shown = label.trim() || fallback;
   try {
     const address = decodeURIComponent(url.slice('mailto:'.length, addressEnd));
     if (shown.toLowerCase().includes(address.toLowerCase()) || shown.toLowerCase().includes(url.toLowerCase())) {
-      shown = 'Email';
+      shown = fallback;
     }
   } catch {
-    shown = 'Email';
+    shown = fallback;
   }
-  return `<a href="#" data-email-a="${escAttr(first)}" data-email-b="${escAttr(second)}">${prefix}<span>${esc(shown)}</span></a>`;
+  // The label is either the caller's (already in the page's language) or our
+  // fallback, so one marking covers both.
+  return `<a href="#" data-email-a="${escAttr(first)}" data-email-b="${escAttr(second)}">${prefix}<span${labelLangAttr}>${esc(shown)}</span></a>`;
 }
 
 /** Added only to pages containing an email control. */
@@ -77,8 +87,12 @@ document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link
 });
 </script>`;
 
-/** Render the links strip. Links whose URL fails validation render as plain text. */
-export function renderLinks(links: Link[]): string {
+/**
+ * Render the links strip. Links whose URL fails validation render as plain
+ * text. `mailLabel` is the wording used when a mail link has no label of its
+ * own, in the page's language.
+ */
+export function renderLinks(links: Link[], mailLabel = 'Email', mailLabelLangAttr = ''): string {
   const items = links
     .filter((l) => l.label.trim() || l.url.trim())
     .map((link) => {
@@ -87,7 +101,13 @@ export function renderLinks(links: Link[]): string {
       const label = esc(link.label.trim() || link.url.trim());
       if (!url) return `<span>${label}</span>`;
       if (url.startsWith('mailto:')) {
-        return obfuscatedEmailLink(url, link.label.trim(), iconSvg(kind));
+        return obfuscatedEmailLink(
+          url,
+          link.label.trim(),
+          iconSvg(kind),
+          link.label.trim() ? '' : mailLabelLangAttr,
+          mailLabel,
+        );
       }
       return `<a href="${escAttr(url)}">${iconSvg(kind)}<span>${label}</span></a>`;
     });

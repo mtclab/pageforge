@@ -15,13 +15,17 @@ await cp(join(root, 'src/static'), dist, { recursive: true });
 await cp(join(root, 'src/app/ui.css'), join(dist, 'ui.css'));
 
 const options = {
-  entryPoints: [join(root, 'src/app/main.ts')],
+  // app.js = the builder at /make, landing.js = the shop window at /
+  entryPoints: {
+    app: join(root, 'src/app/main.ts'),
+    landing: join(root, 'src/app/landing.ts'),
+  },
   bundle: true,
   format: 'esm',
   target: 'es2020',
   minify: !watch,
   sourcemap: watch ? 'inline' : false,
-  outfile: join(dist, 'app.js'),
+  outdir: dist,
   logLevel: 'info',
 };
 

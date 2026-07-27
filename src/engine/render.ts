@@ -8,6 +8,7 @@ import { renderHero } from './sections/hero.js';
 import {
   CUSTOM_FAVICON_PATH,
   FAVICON_PATH,
+  labelContext,
   type Font,
   type Palette,
   type RenderedSite,
@@ -174,8 +175,10 @@ export function renderSite(data: SiteData, theme: ThemePack, opts: RenderOptions
   const css = `${rootVars(palette, font, styleVars(data, theme))}\n${BASE_CSS}\n${theme.css}\n${autoDarkCss(data, theme, palette)}`;
 
   const name = data.name.trim();
+  // One label set for the whole page: the language it is written in.
+  const ctx = labelContext(data);
   const sections = data.sections
-    .map((s, i) => renderSection(s, i + 1))
+    .map((s, i) => renderSection(s, i + 1, ctx))
     .filter(Boolean);
 
   const description = data.tagline?.trim();
@@ -211,7 +214,7 @@ export function renderSite(data: SiteData, theme: ThemePack, opts: RenderOptions
 `
     : '';
 
-  let body = `${renderHero(data)}
+  let body = `${renderHero(data, { ctx })}
 ${sections.length ? `<main>\n${sections.join('\n')}\n</main>` : '<main></main>'}
 ${renderFooter(data, opts.hosted)}`;
 

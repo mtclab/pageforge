@@ -19,8 +19,12 @@ export function labeled(
   input: HTMLElement,
   hint?: string,
 ): HTMLDivElement {
-  const id = input.id || `f-${Math.random().toString(36).slice(2, 9)}`;
-  input.id = id;
+  // The label must point at the control, not at a wrapper the control sits in.
+  const control = input.matches('input, select, textarea')
+    ? input
+    : input.querySelector<HTMLElement>('input, select, textarea') ?? input;
+  const id = control.id || `f-${Math.random().toString(36).slice(2, 9)}`;
+  control.id = id;
   const wrap = el('div', { class: 'field' }, el('label', { for: id, text: labelText }), input);
   if (hint) wrap.append(el('p', { class: 'hint', text: hint }));
   return wrap;

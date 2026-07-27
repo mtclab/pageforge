@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "name": "Anna\" onload=\"alert(document.domain)",
+  "tagline": "Maker\" onmouseover=\"alert(1)",
+  "lang": "fi",
+  "photo": { "dataUrl": "data:image/jpeg;base64,/9j/hero" },
+  "favicon": { "dataUrl": "data:image/png;base64,iVBORw0KGgo=" },
+  "links": [
+    { "label": "Site\" onclick=\"alert(1)", "url": "https://example.com/?q=\" onmouseenter=\"alert(1)" },
+    { "label": "Mail\" onfocus=\"alert(1)", "url": "mailto:anna\"onpointerover=\"alert(1)@example.com" },
+    { "label": "Call", "url": "tel:+358 40 123 4567" }
+  ],
+  "sections": [
+    { "kind": "about", "text": "Plain about text with a \" quote." },
+    {
+      "kind": "projects",
+      "items": [
+        {
+          "name": "Project\" onblur=\"alert(1)",
+          "desc": "desc \" quote",
+          "url": "https://example.com/p?x=\" ondragstart=\"alert(1)"
+        }
+      ]
+    },
+    { "kind": "hobbies", "items": ["hobby \" quote"] },
+    { "kind": "contact", "email": "anna\"onauxclick=\"alert(1)@example.com", "note": "note \" quote" },
+    {
+      "kind": "gallery",
+      "photos": [
+        { "dataUrl": "data:image/jpeg;base64,/9j/one", "alt": "A cat\" onmouseup=\"alert('alt')" },
+        { "dataUrl": "data:image/jpeg;base64,/9j/two", "alt": "Second\" onwheel=\"alert(1)" }
+      ]
+    },
+    { "kind": "custom", "title": "Custom\" onscroll=\"alert(1)", "text": "custom \" body" }
+  ],
+  "footerNote": "footer \" quote",
+  "meta": {
+    "themeId": "slate",
+    "paletteId": "paper",
+    "fontId": "system",
+    "surface": "card\" autofocus onfocus=\"alert(1)",
+    "photoShape": "circle\" data-injected=\"yes",
+    "accent": "#3366cc"
+  }
+}

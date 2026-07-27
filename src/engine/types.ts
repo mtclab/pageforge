@@ -25,7 +25,11 @@ export type Section =
   | { kind: 'hobbies'; title?: string; items: string[] }
   | { kind: 'contact'; email?: string; note?: string }
   | { kind: 'custom'; title: string; text: string }
-  | { kind: 'gallery'; title?: string; photos: { dataUrl: string }[] };
+  /**
+   * `alt` is the author's description of the picture, used as the image's alt
+   * text. Absent or blank means "decorative": the image renders with alt="".
+   */
+  | { kind: 'gallery'; title?: string; photos: { dataUrl: string; alt?: string }[] };
 
 export interface SiteData {
   version: 1;
@@ -122,6 +126,94 @@ export interface RenderedSite {
   html: string;
   css: string;
 }
+
+/** The languages our generated headings and labels actually exist in. */
+export type LabelLocale = 'fi' | 'en' | 'sv';
+
+/**
+ * Headings for a page about ONE person. Every page this tool makes is one
+ * person's page, so there is a single voice: the labels say "about me", never
+ * "about us". The English strings are also the fallback for any language we
+ * have no labels for.
+ */
+export interface PersonalLabels {
+  about: string;
+  projects: string;
+  hobbies: string;
+  contact: string;
+  gallery: string;
+  /** Label on the obfuscated mail link. */
+  email: string;
+}
+
+export const PERSONAL_LABELS: Record<LabelLocale, PersonalLabels> = {
+  fi: {
+    about: 'Tietoa minusta',
+    projects: 'Mitä teen',
+    hobbies: 'Mistä pidän',
+    contact: 'Ota yhteyttä',
+    gallery: 'Kuvat',
+    email: 'Lähetä sähköpostia',
+  },
+  en: {
+    about: 'About',
+    projects: 'Things I make',
+    hobbies: 'Things I love',
+    contact: 'Get in touch',
+    gallery: 'Photos',
+    email: 'Email me',
+  },
+  sv: {
+    about: 'Om mig',
+    projects: 'Vad jag gör',
+    hobbies: 'Vad jag gillar',
+    contact: 'Kontakt',
+    gallery: 'Bilder',
+    email: 'Mejla mig',
+  },
+};
+
+/** The locale our labels come out in: fi and sv when asked for, else English. */
+export function labelLocale(lang?: string): LabelLocale {
+  const normalized = lang?.toLowerCase();
+  if (normalized === 'fi' || normalized?.startsWith('fi-')) return 'fi';
+  if (normalized === 'sv' || normalized?.startsWith('sv-')) return 'sv';
+  return 'en';
+}
+
+/** Unknown and missing languages retain the existing English fallback. */
+export function personalLabels(lang?: string): PersonalLabels {
+  return PERSONAL_LABELS[labelLocale(lang)];
+}
+
+export interface LabelContext {
+  personal: PersonalLabels;
+  /**
+   * ` lang="en"` when the page is in a language we have no labels for. The
+   * document keeps the author's own `html lang` - their words really are in
+   * that language - and the English words WE generate are marked as English,
+   * so nothing on the page claims to be a language it is not. Empty when the
+   * labels are already in the page's own language.
+   */
+  labelLangAttr: string;
+}
+
+export function labelContext(data: SiteData): LabelContext {
+  const locale = labelLocale(data.lang);
+  const pageBase = (data.lang ?? 'en').toLowerCase().split('-')[0];
+  return {
+    personal: PERSONAL_LABELS[locale],
+    labelLangAttr: pageBase === locale ? '' : ' lang="en"',
+  };
+}
+
+/**
+ * The folder inside the downloaded zip that holds the website itself.
+ * Everything under it is meant to be uploaded; everything beside it must never
+ * be, because the draft (site.json) carries the author's email address in
+ * plain text while the published page carries it only obfuscated.
+ */
+export const SITE_DIR = 'website';
 
 /** Path the generated HTML uses for the photo; the zip and the preview both key off this. */
 export const PHOTO_PATH = 'assets/photo.jpg';

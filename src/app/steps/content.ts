@@ -87,7 +87,10 @@ export function renderContentStep(pane: HTMLElement, ctx: StepCtx): void {
     data.lang = langSelect.value;
     onChange();
   });
-  pane.append(labeled('Language of your page', langSelect, 'What language you write your content in.'));
+  // Native select (15 options, and the OS pickers beat anything we could
+  // build) wearing the same clothes as the rest of the controls.
+  const langWrap = el('span', { class: 'select-wrap' }, langSelect);
+  pane.append(labeled('Language of your page', langWrap, 'What language you write your content in.'));
 
   pane.append(renderPhotoField(ctx));
 

@@ -20,6 +20,20 @@ export function renderDownloadStep(pane: HTMLElement, ctx: StepCtx): void {
     }),
   );
 
+  // The delivery button comes first. This is the step the whole product exists
+  // for; making people read a checklist before they can reach it puts our
+  // housekeeping in front of their result.
+  const btn = el('button', { type: 'button', class: 'primary big', text: 'Download your site (.zip)' });
+  btn.addEventListener('click', () => downloadZip(data));
+  const deliver = el('div', { class: 'deliver' }, btn);
+  if (!data.name.trim()) {
+    btn.disabled = true;
+    deliver.append(el('p', { class: 'error', text: 'Add your name in step 1 first - it is the only required thing.' }));
+  } else {
+    deliver.append(el('p', { class: 'hint', text: 'Nothing is uploaded. The zip is built here, in this browser.' }));
+  }
+  pane.append(deliver);
+
   // Pre-download checklist: friendly nudges, never blocking
   const checks: { ok: boolean; text: string }[] = [
     { ok: Boolean(data.name.trim()), text: 'Your name is set' },
@@ -48,22 +62,16 @@ export function renderDownloadStep(pane: HTMLElement, ctx: StepCtx): void {
     }
   }
 
-  const btn = el('button', { type: 'button', class: 'primary big', text: 'Download your site (.zip)' });
-  btn.addEventListener('click', () => downloadZip(data));
-  if (!data.name.trim()) {
-    btn.disabled = true;
-    pane.append(el('p', { class: 'error', text: 'Add your name in step 1 first - it is the only required thing.' }));
-  }
-  pane.append(btn);
-
   const what = el('div', { class: 'group' }, el('h3', { text: 'What now?' }));
   const steps = el('ol', { class: 'what-now' });
   steps.append(
     el(
       'li',
       {},
-      'Unzip the file. The folder inside is your website - double-click ',
-      el('code', { text: 'index.html' }),
+      'Unzip the file. The ',
+      el('code', { text: 'website' }),
+      ' folder IS your site - upload that folder, and double-click ',
+      el('code', { text: 'website/index.html' }),
       ' to see it.',
     ),
     el(
@@ -75,23 +83,15 @@ export function renderDownloadStep(pane: HTMLElement, ctx: StepCtx): void {
       linkEl('https://app.netlify.com/drop', 'netlify.com/drop'),
       '.',
     ),
-    el('li', {}, 'Keep the zip. The ', el('code', { text: 'site.json' }), ' file inside lets you edit your site here later.'),
+    el('li', {}, 'Keep the zip. The ', el('code', { text: 'site.json' }), ' beside the website folder lets you edit your site here later - do not upload it, it holds your answers in plain text.'),
   );
   what.append(steps);
   pane.append(what);
 
-  if (publishEnabled()) {
-    if (data.name.trim()) pane.append(renderPublishBox(data));
-  } else {
-    pane.append(
-      el(
-        'p',
-        { class: 'hint coming-soon' },
-        el('span', { class: 'beta-tag', text: 'coming later' }),
-        ' We can host it for you - one click, no account. Not open yet; for now the zip + a free host above gets you online in minutes.',
-      ),
-    );
-  }
+  // Hosted publish, when it is open. When it is not, the step says nothing
+  // about it: an unbuilt feature advertised in the delivery moment is an
+  // apology nobody asked for.
+  if (publishEnabled() && data.name.trim()) pane.append(renderPublishBox(data));
 
   // Share a preview without hosting anything
   const share = el('div', { class: 'group' }, el('h3', { text: 'Show it to someone first?' }));
@@ -166,9 +166,6 @@ export function renderDownloadStep(pane: HTMLElement, ctx: StepCtx): void {
   qrActions.append(qrBtn, printBtn, qrMsg);
   qrBox.append(qrInput, qrActions);
   pane.append(qrBox);
-
-  const tip = el('p', { class: 'tip', text: 'This tool is free.' });
-  pane.append(tip);
 
   const startOver = el('button', { type: 'button', class: 'chip danger', text: 'Start over (clears everything)' });
   startOver.addEventListener('click', () => {
