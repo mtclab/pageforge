@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Make your page - pageforge</title>
+<meta name="description" content="Answer a few questions, pick a look, download your whole website as a zip. Free, no account, your data never leaves your browser.">
+<meta property="og:title" content="Make your page - pageforge">
+<meta property="og:description" content="Answer a few questions, pick a look, download your whole website as a zip. Free, no account, your data never leaves your browser.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Pageforge">
+<meta property="og:url" content="https://pageforge.mtclab.net/make">
+<meta property="og:image" content="https://pageforge.mtclab.net/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Make your page - pageforge">
+<meta name="twitter:description" content="Answer a few questions, pick a look, download your whole website as a zip. Free, no account, your data never leaves your browser.">
+<meta name="twitter:image" content="https://pageforge.mtclab.net/og.png">
+<link rel="canonical" href="https://pageforge.mtclab.net/make">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="ui.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/">pageforge</a>
+  <nav id="steps" class="steps" aria-label="Steps"></nav>
+  <span class="undo-group">
+    <button id="undo" type="button" class="icon-btn" aria-label="Undo" title="Undo (Ctrl+Z)" disabled>↶</button>
+    <button id="redo" type="button" class="icon-btn" aria-label="Redo" title="Redo (Ctrl+Shift+Z)" disabled>↷</button>
+  </span>
+  <button id="preview-toggle" type="button" class="preview-toggle" aria-expanded="false">Preview</button>
+</header>
+
+<div class="wizard">
+  <section class="form-pane">
+    <div id="pane" class="pane"></div>
+    <div class="pager">
+      <button id="prev" type="button" class="chip">Back</button>
+      <button id="next" type="button" class="primary">Next</button>
+    </div>
+  </section>
+
+  <aside id="preview-pane" class="preview-pane" aria-label="Live preview">
+    <div class="preview-tools">
+      <span class="preview-label">Live preview</span>
+      <span class="preview-tools-right">
+        <span class="width-toggle">
+          <button type="button" data-width="desktop" aria-pressed="true">Wide</button>
+          <button type="button" data-width="mobile" aria-pressed="false">Phone</button>
+        </span>
+        <button type="button" id="fullscreen-toggle" class="chip" aria-pressed="false" title="See it at your real screen size">Full screen</button>
+      </span>
+    </div>
+    <iframe id="preview-frame" title="Preview of your homepage" sandbox="allow-same-origin"></iframe>
+  </aside>
+</div>
+
+<footer class="app-footer">
+  <p>Free and open - no account, no tracking. Your text and photo never leave your browser.</p>
+  <p><a href="help.html">Help</a> &middot; <a href="/">What pageforge is</a></p>
+  <p class="maker-mark">Built by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
+</footer>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

@@ -2,6 +2,8 @@ import type { Link, LinkKind, Section, SiteData } from '../engine/types.js';
 import { THEMES } from '../themes/index.js';
 
 const IMAGE_BASE64_MAX = 1_100_000;
+/** Alt text is a sentence about a picture, not an essay. Mirrors worker/validate.ts. */
+export const PHOTO_ALT_MAX = 250;
 const LINK_KINDS: LinkKind[] = [
   'email', 'github', 'instagram', 'linkedin', 'youtube', 'facebook', 'x', 'website',
 ];
@@ -48,6 +50,15 @@ function decodeImage(value: unknown): { dataUrl: string } | undefined | null {
   if (value === undefined) return undefined;
   if (!isObject(value) || !validImageDataUrl(value.dataUrl)) return null;
   return { dataUrl: value.dataUrl };
+}
+
+/** Gallery pictures additionally carry the author's own description (alt text). */
+function decodeGalleryPhoto(value: unknown): { dataUrl: string; alt?: string } | null {
+  const image = decodeImage(value);
+  if (!image || !isObject(value)) return null;
+  const alt = optionalString(value.alt);
+  if (alt === null || (alt !== undefined && alt.length > PHOTO_ALT_MAX)) return null;
+  return alt === undefined ? image : { ...image, alt };
 }
 
 function decodeLinks(value: unknown): Link[] | null {
@@ -108,9 +119,9 @@ function decodeSections(value: unknown): Section[] | null {
         break;
       case 'gallery': {
         if (raw.photos !== undefined && (!Array.isArray(raw.photos) || raw.photos.length > 6)) return null;
-        const photos: { dataUrl: string }[] = [];
+        const photos: { dataUrl: string; alt?: string }[] = [];
         for (const photo of raw.photos ?? []) {
-          const decoded = decodeImage(photo);
+          const decoded = decodeGalleryPhoto(photo);
           if (!decoded) return null;
           photos.push(decoded);
         }

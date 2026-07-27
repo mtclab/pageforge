@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { accentContrastFor, contrast, fitAccent } from '../src/engine/color.js';
 import { renderSite } from '../src/engine/render.js';
 import type { SiteData } from '../src/engine/types.js';
-import { THEMES } from '../src/themes/index.js';
+import { getTheme, THEMES } from '../src/themes/index.js';
 import minimal from './fixtures/minimal.json';
 
 const base = minimal as SiteData;
@@ -61,7 +61,7 @@ describe('style overrides', () => {
       photo: { dataUrl: 'data:image/jpeg;base64,AA==' },
       meta: { ...base.meta, photoShape: 'square' },
     };
-    expect(renderSite(data, THEMES[0]!).html).toContain('photo-square');
+    expect(renderSite(data, getTheme('slate')).html).toContain('photo-square');
   });
   it('width + text overrides resolve into :root vars for EVERY theme', () => {
     for (const theme of THEMES) {
@@ -88,7 +88,7 @@ describe('style overrides', () => {
   });
   it('custom accent is fitted into the :root vars', () => {
     const data: SiteData = { ...base, meta: { ...base.meta, accent: '#ffff00' } };
-    const { css } = renderSite(data, THEMES[0]!);
+    const { css } = renderSite(data, getTheme('slate'));
     const m = css.match(/--accent: (#[0-9a-f]{6});/);
     expect(m).not.toBeNull();
     expect(contrast(m![1]!, '#fafaf8')).toBeGreaterThanOrEqual(4.5);
@@ -96,7 +96,7 @@ describe('style overrides', () => {
   });
   it('invalid custom accent falls back to the canonical palette accent', () => {
     const data = { ...base, meta: { ...base.meta, accent: 'red; } body { display: none' } } as SiteData;
-    const { css } = renderSite(data, THEMES[0]!);
+    const { css } = renderSite(data, getTheme('slate'));
     expect(css).not.toContain('display: none');
     expect(css).toContain('--accent: #3b5bdb;');
   });
@@ -105,14 +105,14 @@ describe('style overrides', () => {
       ...base,
       meta: { ...base.meta, surface: 'card', corners: 'round', shadow: 'lifted', density: 'airy' },
     };
-    const { html, css } = renderSite(data, THEMES[0]!);
+    const { html, css } = renderSite(data, getTheme('slate'));
     expect(html).toContain('surface-card');
     expect(css).toContain('--section-radius: 22px;');
     expect(css).toContain('--section-shadow: 0 10px 28px -10px');
     expect(css).toContain('--density: 1.35;');
   });
   it('no surface override -> no surface class (theme keeps its own look)', () => {
-    const { html } = renderSite(base, THEMES[0]!);
+    const { html } = renderSite(base, getTheme('slate'));
     expect(html).not.toContain('surface-');
   });
   it('v2b/v2c flags land as body classes', () => {
@@ -127,21 +127,21 @@ describe('style overrides', () => {
         background: 'dots',
       },
     };
-    const { html } = renderSite(data, THEMES[0]!);
+    const { html } = renderSite(data, getTheme('slate'));
     expect(html).toContain('heading-highlight');
     expect(html).toContain('hero-center');
     expect(html).toContain('photo-sz-l');
     expect(html).toContain('bg-dots');
   });
   it('auto dark emits a prefers-color-scheme block with the darkest palette', () => {
-    const slateTheme = THEMES.find((t) => t.id === 'slate')!;
+    const slateTheme = getTheme('slate');
     const data: SiteData = { ...base, meta: { ...base.meta, autoDark: true } };
     const { css } = renderSite(data, slateTheme);
     expect(css).toContain('@media (prefers-color-scheme: dark)');
     expect(css).toContain('--bg: #17191c'); // graphite
   });
   it('auto dark is a no-op when already on a dark palette', () => {
-    const slateTheme = THEMES.find((t) => t.id === 'slate')!;
+    const slateTheme = getTheme('slate');
     const data: SiteData = {
       ...base,
       meta: { ...base.meta, paletteId: 'graphite', autoDark: true },
@@ -150,7 +150,7 @@ describe('style overrides', () => {
     expect(css).not.toContain('prefers-color-scheme: dark');
   });
   it('custom accent inside auto dark is refit against the dark bg', () => {
-    const slateTheme = THEMES.find((t) => t.id === 'slate')!;
+    const slateTheme = getTheme('slate');
     const data: SiteData = { ...base, meta: { ...base.meta, autoDark: true, accent: '#00337f' } };
     const { css } = renderSite(data, slateTheme);
     const m = css.match(/prefers-color-scheme: dark\) \{\n:root \{[\s\S]*?--accent: (#[0-9a-f]{6});/);
@@ -165,7 +165,7 @@ describe('style overrides', () => {
     ];
     for (const cp of nasty) {
       const data: SiteData = { ...base, meta: { ...base.meta, customPalette: cp } };
-      const { css } = renderSite(data, THEMES[0]!);
+      const { css } = renderSite(data, getTheme('slate'));
       const get = (v: string) => css.match(new RegExp(`--${v}: (#[0-9a-f]{6})`))![1]!;
       expect(contrast(get('text'), get('bg'))).toBeGreaterThanOrEqual(4.5);
       expect(contrast(get('accent'), get('bg'))).toBeGreaterThanOrEqual(4.5);
@@ -186,7 +186,7 @@ describe('style overrides', () => {
         },
       },
     };
-    const { css } = renderSite(data, THEMES[0]!);
+    const { css } = renderSite(data, getTheme('slate'));
     expect(css).toContain('--surface: #ffffff;');
   });
   it('invalid custom palette is ignored', () => {
@@ -194,11 +194,11 @@ describe('style overrides', () => {
       ...base,
       meta: { ...base.meta, customPalette: { bg: 'red', surface: 'x', text: '', muted: '1', accent: 'javascript:' } },
     };
-    const { css } = renderSite(data, THEMES[0]!);
+    const { css } = renderSite(data, getTheme('slate'));
     expect(css).toContain('--bg: #fafaf8;'); // slate paper stays
   });
   it('defaults resolve to the theme values', () => {
-    const { css } = renderSite(base, THEMES[0]!);
+    const { css } = renderSite(base, getTheme('slate'));
     expect(css).toContain('--page-max: 42rem;');
     expect(css).toContain('--text-factor: 1;');
     expect(css).toContain('--photo-radius: 50%;');
