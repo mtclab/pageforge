@@ -141,7 +141,15 @@ describe('S10 export and offboarding', () => {
       name: 'Julkaistu versio',
       photo: { src: `assets/${sha}.png` },
     }));
-    expect(decoder.decode(files['LUEMINUT.txt'])).toContain('millä tahansa');
+    const lueminut = decoder.decode(files['LUEMINUT.txt']);
+    expect(lueminut).toContain('millä tahansa');
+    // The handover instructions must never send site.json to a web server: it
+    // carries the address the published page only shows obfuscated, so
+    // following them would serve it from /site.json. (Same defect class as the
+    // personal zip - see the publishable-set gate in test/zip.test.ts.)
+    expect(lueminut).toContain('VAIN index.html ja assets-kansio');
+    expect(lueminut).toContain('Älä vie site.json-tiedostoa palvelimelle');
+    expect(lueminut).not.toContain('siirrä index.html, site.json');
 
     const approval = await worker.fetch(
       jsonRequest('/api/biz/sites/export01/export', 'GET', undefined, approvalKey),

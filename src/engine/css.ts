@@ -28,12 +28,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -151,6 +155,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {

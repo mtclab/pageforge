@@ -45,8 +45,8 @@ const css = `/* business voice: ruutu — price-board rhythm */
   padding: .65rem 0;
 }
 .menu-board .service + .service { border-top: 1px solid color-mix(in srgb, var(--muted) 38%, transparent); }
-.menu-board .service h3 { display: flex; align-items: baseline; gap: .5rem; min-width: 0; }
-.menu-board .service h3::after { content: ""; flex: 1; min-width: 1.5rem; border-bottom: 2px dotted var(--muted); }
+.menu-board .service :is(h3, h4) { display: flex; align-items: baseline; gap: .5rem; min-width: 0; }
+.menu-board .service :is(h3, h4)::after { content: ""; flex: 1; min-width: 1.5rem; border-bottom: 2px dotted var(--muted); }
 .menu-board .service-price { grid-column: 2; grid-row: 1; color: var(--text); font-weight: 700; white-space: nowrap; }
 .menu-board .desc { grid-column: 1 / -1; margin-top: .12rem; font-size: .88rem; }
 .service-price, .hours-list { font-variant-numeric: tabular-nums; }

@@ -1,11 +1,14 @@
 import { esc, escAttr, TEL_URL_RE } from '../escape.js';
 import { extractFoundingYear } from '../evidence.js';
 import { renderLinks } from '../links.js';
+import { labelContext, type LabelContext } from '../localization.js';
 import { PHOTO_PATH, type SiteData } from '../types.js';
 
 export interface HeroRenderOptions {
   heroCta?: boolean;
   bizHero?: boolean;
+  /** Labels for the page's language; built from the data when omitted. */
+  ctx?: LabelContext;
 }
 
 function heroName(name: string, bizHero: boolean): string {
@@ -28,6 +31,7 @@ function heroName(name: string, bizHero: boolean): string {
 }
 
 export function renderHero(data: SiteData, opts: HeroRenderOptions = {}): string {
+  const ctx = opts.ctx ?? labelContext(data, opts.bizHero === true);
   const parts: string[] = [];
   const name = data.name.trim();
   if (opts.bizHero && data.business?.city?.trim()) {
@@ -45,7 +49,9 @@ export function renderHero(data: SiteData, opts: HeroRenderOptions = {}): string
   if (opts.bizHero) {
     const about = data.sections.find((section) => section.kind === 'about');
     const year = extractFoundingYear(about?.text);
-    if (year) parts.push(`<span class="badge-year">Vuodesta ${year}</span>`);
+    if (year) {
+      parts.push(`<span class="badge-year"${ctx.labelLangAttr}>${ctx.business.since} ${year}</span>`);
+    }
   }
   if (data.tagline?.trim()) {
     parts.push(`<p class="tagline">${esc(data.tagline.trim())}</p>`);
@@ -55,12 +61,17 @@ export function renderHero(data: SiteData, opts: HeroRenderOptions = {}): string
     const phone = data.links.find((link) => safePhoneUrl(link.url) !== null);
     if (phone) {
       const url = safePhoneUrl(phone.url)!;
-      parts.push(`<a class="cta-call" href="${escAttr(url)}">${esc(phone.label.trim() || 'Soita')}</a>`);
+      const label = phone.label.trim();
+      const langAttr = label ? '' : ctx.labelLangAttr;
+      parts.push(
+        `<a class="cta-call" href="${escAttr(url)}"${langAttr}>${esc(label || ctx.business.call)}</a>`,
+      );
       // The CTA already renders this link - keep it out of the strip below.
       stripLinks = data.links.filter((link) => link !== phone);
     }
   }
-  const links = renderLinks(stripLinks);
+  const mailLabel = ctx.isBusiness ? ctx.business.contact : ctx.personal.email;
+  const links = renderLinks(stripLinks, mailLabel, ctx.labelLangAttr);
   if (links) parts.push(links);
   return `<header class="hero">\n${parts.join('\n')}\n</header>`;
 }

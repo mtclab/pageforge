@@ -31,12 +31,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -154,6 +158,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -320,7 +327,7 @@ footer { border-top: 8px solid var(--text); padding-top: 1rem; text-transform: u
 </section>
 </main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 </div>
 </body>
@@ -360,12 +367,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -483,6 +494,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -552,7 +566,7 @@ footer a { color: inherit; }
 .services { grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 1px; background: var(--muted); border: 1px solid var(--muted); }
 .service-group { border-left: .4rem solid var(--accent); padding-left: .7rem; color: var(--text); text-transform: uppercase; }
 .service { min-height: 10rem; padding: 1.2rem; background: var(--bg); }
-.service h3 { font-size: 1.45rem; }
+.service :is(h3, h4) { font-size: 1.45rem; }
 .service-price { margin-top: 1rem; font-size: 1.25rem; }
 .hours-list { max-width: 38rem; font-variant-numeric: tabular-nums; }
 .hours-row { padding: .45rem 0; border-bottom: 1px solid var(--muted); }
@@ -616,7 +630,7 @@ footer { border-top: 1px solid var(--muted); padding-top: 1rem; }
 </section>
 </main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 </div>
 </body>
@@ -655,12 +669,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -778,6 +796,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -943,7 +964,7 @@ exports[`renderSite > snapshot: arkki x full > html 1`] = `
 </section>
 </main>
 <footer>
-<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -989,12 +1010,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -1112,6 +1137,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -1266,7 +1294,7 @@ exports[`renderSite > snapshot: arkki x hostile > html 1`] = `
 </section>
 </main>
 <footer>
-<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -1312,12 +1340,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -1435,6 +1467,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -1549,7 +1584,7 @@ exports[`renderSite > snapshot: arkki x minimal > html 1`] = `
 </header>
 <main></main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 </div>
 </body>
@@ -1587,12 +1622,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -1710,6 +1749,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -1878,7 +1920,7 @@ exports[`renderSite > snapshot: atelier x full > html 1`] = `
 </section>
 </main>
 <footer>
-<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -1924,12 +1966,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -2047,6 +2093,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -2204,7 +2253,7 @@ exports[`renderSite > snapshot: atelier x hostile > html 1`] = `
 </section>
 </main>
 <footer>
-<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -2250,12 +2299,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -2373,6 +2426,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -2490,7 +2546,7 @@ exports[`renderSite > snapshot: atelier x minimal > html 1`] = `
 </header>
 <main></main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 </div>
 </body>
@@ -2528,12 +2584,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -2651,6 +2711,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -2825,7 +2888,7 @@ exports[`renderSite > snapshot: aurora x full > html 1`] = `
 </section>
 </main>
 <footer>
-<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -2871,12 +2934,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -2994,6 +3061,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -3157,7 +3227,7 @@ exports[`renderSite > snapshot: aurora x hostile > html 1`] = `
 </section>
 </main>
 <footer>
-<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -3203,12 +3273,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -3326,6 +3400,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -3449,7 +3526,7 @@ exports[`renderSite > snapshot: aurora x minimal > html 1`] = `
 </header>
 <main></main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 </div>
 </body>
@@ -3487,12 +3564,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -3610,6 +3691,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -3800,7 +3884,7 @@ exports[`renderSite > snapshot: blueprint x full > html 1`] = `
 </section>
 </main>
 <footer>
-<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -3846,12 +3930,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -3969,6 +4057,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -4148,7 +4239,7 @@ exports[`renderSite > snapshot: blueprint x hostile > html 1`] = `
 </section>
 </main>
 <footer>
-<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -4194,12 +4285,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -4317,6 +4412,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -4456,7 +4554,7 @@ exports[`renderSite > snapshot: blueprint x minimal > html 1`] = `
 </header>
 <main></main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 </div>
 </body>
@@ -4494,12 +4592,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -4617,6 +4719,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -4790,7 +4895,7 @@ exports[`renderSite > snapshot: gazette x full > html 1`] = `
 </section>
 </main>
 <footer>
-<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -4836,12 +4941,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -4959,6 +5068,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -5121,7 +5233,7 @@ exports[`renderSite > snapshot: gazette x hostile > html 1`] = `
 </section>
 </main>
 <footer>
-<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -5167,12 +5279,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -5290,6 +5406,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -5412,7 +5531,7 @@ exports[`renderSite > snapshot: gazette x minimal > html 1`] = `
 </header>
 <main></main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 </div>
 </body>
@@ -5450,12 +5569,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -5573,6 +5696,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -5744,7 +5870,7 @@ exports[`renderSite > snapshot: ink x full > html 1`] = `
 </section>
 </main>
 <footer>
-<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -5790,12 +5916,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -5913,6 +6043,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -6073,7 +6206,7 @@ exports[`renderSite > snapshot: ink x hostile > html 1`] = `
 </section>
 </main>
 <footer>
-<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -6119,12 +6252,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -6242,6 +6379,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -6362,7 +6502,7 @@ exports[`renderSite > snapshot: ink x minimal > html 1`] = `
 </header>
 <main></main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 </div>
 </body>
@@ -6400,12 +6540,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -6523,6 +6667,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -6711,7 +6858,7 @@ exports[`renderSite > snapshot: kyltti x full > html 1`] = `
 </section>
 </main>
 <footer>
-<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -6757,12 +6904,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -6880,6 +7031,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -7057,7 +7211,7 @@ exports[`renderSite > snapshot: kyltti x hostile > html 1`] = `
 </section>
 </main>
 <footer>
-<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -7103,12 +7257,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -7226,6 +7384,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -7363,7 +7524,7 @@ exports[`renderSite > snapshot: kyltti x minimal > html 1`] = `
 </header>
 <main></main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 </div>
 </body>
@@ -7401,12 +7562,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -7524,6 +7689,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -7688,7 +7856,7 @@ exports[`renderSite > snapshot: letterpress x full > html 1`] = `
 </section>
 </main>
 <footer>
-<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -7734,12 +7902,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -7857,6 +8029,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -8010,7 +8185,7 @@ exports[`renderSite > snapshot: letterpress x hostile > html 1`] = `
 </section>
 </main>
 <footer>
-<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -8056,12 +8231,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -8179,6 +8358,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -8292,7 +8474,7 @@ exports[`renderSite > snapshot: letterpress x minimal > html 1`] = `
 </header>
 <main></main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 </div>
 </body>
@@ -8330,12 +8512,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -8453,6 +8639,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -8597,7 +8786,7 @@ exports[`renderSite > snapshot: linen x full > html 1`] = `
 </section>
 </main>
 <footer>
-<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -8643,12 +8832,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -8766,6 +8959,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -8899,7 +9095,7 @@ exports[`renderSite > snapshot: linen x hostile > html 1`] = `
 </section>
 </main>
 <footer>
-<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -8945,12 +9141,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -9068,6 +9268,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -9161,7 +9364,7 @@ exports[`renderSite > snapshot: linen x minimal > html 1`] = `
 </header>
 <main></main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 </div>
 </body>
@@ -9199,12 +9402,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -9322,6 +9529,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -9481,7 +9691,7 @@ exports[`renderSite > snapshot: meadow x full > html 1`] = `
 </section>
 </main>
 <footer>
-<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -9527,12 +9737,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -9650,6 +9864,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -9798,7 +10015,7 @@ exports[`renderSite > snapshot: meadow x hostile > html 1`] = `
 </section>
 </main>
 <footer>
-<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -9844,12 +10061,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -9967,6 +10188,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -10075,7 +10299,7 @@ exports[`renderSite > snapshot: meadow x minimal > html 1`] = `
 </header>
 <main></main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 </div>
 </body>
@@ -10113,12 +10337,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -10236,6 +10464,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -10403,7 +10634,7 @@ exports[`renderSite > snapshot: midnight x full > html 1`] = `
 </section>
 </main>
 <footer>
-<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -10449,12 +10680,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -10572,6 +10807,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -10728,7 +10966,7 @@ exports[`renderSite > snapshot: midnight x hostile > html 1`] = `
 </section>
 </main>
 <footer>
-<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -10774,12 +11012,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -10897,6 +11139,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -11013,7 +11258,7 @@ exports[`renderSite > snapshot: midnight x minimal > html 1`] = `
 </header>
 <main></main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 </div>
 </body>
@@ -11051,12 +11296,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -11174,6 +11423,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -11314,7 +11566,7 @@ exports[`renderSite > snapshot: nordic x full > html 1`] = `
 </section>
 </main>
 <footer>
-<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -11360,12 +11612,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -11483,6 +11739,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -11612,7 +11871,7 @@ exports[`renderSite > snapshot: nordic x hostile > html 1`] = `
 </section>
 </main>
 <footer>
-<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -11658,12 +11917,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -11781,6 +12044,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -11870,7 +12136,7 @@ exports[`renderSite > snapshot: nordic x minimal > html 1`] = `
 </header>
 <main></main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 </div>
 </body>
@@ -11908,12 +12174,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -12031,6 +12301,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -12213,7 +12486,7 @@ exports[`renderSite > snapshot: pehmo x full > html 1`] = `
 </section>
 </main>
 <footer>
-<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -12259,12 +12532,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -12382,6 +12659,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -12553,7 +12833,7 @@ exports[`renderSite > snapshot: pehmo x hostile > html 1`] = `
 </section>
 </main>
 <footer>
-<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -12599,12 +12879,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -12722,6 +13006,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -12853,7 +13140,7 @@ exports[`renderSite > snapshot: pehmo x minimal > html 1`] = `
 </header>
 <main></main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 </div>
 </body>
@@ -12891,12 +13178,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -13014,6 +13305,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -13099,8 +13393,8 @@ footer a { color: inherit; }
   padding: .65rem 0;
 }
 .menu-board .service + .service { border-top: 1px solid color-mix(in srgb, var(--muted) 38%, transparent); }
-.menu-board .service h3 { display: flex; align-items: baseline; gap: .5rem; min-width: 0; }
-.menu-board .service h3::after { content: ""; flex: 1; min-width: 1.5rem; border-bottom: 2px dotted var(--muted); }
+.menu-board .service :is(h3, h4) { display: flex; align-items: baseline; gap: .5rem; min-width: 0; }
+.menu-board .service :is(h3, h4)::after { content: ""; flex: 1; min-width: 1.5rem; border-bottom: 2px dotted var(--muted); }
 .menu-board .service-price { grid-column: 2; grid-row: 1; color: var(--text); font-weight: 700; white-space: nowrap; }
 .menu-board .desc { grid-column: 1 / -1; margin-top: .12rem; font-size: .88rem; }
 .service-price, .hours-list { font-variant-numeric: tabular-nums; }
@@ -13187,7 +13481,7 @@ exports[`renderSite > snapshot: ruutu x full > html 1`] = `
 </section>
 </main>
 <footer>
-<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -13233,12 +13527,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -13356,6 +13654,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -13441,8 +13742,8 @@ footer a { color: inherit; }
   padding: .65rem 0;
 }
 .menu-board .service + .service { border-top: 1px solid color-mix(in srgb, var(--muted) 38%, transparent); }
-.menu-board .service h3 { display: flex; align-items: baseline; gap: .5rem; min-width: 0; }
-.menu-board .service h3::after { content: ""; flex: 1; min-width: 1.5rem; border-bottom: 2px dotted var(--muted); }
+.menu-board .service :is(h3, h4) { display: flex; align-items: baseline; gap: .5rem; min-width: 0; }
+.menu-board .service :is(h3, h4)::after { content: ""; flex: 1; min-width: 1.5rem; border-bottom: 2px dotted var(--muted); }
 .menu-board .service-price { grid-column: 2; grid-row: 1; color: var(--text); font-weight: 700; white-space: nowrap; }
 .menu-board .desc { grid-column: 1 / -1; margin-top: .12rem; font-size: .88rem; }
 .service-price, .hours-list { font-variant-numeric: tabular-nums; }
@@ -13518,7 +13819,7 @@ exports[`renderSite > snapshot: ruutu x hostile > html 1`] = `
 </section>
 </main>
 <footer>
-<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -13564,12 +13865,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -13687,6 +13992,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -13772,8 +14080,8 @@ footer a { color: inherit; }
   padding: .65rem 0;
 }
 .menu-board .service + .service { border-top: 1px solid color-mix(in srgb, var(--muted) 38%, transparent); }
-.menu-board .service h3 { display: flex; align-items: baseline; gap: .5rem; min-width: 0; }
-.menu-board .service h3::after { content: ""; flex: 1; min-width: 1.5rem; border-bottom: 2px dotted var(--muted); }
+.menu-board .service :is(h3, h4) { display: flex; align-items: baseline; gap: .5rem; min-width: 0; }
+.menu-board .service :is(h3, h4)::after { content: ""; flex: 1; min-width: 1.5rem; border-bottom: 2px dotted var(--muted); }
 .menu-board .service-price { grid-column: 2; grid-row: 1; color: var(--text); font-weight: 700; white-space: nowrap; }
 .menu-board .desc { grid-column: 1 / -1; margin-top: .12rem; font-size: .88rem; }
 .service-price, .hours-list { font-variant-numeric: tabular-nums; }
@@ -13809,7 +14117,7 @@ exports[`renderSite > snapshot: ruutu x minimal > html 1`] = `
 </header>
 <main></main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 </div>
 </body>
@@ -13847,12 +14155,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -13970,6 +14282,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -14144,7 +14459,7 @@ exports[`renderSite > snapshot: scrapbook x full > html 1`] = `
 </section>
 </main>
 <footer>
-<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -14190,12 +14505,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -14313,6 +14632,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -14476,7 +14798,7 @@ exports[`renderSite > snapshot: scrapbook x hostile > html 1`] = `
 </section>
 </main>
 <footer>
-<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -14522,12 +14844,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -14645,6 +14971,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -14768,7 +15097,7 @@ exports[`renderSite > snapshot: scrapbook x minimal > html 1`] = `
 </header>
 <main></main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 </div>
 </body>
@@ -14806,12 +15135,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -14929,6 +15262,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -15064,7 +15400,7 @@ exports[`renderSite > snapshot: slate x full > html 1`] = `
 </section>
 </main>
 <footer>
-<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -15110,12 +15446,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -15233,6 +15573,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -15357,7 +15700,7 @@ exports[`renderSite > snapshot: slate x hostile > html 1`] = `
 </section>
 </main>
 <footer>
-<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -15403,12 +15746,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -15526,6 +15873,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -15610,7 +15960,7 @@ exports[`renderSite > snapshot: slate x minimal > html 1`] = `
 </header>
 <main></main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 </div>
 </body>
@@ -15648,12 +15998,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -15771,6 +16125,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -15941,7 +16298,7 @@ exports[`renderSite > snapshot: studio x full > html 1`] = `
 </section>
 </main>
 <footer>
-<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -15987,12 +16344,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -16110,6 +16471,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -16269,7 +16633,7 @@ exports[`renderSite > snapshot: studio x hostile > html 1`] = `
 </section>
 </main>
 <footer>
-<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -16315,12 +16679,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -16438,6 +16806,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -16557,7 +16928,7 @@ exports[`renderSite > snapshot: studio x minimal > html 1`] = `
 </header>
 <main></main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 </div>
 </body>
@@ -16595,12 +16966,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -16718,6 +17093,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -16876,7 +17254,7 @@ exports[`renderSite > snapshot: terminal x full > html 1`] = `
 </section>
 </main>
 <footer>
-<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -16922,12 +17300,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -17045,6 +17427,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -17192,7 +17577,7 @@ exports[`renderSite > snapshot: terminal x hostile > html 1`] = `
 </section>
 </main>
 <footer>
-<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -17238,12 +17623,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -17361,6 +17750,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -17468,7 +17860,7 @@ exports[`renderSite > snapshot: terminal x minimal > html 1`] = `
 </header>
 <main></main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 </div>
 </body>
@@ -17506,12 +17898,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -17629,6 +18025,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -17698,7 +18097,7 @@ footer a { color: inherit; }
 .services { grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 1px; background: var(--muted); border: 1px solid var(--muted); }
 .service-group { border-left: .4rem solid var(--accent); padding-left: .7rem; color: var(--text); text-transform: uppercase; }
 .service { min-height: 10rem; padding: 1.2rem; background: var(--bg); }
-.service h3 { font-size: 1.45rem; }
+.service :is(h3, h4) { font-size: 1.45rem; }
 .service-price { margin-top: 1rem; font-size: 1.25rem; }
 .hours-list { max-width: 38rem; font-variant-numeric: tabular-nums; }
 .hours-row { padding: .45rem 0; border-bottom: 1px solid var(--muted); }
@@ -17784,7 +18183,7 @@ exports[`renderSite > snapshot: yo x full > html 1`] = `
 </section>
 </main>
 <footer>
-<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -17830,12 +18229,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -17953,6 +18356,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -18022,7 +18428,7 @@ footer a { color: inherit; }
 .services { grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 1px; background: var(--muted); border: 1px solid var(--muted); }
 .service-group { border-left: .4rem solid var(--accent); padding-left: .7rem; color: var(--text); text-transform: uppercase; }
 .service { min-height: 10rem; padding: 1.2rem; background: var(--bg); }
-.service h3 { font-size: 1.45rem; }
+.service :is(h3, h4) { font-size: 1.45rem; }
 .service-price { margin-top: 1rem; font-size: 1.25rem; }
 .hours-list { max-width: 38rem; font-variant-numeric: tabular-nums; }
 .hours-row { padding: .45rem 0; border-bottom: 1px solid var(--muted); }
@@ -18097,7 +18503,7 @@ exports[`renderSite > snapshot: yo x hostile > html 1`] = `
 </section>
 </main>
 <footer>
-<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -18143,12 +18549,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -18266,6 +18676,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -18335,7 +18748,7 @@ footer a { color: inherit; }
 .services { grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 1px; background: var(--muted); border: 1px solid var(--muted); }
 .service-group { border-left: .4rem solid var(--accent); padding-left: .7rem; color: var(--text); text-transform: uppercase; }
 .service { min-height: 10rem; padding: 1.2rem; background: var(--bg); }
-.service h3 { font-size: 1.45rem; }
+.service :is(h3, h4) { font-size: 1.45rem; }
 .service-price { margin-top: 1rem; font-size: 1.25rem; }
 .hours-list { max-width: 38rem; font-variant-numeric: tabular-nums; }
 .hours-row { padding: .45rem 0; border-bottom: 1px solid var(--muted); }
@@ -18370,7 +18783,7 @@ exports[`renderSite > snapshot: yo x minimal > html 1`] = `
 </header>
 <main></main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 </div>
 </body>
@@ -18408,12 +18821,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -18531,6 +18948,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -18697,7 +19117,7 @@ exports[`renderSite > snapshot: zine x full > html 1`] = `
 </section>
 </main>
 <footer>
-<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made in Tampere &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -18743,12 +19163,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -18866,6 +19290,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -19021,7 +19448,7 @@ exports[`renderSite > snapshot: zine x hostile > html 1`] = `
 </section>
 </main>
 <footer>
-<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>&lt;footer injection&gt; &middot; Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 <script>
 document.querySelectorAll('[data-email-a][data-email-b]').forEach(function (link) {
@@ -19067,12 +19494,16 @@ body {
   font-size: calc(clamp(1rem, 0.95rem + 0.3vw, 1.125rem) * var(--text-factor));
 }
 img { display: block; max-width: 100%; }
-h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
+h1, h2, h3, h4 { font-family: var(--font-heading); line-height: 1.2; overflow-wrap: break-word; }
 h1 { font-size: calc(clamp(1.9rem, 1.4rem + 2.5vw, 3rem) * var(--text-factor)); }
 h2 { font-size: calc(clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem) * var(--text-factor)); }
 
 .page { max-width: var(--page-max); }
-p, li { overflow-wrap: break-word; }
+/* Long words break instead of pushing the page sideways on a phone. An
+   address, an opening-hours label or a link showing a bare URL is as likely to
+   be unbreakable as a paragraph is, and overflow-wrap inherits, so this covers
+   the spans inside them too. */
+p, li, dt, dd, a { overflow-wrap: break-word; }
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -19190,6 +19621,9 @@ body.bg-wash-corner {
 .services { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .service-group { margin: 1.5rem 0 0.65rem; color: var(--accent); font-size: 1.1rem; }
 .service .desc { color: var(--muted); }
+/* Services under a group heading are h4 (the group owns them); they must look
+   exactly like the h3 they are when the list has no groups. */
+.service h4 { font-size: 1.17em; }
 .service-price { color: var(--accent); font-weight: 700; }
 
 .section-notice {
@@ -19305,7 +19739,7 @@ exports[`renderSite > snapshot: zine x minimal > html 1`] = `
 </header>
 <main></main>
 <footer>
-<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a></p>
+<p>Made with <a href="https://pageforge.mtclab.net" rel="noopener">pageforge</a> by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
 </footer>
 </div>
 </body>

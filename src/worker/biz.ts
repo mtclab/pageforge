@@ -418,7 +418,7 @@ async function exportFiles(
       if (!object) throw new Error(`photo object missing for export: ${r2Key}`);
       files[path] = new Uint8Array(await object.arrayBuffer());
     }
-    return { src: path };
+    return photo.alt === undefined ? { src: path } : { src: path, alt: photo.alt };
   };
 
   if (data.photo) data.photo = await resolvePhoto(data.photo);
@@ -438,12 +438,20 @@ async function exportFiles(
   const encoder = new TextEncoder();
   files['index.html'] = encoder.encode(bizHtml(data, false, false, undefined, true));
   files['site.json'] = encoder.encode(`${JSON.stringify(data, null, 2)}\n`);
+  // Only index.html and assets/ are the website. site.json holds the same
+  // sähköposti the page itself only shows obfuscated, so the instructions must
+  // never tell anyone to upload it: /site.json would serve it to any scraper.
   files['LUEMINUT.txt'] = encoder.encode(
     `SIVUSTON LUOVUTUSPAKETTI\n\n`+
-    `index.html on valmis verkkosivu. site.json sisältää sivuston rakenteiset tiedot, `+
-    `ja assets-kansiossa ovat sivun kuvat.\n\n`+
+    `index.html on valmis verkkosivu ja assets-kansiossa ovat sivun kuvat. `+
+    `Nämä kaksi ovat sivusto.\n\n`+
+    `site.json sisältää sivuston rakenteiset tiedot (mukaan lukien sähköpostiosoite `+
+    `sellaisenaan) ja tämä LUEMINUT.txt on ohje sinulle. Kumpikaan ei kuulu verkkoon.\n\n`+
     `Voit julkaista sivun millä tahansa tavallisia HTML-tiedostoja palvelevalla webhotellilla: `+
-    `pura ZIP ja siirrä index.html, site.json, LUEMINUT.txt ja assets-kansio samaan hakemistoon.\n`,
+    `pura ZIP ja siirrä VAIN index.html ja assets-kansio samaan hakemistoon. `+
+    `Älä vie site.json-tiedostoa palvelimelle: silloin kuka tahansa voi lukea `+
+    `sähköpostiosoitteen osoitteesta sivustosi.fi/site.json, vaikka itse sivu `+
+    `piilottaa sen osoitteenkeruurobooteilta.\n`,
   );
   return files;
 }
