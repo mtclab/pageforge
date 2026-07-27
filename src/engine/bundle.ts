@@ -2,7 +2,7 @@ import { strToU8, zipSync } from 'fflate';
 import { renderFavicon } from './favicon.js';
 import { renderReadme } from './readme.js';
 import { effectivePalette, renderSite, resolveFont } from './render.js';
-import { collectImages, FAVICON_PATH, type SiteData, type ThemePack } from './types.js';
+import { collectImages, FAVICON_PATH, SITE_DIR, type SiteData, type ThemePack } from './types.js';
 
 /** Fixed timestamp for zip entries: same inputs -> byte-identical zip. */
 const ZIP_MTIME = new Date('2026-01-01T00:00:00Z');
@@ -15,7 +15,7 @@ function dataUrlBytes(dataUrl: string): Uint8Array {
   return bytes;
 }
 
-/** Every file that goes into the downloaded site, keyed by zip path. */
+/** The site itself: exactly the files that are meant to be served, no others. */
 export function buildSiteFiles(data: SiteData, theme: ThemePack): Record<string, Uint8Array> {
   const { html, css } = renderSite(data, theme);
   const palette = effectivePalette(data, theme);
@@ -24,14 +24,28 @@ export function buildSiteFiles(data: SiteData, theme: ThemePack): Record<string,
   const files: Record<string, Uint8Array> = {
     'index.html': strToU8(html),
     'style.css': strToU8(css),
-    'README.md': strToU8(renderReadme(data.name.trim(), Boolean(data.photo))),
-    'site.json': strToU8(JSON.stringify(data, null, 2) + '\n'),
   };
   if (!data.favicon) {
     files[FAVICON_PATH] = strToU8(renderFavicon(data.name, palette, font));
   }
   for (const [path, dataUrl] of collectImages(data)) {
     files[path] = dataUrlBytes(dataUrl);
+  }
+  return files;
+}
+
+/**
+ * Everything the download contains: the website under `website/`, and beside
+ * it the two files that are for the author alone - the instructions and the
+ * draft they can load back in here.
+ */
+export function buildDownloadFiles(data: SiteData, theme: ThemePack): Record<string, Uint8Array> {
+  const files: Record<string, Uint8Array> = {
+    'README.md': strToU8(renderReadme(data.name.trim(), Boolean(data.photo))),
+    'site.json': strToU8(JSON.stringify(data, null, 2) + '\n'),
+  };
+  for (const [path, bytes] of Object.entries(buildSiteFiles(data, theme))) {
+    files[`${SITE_DIR}/${path}`] = bytes;
   }
   return files;
 }

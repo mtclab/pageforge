@@ -6,8 +6,8 @@ Personal homepage generator. Users answer a short wizard, pick a theme, and down
 
 - `src/engine/` - pure, DOM-free render engine (also runs in Node for tests). `renderSite(data, theme)` -> `{html, css}`. Deterministic: same inputs, byte-identical output (fixed zip mtime, no clock/randomness).
 - `src/themes/` - theme packs as data: one `theme.ts` per theme (structural CSS string + palettes + system font stacks). Registry in `src/themes/index.ts`. Every palette must pass the WCAG AA contrast test.
-- `src/app/` - the wizard (vanilla TS, no framework). 4 steps: You / Look / Style / Download. Draft persists in localStorage. Zip built client-side with fflate.
-- `src/static/` - app shell, copied verbatim to `dist/`.
+- `src/app/` - two bundles, no framework. `main.ts` -> `app.js` is the wizard at `/make` (4 steps: You / Look / Style / Download; draft in localStorage; zip built client-side with fflate). `landing.ts` -> `landing.js` is the shop window at `/`, which renders every theme live from the same engine.
+- `src/static/` - page shells, copied verbatim to `dist/`. `index.html` = the landing at `/`, `make.html` = the builder at `/make` (Workers Assets resolves the extensionless path). The landing forwards any fragment that is not one of its own anchors to `/make`, so pre-landing share links (`/#s=...`) and the theme workbench (`/#gallery`) keep working.
 
 ## Commands
 

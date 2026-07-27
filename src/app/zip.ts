@@ -1,10 +1,10 @@
-import { buildSiteFiles, buildZip, zipFilename } from '../engine/bundle.js';
+import { buildDownloadFiles, buildZip, zipFilename } from '../engine/bundle.js';
 import type { SiteData } from '../engine/types.js';
 import { getTheme } from '../themes/index.js';
 
 /** Build the zip in memory and hand it to the browser as a download. */
 export function downloadZip(data: SiteData): void {
-  const files = buildSiteFiles(data, getTheme(data.meta.themeId));
+  const files = buildDownloadFiles(data, getTheme(data.meta.themeId));
   const zip = buildZip(files);
   const buf = new Uint8Array(zip).buffer as ArrayBuffer;
   const blob = new Blob([buf], { type: 'application/zip' });
