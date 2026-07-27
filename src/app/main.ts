@@ -9,6 +9,7 @@ import { renderContentStep, type StepCtx } from './steps/content.js';
 import { renderCustomizeStep } from './steps/customize.js';
 import { renderDownloadStep } from './steps/download.js';
 import { renderThemeStep } from './steps/theme.js';
+import { THEMES } from '../themes/index.js';
 
 const STEPS: { n: AppState['step']; label: string }[] = [
   { n: 1, label: 'You' },
@@ -19,6 +20,7 @@ const STEPS: { n: AppState['step']; label: string }[] = [
 
 function initWizard(): void {
   const state = loadState();
+  applyLookFromHash();
 
   const pane = document.getElementById('pane')!;
   const stepNav = document.getElementById('steps')!;
@@ -105,6 +107,27 @@ function initWizard(): void {
     window.scrollTo({ top: 0 });
   }
 
+  /**
+   * Arriving from a look on the landing page. The chosen theme is applied
+   * before the first render, so the preview shows what they clicked, and the
+   * hash is dropped so a reload does not re-apply it over later edits.
+   */
+  function applyLookFromHash(): void {
+    const m = location.hash.match(/^#look=([a-z0-9-]+)$/);
+    if (!m) return;
+    const theme = THEMES.find((t) => t.id === m[1] && !t.biz);
+    window.history.replaceState(null, '', location.pathname);
+    if (!theme) return;
+    state.data.meta = {
+      ...state.data.meta,
+      themeId: theme.id,
+      paletteId: theme.defaults.paletteId,
+      fontId: theme.defaults.fontId,
+    };
+    delete state.data.meta.accent;
+    saveState(state);
+  }
+
   function renderStepNav(): void {
     stepNav.replaceChildren(
       ...STEPS.map(({ n, label }) => {
@@ -123,6 +146,10 @@ function initWizard(): void {
 
   function renderPane(): void {
     renderStepNav();
+    // Step 2 hands the whole desk to the theme wall: every card is already a
+    // preview of the user's own page, so a second preview beside it is a
+    // preview of the theme they just picked.
+    document.body.classList.toggle('step-look', state.step === 2);
     pane.replaceChildren();
     switch (state.step) {
       case 1:
@@ -138,9 +165,12 @@ function initWizard(): void {
         renderDownloadStep(pane, ctx);
         break;
     }
-    prevBtn.disabled = state.step === 1;
+    // A disabled Back on the first step is a control that never does anything.
+    prevBtn.hidden = state.step === 1;
     nextBtn.hidden = state.step === 4;
-    nextBtn.textContent = state.step === 3 ? 'Finish' : 'Next';
+    // The button is named after the step it opens, and that step's action keeps
+    // the same name all the way to "Download your site (.zip)".
+    nextBtn.textContent = state.step === 3 ? 'Download' : 'Next';
   }
 
   prevBtn.addEventListener('click', () => goto((state.step - 1) as AppState['step']));

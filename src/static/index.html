@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>pageforge - make your own homepage</title>
-<meta name="description" content="Build your own personal homepage in minutes. Free, no account, no tracking - you download the whole site and it is yours.">
-<meta property="og:title" content="pageforge - make your own homepage">
+<title>pageforge - make a homepage, keep the file</title>
+<meta name="description" content="Build a complete personal homepage in your browser and download the whole website as a zip. No account, no subscription, no hosting lock-in - the files are yours.">
+<meta property="og:title" content="pageforge - make a homepage, keep the file">
 <meta property="og:description" content="Answer a few questions, pick a look, download your whole website as a zip. Free, no account, your data never leaves your browser.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Pageforge">
@@ -14,10 +14,21 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="pageforge - make your own homepage">
+<meta name="twitter:title" content="pageforge - make a homepage, keep the file">
 <meta name="twitter:description" content="Answer a few questions, pick a look, download your whole website as a zip. Free, no account, your data never leaves your browser.">
 <meta name="twitter:image" content="https://pageforge.mtclab.net/og.png">
 <link rel="canonical" href="https://pageforge.mtclab.net/">
+<script>
+// The builder used to live at "/", so old links carry its fragments: share
+// links (#s=...) and the theme workbench (#gallery). Hand anything that is
+// not one of this page's own anchors straight to the builder, unchanged.
+(function () {
+  var h = location.hash;
+  if (h && h.length > 1 && !/^#(looks|zip|how|start)$/.test(h)) {
+    location.replace('/make' + h);
+  }
+})();
+</script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -26,7 +37,7 @@
   "url": "https://pageforge.mtclab.net/",
   "applicationCategory": "DesignApplication",
   "operatingSystem": "Web",
-  "description": "Build your own personal homepage in minutes. Free, no account, no tracking - you download the whole site and it is yours.",
+  "description": "Build a complete personal homepage in your browser and download the whole website as a zip. No account, no subscription, no hosting lock-in.",
   "offers": {
     "@type": "Offer",
     "price": "0",
@@ -39,44 +50,124 @@
 </head>
 <body>
 <header class="topbar">
-  <div class="brand">pageforge</div>
-  <nav id="steps" class="steps" aria-label="Steps"></nav>
-  <span class="undo-group">
-    <button id="undo" type="button" class="icon-btn" aria-label="Undo" title="Undo (Ctrl+Z)" disabled>↶</button>
-    <button id="redo" type="button" class="icon-btn" aria-label="Redo" title="Redo (Ctrl+Shift+Z)" disabled>↷</button>
-  </span>
-  <button id="preview-toggle" type="button" class="preview-toggle" aria-expanded="false">Preview</button>
+  <a class="brand" href="/">pageforge</a>
+  <nav class="steps" aria-label="Sections">
+    <a class="step-btn" href="#looks">The looks</a>
+    <a class="step-btn" href="#zip">What you get</a>
+    <a class="step-btn" href="#how">How it works</a>
+    <a class="step-btn" href="help.html">Help</a>
+  </nav>
+  <a class="primary" href="/make">Start your page</a>
 </header>
 
-<div class="wizard">
-  <section class="form-pane">
-    <div id="pane" class="pane"></div>
-    <div class="pager">
-      <button id="prev" type="button" class="chip">Back</button>
-      <button id="next" type="button" class="primary">Next</button>
+<main class="landing">
+  <section class="wrap hero">
+    <div>
+      <p class="eyebrow">A print shop for one page</p>
+      <h1>Make a homepage.<br><span class="mark">Keep the file.</span></h1>
+      <p class="lede">
+        pageforge builds a finished website in this browser and hands you the folder:
+        page, stylesheet, photos, README. Download it and it is yours - put it on any
+        host, edit it in ten years, or just keep it. No account. No subscription.
+        Nothing to cancel.
+      </p>
+      <div class="hero-actions">
+        <a class="primary big" href="/make">Start your page</a>
+        <a class="ghost" href="#looks">See the 15 looks</a>
+      </div>
+    </div>
+    <div class="sheet-stack" id="hero-sheets" aria-hidden="true"></div>
+  </section>
+
+  <dl class="wrap proof-row">
+    <div>
+      <dt>Stays with you</dt>
+      <dd>Your text and photos never leave this browser. There is no server to leave them on.</dd>
+    </div>
+    <div>
+      <dt>One zip, whole site</dt>
+      <dd>Plain HTML and CSS that any host on earth can serve. No build step, no framework.</dd>
+    </div>
+    <div>
+      <dt>Free, and that is all</dt>
+      <dd>No account, no email address, no trial that ends. Make as many pages as you like.</dd>
+    </div>
+  </dl>
+
+  <section class="band-section" id="looks">
+    <div class="wrap">
+      <h2>Fifteen looks, all of them finished</h2>
+      <p class="section-lede">
+        Every look below is a real page rendered right now in your browser, not a picture of one.
+        Pick one and the builder opens with it already on.
+      </p>
+      <div class="look-grid" id="look-grid"></div>
     </div>
   </section>
 
-  <aside id="preview-pane" class="preview-pane" aria-label="Live preview">
-    <div class="preview-tools">
-      <span class="preview-label">Live preview</span>
-      <span class="preview-tools-right">
-        <span class="width-toggle">
-          <button type="button" data-width="desktop" aria-pressed="true">Wide</button>
-          <button type="button" data-width="mobile" aria-pressed="false">Phone</button>
-        </span>
-        <button type="button" id="fullscreen-toggle" class="chip" aria-pressed="false" title="See it at your real screen size">Full screen</button>
-      </span>
+  <section class="band-section" id="zip">
+    <div class="wrap">
+      <h2>What lands in your downloads folder</h2>
+      <p class="section-lede">
+        Most page builders rent you a page on their servers: stop paying, and the page stops
+        existing. pageforge gives you the files instead. This is the whole zip.
+      </p>
+      <ul class="manifest">
+        <li><b>index.html</b> <span>Your page. Double-click it and it opens, internet or not.</span></li>
+        <li><b>style.css</b> <span>The look you picked, as plain CSS you can read and change.</span></li>
+        <li><b>assets/</b> <span>Your photo, your gallery, a favicon drawn from your name.</span></li>
+        <li><b>site.json</b> <span>Your answers, beside the website folder - not part of the site. Load it back here any time to keep editing, but do not upload it.</span></li>
+        <li><b>README.md</b> <span>How to put it online, with the free hosts written out.</span></li>
+      </ul>
     </div>
-    <iframe id="preview-frame" title="Preview of your homepage" sandbox="allow-same-origin"></iframe>
-  </aside>
-</div>
+  </section>
 
-<footer class="app-footer">
-  <p>Free and open - no account, no tracking. Your text and photo never leave your browser.</p>
-  <p><a href="help.html">Help</a></p>
+  <section class="band-section" id="how">
+    <div class="wrap">
+      <h2>Four steps, then it is done</h2>
+      <ol class="steps-list">
+        <li>
+          <p class="n">STEP 1</p>
+          <h3>You</h3>
+          <p>Your name, a line about you, your links, whichever sections you want. Only the name is required.</p>
+        </li>
+        <li>
+          <p class="n">STEP 2</p>
+          <h3>Look</h3>
+          <p>Fifteen looks, each one previewing your own words rather than someone else's.</p>
+        </li>
+        <li>
+          <p class="n">STEP 3</p>
+          <h3>Style</h3>
+          <p>Colours, type, spacing, dark mode. Or skip it - the looks are finished as they come.</p>
+        </li>
+        <li>
+          <p class="n">STEP 4</p>
+          <h3>Download</h3>
+          <p>The zip lands in your downloads folder. The README takes it from there.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="wrap closer" id="start">
+    <h2>Your page is about ten minutes away</h2>
+    <p>Nothing to sign up for. If you stop halfway the draft waits in this browser.</p>
+    <a class="primary big" href="/make">Start your page</a>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <nav class="footer-links" aria-label="Footer">
+      <a href="/make">Make a page</a>
+      <a href="help.html">Help and hosting guides</a>
+      <a href="/make#gallery">Theme workbench</a>
+    </nav>
+    <p class="maker-mark">Built by <a href="https://mtclab.net" rel="noopener">MTC Lab</a></p>
+  </div>
 </footer>
 
-<script type="module" src="app.js"></script>
+<script type="module" src="landing.js"></script>
 </body>
 </html>

@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "name": "Anna\" onload=\"alert(document.domain)",
+  "tagline": "Maker\" onmouseover=\"alert(1)",
+  "lang": "fi",
+  "photo": { "src": "assets/p.jpg\" onerror=\"alert('hero')" },
+  "favicon": { "dataUrl": "data:image/png;base64,iVBORw0KGgo=" },
+  "links": [
+    { "label": "Site\" onclick=\"alert(1)", "url": "https://example.com/?q=\" onmouseenter=\"alert(1)" },
+    { "label": "Mail\" onfocus=\"alert(1)", "url": "mailto:anna\"onpointerover=\"alert(1)@example.com" },
+    { "label": "Call", "url": "tel:+358 40 123 4567" }
+  ],
+  "sections": [
+    { "kind": "about", "text": "Plain about text with a \" quote." },
+    {
+      "kind": "projects",
+      "items": [
+        {
+          "name": "Project\" onblur=\"alert(1)",
+          "desc": "desc \" quote",
+          "url": "https://example.com/p?x=\" ondragstart=\"alert(1)"
+        }
+      ]
+    },
+    { "kind": "hobbies", "items": ["hobby \" quote"] },
+    { "kind": "contact", "email": "anna\"onauxclick=\"alert(1)@example.com", "note": "note \" quote" },
+    {
+      "kind": "gallery",
+      "photos": [
+        { "src": "assets/g1.jpg\" onerror=\"alert('g1')", "alt": "A cat\" onmouseup=\"alert('alt')" },
+        { "dataUrl": "data:image/jpeg;base64,/9j/fixture", "alt": "Second\" onwheel=\"alert(1)" }
+      ]
+    },
+    {
+      "kind": "services",
+      "items": [
+        { "name": "Cut\" oncut=\"alert(1)", "group": "Hair\" oncopy=\"alert(1)", "price": "30 e\" onpaste=\"alert(1)" }
+      ]
+    },
+    {
+      "kind": "hours",
+      "days": [
+        { "label": "Mon\" onshow=\"alert(1)", "open": "09:00", "close": "17:00" },
+        { "label": "Tue", "closed": true }
+      ],
+      "exceptions": [{ "date": "24.12.\" ontoggle=\"alert(1)", "text": "closed \" quote" }]
+    },
+    {
+      "kind": "location",
+      "address": "Katu 1\" oncontextmenu=\"alert(1)",
+      "phone": "+358 40 123 4567\" onselect=\"alert(1)",
+      "mapUrl": "https://maps.example.com/?q=\" onpointerdown=\"alert(1)"
+    },
+    { "kind": "notice", "text": "notice \" quote", "until": "1.1.\" onratechange=\"alert(1)" },
+    { "kind": "custom", "title": "Custom\" onscroll=\"alert(1)", "text": "custom \" body" }
+  ],
+  "business": {
+    "phone": "+358 40 000 0000\" onplay=\"alert(1)",
+    "address": "Osoite 2\" onpause=\"alert(1)",
+    "city": "Kaupunki\" onended=\"alert(1)",
+    "yTunnus": "1234567-8\" onerror=\"alert(1)"
+  },
+  "footerNote": "footer \" quote",
+  "meta": {
+    "themeId": "slate",
+    "paletteId": "paper",
+    "fontId": "system",
+    "surface": "card\" autofocus onfocus=\"alert(1)",
+    "photoShape": "circle\" data-injected=\"yes",
+    "accent": "#3366cc"
+  }
+}

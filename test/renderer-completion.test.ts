@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { BUSINESS_LABELS, businessLabels } from '../src/engine/localization.js';
 import { renderSite } from '../src/engine/render.js';
 import type { SiteData } from '../src/engine/types.js';
 import { getTheme } from '../src/themes/index.js';
@@ -27,14 +26,9 @@ describe('renderer completion', () => {
     });
   }
 
-  it('has complete fi/en/sv labels and uses Swedish business headings', () => {
-    const keys = Object.keys(BUSINESS_LABELS.en).sort();
-    for (const locale of ['fi', 'en', 'sv'] as const) {
-      expect(Object.keys(BUSINESS_LABELS[locale]).sort()).toEqual(keys);
-      expect(Object.values(BUSINESS_LABELS[locale]).every(Boolean)).toBe(true);
-    }
-    expect(businessLabels('de')).toBe(BUSINESS_LABELS.en);
-
+  // Label-set completeness and the personal/business voices live in
+  // test/localization.test.ts; this keeps the business-fixture spot check.
+  it('uses Swedish business headings', () => {
     const swedish: SiteData = { ...appearance as SiteData, lang: 'sv' };
     const html = renderSite(swedish, getTheme(swedish.meta.themeId)).html;
     expect(html).toContain('Öppettider');
@@ -45,8 +39,11 @@ describe('renderer completion', () => {
   });
 
   it('renders a call CTA only when heroCta is enabled', () => {
+    // The unlabelled CTA speaks the page's language: it used to say "Soita" on
+    // an English page, which is the same defect the headings had.
     const data: SiteData = {
       ...base,
+      lang: 'fi',
       links: [
         { label: '', url: 'tel:+358 40 123 4567', kind: 'phone' },
         { label: '<Soita toinen>', url: 'tel:+358 50 234 5678', kind: 'phone' },
@@ -56,6 +53,10 @@ describe('renderer completion', () => {
     const html = renderSite(data, getTheme(data.meta.themeId), { heroCta: true }).html;
     expect(html).toContain('<a class="cta-call" href="tel:+358 40 123 4567">Soita</a>');
     expect(html).not.toContain('class="cta-call" href="tel:+358 50 234 5678"');
+
+    const english = renderSite({ ...data, lang: 'en' }, getTheme(data.meta.themeId), { heroCta: true }).html;
+    expect(english).toContain('<a class="cta-call" href="tel:+358 40 123 4567">Call</a>');
+    expect(english).not.toContain('>Soita</a>');
   });
 
   it('validates telephone links and the branding preference', () => {

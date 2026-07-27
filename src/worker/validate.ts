@@ -3,6 +3,8 @@ import { TEL_URL_RE } from '../engine/escape.js';
 import { jsonLdTime } from '../engine/jsonld.js';
 
 const MAX_IMAGE_B64 = 1_100_000;
+/** Alt text is a sentence about a picture, not an essay. Mirrors app/site-data.ts. */
+const MAX_PHOTO_ALT = 250;
 const DATA_URL_RE = /^data:image\/(?:jpeg|png);base64,([A-Za-z0-9+/=]+)$/;
 /** R2 photo reference produced by the mikoshi photo store (see biz.ts). */
 const IMG_SRC_RE = /^\/img\/[a-f0-9]{64}$/;
@@ -15,6 +17,9 @@ const IMG_SRC_RE = /^\/img\/[a-f0-9]{64}$/;
 function photoRefError(photo: unknown, allowR2Photos: boolean): string | null {
   if (!photo || typeof photo !== 'object') return 'bad image';
   const ref = photo as Record<string, unknown>;
+  if (ref.alt !== undefined && (typeof ref.alt !== 'string' || ref.alt.length > MAX_PHOTO_ALT)) {
+    return 'bad image description';
+  }
   if (typeof ref.src === 'string') {
     if (!allowR2Photos) return 'bad image';
     return IMG_SRC_RE.test(ref.src) ? null : 'bad image reference';
