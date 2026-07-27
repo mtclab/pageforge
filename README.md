@@ -33,7 +33,7 @@ npm run typecheck
 npm run build     # esbuild -> dist/
 npm run dev       # esbuild watch + serve on :8787 (static copies not watched)
 npm run sample    # render the full.json fixture to stdout (--out DIR writes files)
-npm run deploy    # build + wrangler deploy
+npm run deploy    # local/operator testing only; production deploys from merged main
 ```
 
 ## Staging (business control plane)
@@ -53,7 +53,9 @@ only from `main`; the flag stays `false` in `wrangler.toml`.
 
 ## Deploy
 
-`npm run deploy` with a Cloudflare API token in the environment. Production =
-merge to `main` (CI dispatch-only); the mikoshi surface ships dark (flag off,
-placeholder D1/R2 ids in `wrangler.toml` must be provisioned before the flag
-ever turns on in prod).
+Worker + static assets (`wrangler.toml` declares `main = "src/worker/index.ts"`
+alongside `[assets]` - the older "assets-only" note was stale). Production
+deploys `main` to `pageforge.mtclab.net` via `deploy-production.yml`; smoke uses
+workers.dev and `/version` must report the deployed commit. The mikoshi surface
+ships dark: the flag stays off and the placeholder D1/R2 ids in `wrangler.toml`
+must be provisioned before it is ever turned on in prod.
