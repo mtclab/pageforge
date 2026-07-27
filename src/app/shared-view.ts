@@ -35,7 +35,19 @@ export function renderSharedView(data: SiteData): void {
   actions.append(makeOwn, editThis);
   banner.append(actions);
 
-  const frame = el('iframe', { class: 'share-frame', title: `${name}'s page` });
+  // This is the one preview whose content came from a stranger: the whole
+  // page was decoded out of the #s= fragment, which anyone can craft and send.
+  // It is sandboxed with no tokens at all - no scripts (so nothing in it can
+  // run) and no same-origin (so it cannot reach this origin's localStorage,
+  // where every saved draft lives). Rendering the page needs neither: the
+  // stylesheet is inlined and every image is a data: URL by the time it gets
+  // here. The other previews render the user's own data and grant
+  // allow-same-origin; this one has no reason to.
+  const frame = el('iframe', {
+    class: 'share-frame',
+    title: `${name}'s page`,
+    sandbox: '',
+  });
   frame.srcdoc = previewHtml(data);
 
   document.body.replaceChildren(banner, frame);

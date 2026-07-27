@@ -21,8 +21,13 @@ export interface Link {
  * `{ dataUrl }` (bundled into the zip / served from KV). The mikoshi business
  * control plane instead stores photos in R2 and references them by
  * `{ src: "/img/<sha256>" }`; the renderer emits either verbatim (escaped).
+ *
+ * `alt` is the author's description of the picture, used as the image's alt
+ * text. Absent or blank means "decorative": the image renders with alt="".
  */
-export type PhotoRef = { dataUrl: string } | { src: string };
+export type PhotoRef =
+  | { dataUrl: string; alt?: string }
+  | { src: string; alt?: string };
 
 export type Section =
   | { kind: 'about'; text: string }
@@ -157,6 +162,14 @@ export interface RenderedSite {
   html: string;
   css: string;
 }
+
+/**
+ * The folder inside the downloaded zip that holds the website itself.
+ * Everything under it is meant to be uploaded; everything beside it must never
+ * be, because the draft (site.json) carries the author's email address in
+ * plain text while the published page carries it only obfuscated.
+ */
+export const SITE_DIR = 'website';
 
 /** Path the generated HTML uses for the photo; the zip and the preview both key off this. */
 export const PHOTO_PATH = 'assets/photo.jpg';

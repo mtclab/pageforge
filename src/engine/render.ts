@@ -2,6 +2,7 @@ import { accentContrastFor, fitAccent, fitAccentFor, luminance } from './color.j
 import { BASE_CSS, rootVars, type StyleVars } from './css.js';
 import { escAttr, esc } from './escape.js';
 import { EMAIL_ACTIVATION_SCRIPT } from './links.js';
+import { labelContext } from './localization.js';
 import { renderSection } from './sections/blocks.js';
 import { renderFooter } from './sections/footer.js';
 import { renderHero } from './sections/hero.js';
@@ -178,8 +179,11 @@ export function renderSite(data: SiteData, theme: ThemePack, opts: RenderOptions
   const css = `${rootVars(palette, font, styleVars(data, theme))}\n${BASE_CSS}\n${theme.css}\n${autoDarkCss(data, theme, palette)}`;
 
   const name = data.name.trim();
+  // One label set for the whole page: the language it is written in and
+  // whether it speaks for a person or an organisation.
+  const ctx = labelContext(data, opts.bizHero === true);
   const sections = data.sections
-    .map((s, i) => renderSection(s, i + 1, data.lang, data.business, opts.bizHero === true))
+    .map((s, i) => renderSection(s, i + 1, ctx, data.business, opts.bizHero === true))
     .filter(Boolean);
 
   const description = data.tagline?.trim();
@@ -215,7 +219,7 @@ export function renderSite(data: SiteData, theme: ThemePack, opts: RenderOptions
 `
     : '';
 
-  let body = `${renderHero(data, { heroCta: opts.heroCta, bizHero: opts.bizHero })}
+  let body = `${renderHero(data, { heroCta: opts.heroCta, bizHero: opts.bizHero, ctx })}
 ${sections.length ? `<main>\n${sections.join('\n')}\n</main>` : '<main></main>'}
 ${renderFooter(data, opts.hosted)}`;
 

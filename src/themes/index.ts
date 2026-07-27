@@ -20,17 +20,24 @@ import { pehmo } from './biz/pehmo/theme.js';
 import { ruutu } from './biz/ruutu/theme.js';
 import { yo } from './biz/yo/theme.js';
 
+/**
+ * Order is the picker's order, and THEMES[0] is what a blank draft opens with
+ * (state.freshData) and what getTheme falls back to. It leads with Linen -
+ * warm, personal, the estate serif - because the first look a visitor sees is
+ * an argument for the whole product, and Slate (grey, minimal) is the least
+ * flattering of the fifteen to make that argument with.
+ */
 export const THEMES: ThemePack[] = [
-  slate,
-  nordic,
   linen,
-  meadow,
-  scrapbook,
   gazette,
-  letterpress,
+  nordic,
   ink,
+  meadow,
+  letterpress,
   atelier,
+  scrapbook,
   studio,
+  slate,
   blueprint,
   aurora,
   midnight,

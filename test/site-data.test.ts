@@ -11,7 +11,7 @@ describe('SiteData runtime decoder', () => {
     const decoded = decodeSiteData({ version: 1, name: 'Legacy' });
     expect(decoded?.links).toEqual([]);
     expect(decoded?.sections).toEqual([]);
-    expect(decoded?.meta.themeId).toBe('slate');
+    expect(decoded?.meta.themeId).toBe('linen'); // THEMES[0]
     expect(decodeSiteData({ ...minimal, links: null })).toBeNull();
     expect(decodeSiteData({ ...minimal, links: {} })).toBeNull();
   });
