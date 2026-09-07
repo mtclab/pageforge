@@ -5,18 +5,26 @@ import { SITE_DIR } from './types.js';
  * who has never put a website online. Regular hyphens only.
  *
  * It has one job beyond friendliness: the reader must come away knowing that
- * the `website` folder is what goes online and `site.json` is not, because
- * site.json holds their email address as plain text while the published page
- * only ever carries it obfuscated.
+ * the `website` folder is what goes online and `site.json` is not. When the site
+ * carries an email address that reason is concrete - site.json holds it as plain
+ * text while the published page only ever carries it obfuscated - and the README
+ * says so. When there is no address it must NOT say so: a file that describes
+ * the reader's own answers has to be true about them.
  */
-export function renderReadme(name: string, hasPhoto: boolean): string {
+export function renderReadme(name: string, hasPhoto: boolean, hasEmail = false): string {
+  const siteJsonNote = hasEmail
+    ? 'your answers from the generator, including your email address written out in full. Keep it, it lets you load your site back into pageforge later - but do NOT upload it with your site.'
+    : 'your answers from the generator. Keep it, it lets you load your site back into pageforge later - but do NOT upload it with your site.';
+  const uploadWarning = hasEmail
+    ? `Upload only what is inside \`${SITE_DIR}\`. If \`site.json\` goes up too, anyone can open yoursite.com/site.json and read your email address straight off it - the page itself hides that address from address-harvesting robots, and uploading the file would hand it to them anyway.`
+    : `Upload only what is inside \`${SITE_DIR}\`. \`site.json\` and \`README.md\` are yours, not the site's - if they go up too, anyone can read them at yoursite.com/site.json.`;
   const files = [
     `- \`${SITE_DIR}/\` - **your website.** This whole folder is what goes online, and nothing else does.`,
     `  - \`index.html\` - the page itself.`,
     '  - `style.css` - the colors and fonts. The page needs it to look right.',
     ...(hasPhoto ? ['  - `assets/photo.jpg` - your photo.'] : []),
     '  - `assets/` - your pictures and the little icon shown in the browser tab.',
-    '- `site.json` - your answers from the generator, including your email address written out in full. Keep it, it lets you load your site back into pageforge later - but do NOT upload it with your site.',
+    `- \`site.json\` - ${siteJsonNote}`,
     '- `README.md` - this file. Instructions for you; it is not part of your website.',
   ].join('\n');
 
@@ -41,7 +49,7 @@ First, if this is still a zip file, unzip it (right-click > "Extract All" on Win
 Two things, whichever you pick:
 
 - \`index.html\` must end up directly in the folder being served, not inside a subfolder.
-- Upload only what is inside \`${SITE_DIR}\`. If \`site.json\` goes up too, anyone can open yoursite.com/site.json and read your email address straight off it - the page itself hides that address from address-harvesting robots, and uploading the file would hand it to them anyway.
+- ${uploadWarning}
 
 ## Changing your site later
 
