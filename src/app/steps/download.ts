@@ -1,4 +1,6 @@
 import { slugify } from '../../engine/bundle.js';
+import { sectionRenders } from '../../engine/sections/blocks.js';
+import { labelContext } from '../../engine/types.js';
 import { getTheme } from '../../themes/index.js';
 import { publishEnabled } from '../config.js';
 import { el } from '../dom.js';
@@ -38,7 +40,10 @@ export function renderDownloadStep(pane: HTMLElement, ctx: StepCtx): void {
   const checks: { ok: boolean; text: string }[] = [
     { ok: Boolean(data.name.trim()), text: 'Your name is set' },
     { ok: Boolean(data.tagline?.trim()), text: 'A short line about you (shows in search results and shared links)' },
-    { ok: data.sections.some((s) => 'text' in s && s.text.trim()) || data.sections.length > 0, text: 'At least one section with content' },
+    // "with content" has to mean it: a section the user added and left empty is
+    // dropped from the rendered page, so ticking this for a bare `length > 0`
+    // told them a section was there that their own site does not show.
+    { ok: data.sections.some((s) => sectionRenders(s, labelContext(data))), text: 'At least one section with content' },
     { ok: data.links.length > 0 || data.sections.some((s) => s.kind === 'contact' && (s.email ?? '').trim() !== ''), text: 'A way to reach you (link or contact section)' },
   ];
   const list = el('ul', { class: 'checklist' });
