@@ -25,6 +25,15 @@ export function renderSection(section: Section, idx: number, ctx: LabelContext):
 }
 
 /**
+ * Does this section put anything on the page? The renderers are the only
+ * authority - each returns '' when it has no content - so ask them rather than
+ * re-deriving the rule somewhere that can drift out of step with them.
+ */
+export function sectionRenders(section: Section, ctx: LabelContext): boolean {
+  return renderSection(section, 0, ctx) !== '';
+}
+
+/**
  * `langAttr` marks headings WE generate when they are not in the page's own
  * language; a heading the user typed is in their language and always gets ''.
  */

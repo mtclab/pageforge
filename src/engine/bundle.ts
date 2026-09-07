@@ -1,4 +1,5 @@
 import { strToU8, zipSync } from 'fflate';
+import { safeUrl } from './escape.js';
 import { renderFavicon } from './favicon.js';
 import { renderReadme } from './readme.js';
 import { effectivePalette, renderSite, resolveFont } from './render.js';
@@ -41,13 +42,24 @@ export function buildSiteFiles(data: SiteData, theme: ThemePack): Record<string,
  */
 export function buildDownloadFiles(data: SiteData, theme: ThemePack): Record<string, Uint8Array> {
   const files: Record<string, Uint8Array> = {
-    'README.md': strToU8(renderReadme(data.name.trim(), Boolean(data.photo))),
+    'README.md': strToU8(renderReadme(data.name.trim(), Boolean(data.photo), hasEmail(data))),
     'site.json': strToU8(JSON.stringify(data, null, 2) + '\n'),
   };
   for (const [path, bytes] of Object.entries(buildSiteFiles(data, theme))) {
     files[`${SITE_DIR}/${path}`] = bytes;
   }
   return files;
+}
+
+/**
+ * Does this site publish an email address anywhere? The README's warning about
+ * site.json holding it in plain text is only true when it does - and a link the
+ * user typed bare (`me@example.com`) is a mailto only after safeUrl normalizes
+ * it, so ask safeUrl rather than looking for an '@'.
+ */
+function hasEmail(data: SiteData): boolean {
+  if (data.links.some((l) => (safeUrl(l.url) ?? '').startsWith('mailto:'))) return true;
+  return data.sections.some((s) => s.kind === 'contact' && (s.email ?? '').trim() !== '');
 }
 
 export function buildZip(files: Record<string, Uint8Array>): Uint8Array {
