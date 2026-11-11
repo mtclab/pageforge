@@ -114,6 +114,14 @@ export interface ThemePack {
   /** Theme-specific structural CSS, appended after the base CSS. */
   css: string;
   /**
+   * Every accent-tinted surface the theme paints under text, i.e. each
+   * `color-mix(in srgb, var(--accent) N%, var(--bg|--surface))` used as a
+   * background. effectivePalette keeps text, muted and accent at WCAG AA on
+   * each of them as well as on bg and surface; test/rendered-contrast.test.ts
+   * fails when a theme paints text on a tint it does not declare here.
+   */
+  textTints?: { accentPct: number; over: 'bg' | 'surface' }[];
+  /**
    * The theme's natural content width, e.g. "42rem". Feeds --page-max;
    * the user's width choice scales it (narrow x0.85, wide x1.25). Themes
    * must NOT hardcode .page max-width in css (lint-tested).

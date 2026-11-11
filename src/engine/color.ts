@@ -36,17 +36,40 @@ function blend(hex: string, toward: [number, number, number], t: number): string
   ]);
 }
 
-/** Fit one canonical color against every background, or reject the combination. */
-export function fitAccentFor(accent: string, backgrounds: string[]): string | null {
+/**
+ * CSS `color-mix(in srgb, a pct%, b)` for two opaque colours, as the 8-bit
+ * colour the browser paints. Used to know the real background under text
+ * when a theme or a style option tints a surface with the accent.
+ */
+export function mixHex(a: string, pct: number, b: string): string {
+  return blend(b, hexToRgb(a)!, pct / 100);
+}
+
+/**
+ * Fit one canonical color against every background, or reject the combination.
+ * `backgrounds` may depend on the candidate itself - an accent-tinted surface
+ * changes with the accent - so it can be a function of the candidate.
+ */
+export function fitAccentFor(
+  accent: string,
+  backgrounds: string[] | ((candidate: string) => string[]),
+): string | null {
   const rgb = hexToRgb(accent);
-  if (!rgb || !backgrounds.length || backgrounds.some((bg) => !hexToRgb(bg))) return null;
+  const bgsFor = typeof backgrounds === 'function' ? backgrounds : () => backgrounds;
+  const passes = (candidate: string) => {
+    const bgs = bgsFor(candidate);
+    return bgs.length > 0 && bgs.every((bg) => hexToRgb(bg) && contrast(candidate, bg) >= 4.5);
+  };
+  if (!rgb) return null;
   const canonical = rgbToHex(rgb);
-  if (backgrounds.every((bg) => contrast(canonical, bg) >= 4.5)) return canonical;
+  const first = bgsFor(canonical);
+  if (!first.length || first.some((bg) => !hexToRgb(bg))) return null;
+  if (passes(canonical)) return canonical;
   const poles: [number, number, number][] = [[0, 0, 0], [255, 255, 255]];
   for (let step = 1; step <= 20; step += 1) {
     for (const pole of poles) {
       const candidate = blend(canonical, pole, step / 20);
-      if (backgrounds.every((bg) => contrast(candidate, bg) >= 4.5)) return candidate;
+      if (passes(candidate)) return candidate;
     }
   }
   return null;

@@ -2,7 +2,7 @@ import type { ThemePack } from '../../engine/types.js';
 
 /*
  * scrapbook - crafty, personal, family album. Warm paper background, sections
- * as white paper pieces glued on with a soft shadow, a small deterministic
+ * as paper pieces (the palette's surface) glued on with a soft shadow, a small deterministic
  * tilt and a washi-tape strip. Photos read like instant-camera prints. Made
  * for family pages, baby pages, hobby crafters and memory pages.
  */
@@ -18,7 +18,7 @@ const css = `/* theme: scrapbook */
   height: 150px;
   margin: 0 auto 1.4rem;
   padding: 8px;
-  background: #ffffff;
+  background: var(--surface);
   box-shadow: 0 6px 20px color-mix(in srgb, var(--text) 22%, transparent);
 }
 .hero h1 { font-weight: 800; letter-spacing: -0.01em; }
@@ -26,7 +26,7 @@ const css = `/* theme: scrapbook */
 .hero .links { justify-content: center; margin-top: 1.6rem; }
 .section {
   position: relative;
-  background: #ffffff;
+  background: var(--surface);
   padding: 2.1rem 1.9rem 2rem;
   box-shadow: 0 5px 16px color-mix(in srgb, var(--text) 16%, transparent);
 }
@@ -48,16 +48,16 @@ const css = `/* theme: scrapbook */
   color: var(--accent);
 }
 .projects { gap: 1.2rem; }
-.project h3 { font-size: 1.12rem; color: var(--accent); }
+.project h3 { font-size: calc(1.12rem * var(--text-factor)); color: var(--accent); }
 .chips li {
   border: none;
-  background: color-mix(in srgb, var(--accent) 15%, #ffffff);
+  background: color-mix(in srgb, var(--accent) 15%, var(--surface));
   color: var(--text);
   padding: 0.3rem 0.95rem;
 }
 .gallery img {
   padding: 8px;
-  background: #ffffff;
+  background: var(--surface);
   box-shadow: 0 4px 12px color-mix(in srgb, var(--text) 18%, transparent);
 }
 footer {
@@ -128,5 +128,7 @@ export const scrapbook: ThemePack = {
     },
   ],
   css,
+  // hobby chips: color-mix(accent 15%, surface)
+  textTints: [{ accentPct: 15, over: 'surface' }],
   defaults: { paletteId: 'kraft', fontId: 'friendly' },
 };

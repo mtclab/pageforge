@@ -83,6 +83,9 @@ a:hover { text-decoration-thickness: 2px; }
 }
 .heading-highlight .section h2 {
   display: inline-block;
+  /* a highlighter colours the paper, not the ink: the heading reads in the
+     text colour, which effectivePalette keeps at AA on the marker (#50) */
+  color: var(--text);
   background: color-mix(in srgb, var(--accent) 24%, transparent);
   padding: 0.08em 0.45em;
   border-radius: 4px;
@@ -153,7 +156,7 @@ body.bg-wash-corner {
 }
 .gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
 
-footer { margin-top: 3rem; color: var(--muted); font-size: 0.875rem; }
+footer { margin-top: 3rem; color: var(--muted); font-size: calc(0.875rem * var(--text-factor)); }
 footer a { color: inherit; }
 
 @media print {

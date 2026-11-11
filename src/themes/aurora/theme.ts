@@ -28,7 +28,7 @@ body {
 .hero h1 {
   color: var(--accent);
   background: linear-gradient(90deg, var(--accent),
-    color-mix(in srgb, var(--accent) 45%, #ffffff));
+    color-mix(in srgb, var(--accent) 45%, var(--text)));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -49,7 +49,7 @@ body {
   text-decoration: none;
 }
 .section h2 {
-  font-size: 0.82rem;
+  font-size: calc(0.82rem * var(--text-factor));
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -127,5 +127,7 @@ export const aurora: ThemePack = {
     },
   ],
   css,
+  // body wash: color-mix(accent 10%, bg)
+  textTints: [{ accentPct: 10, over: 'bg' }],
   defaults: { paletteId: 'polar', fontId: 'system' },
 };

@@ -109,3 +109,17 @@ describe('builder at /make', () => {
     expect(build).toContain('src/app/landing.ts');
   });
 });
+
+describe('the marker in dark mode', () => {
+  // In dark mode marked words switch to dark ink. The daylight plate covers
+  // only the lower half of the line, so the tops of "Keep the file." were
+  // dark-on-dark. Dark ink needs the whole word on yellow.
+  it('puts the whole marked word on the plate when the ink turns dark', () => {
+    const css = read('src/app/ui.css');
+    const dark = css.slice(css.indexOf('@media (prefers-color-scheme: dark)'));
+    const block = dark.slice(0, dark.indexOf('\n}\n'));
+    expect(block).toMatch(/\.mark\s*\{[^}]*color:\s*#16181a/);
+    expect(block).toMatch(/\.mark\s*\{[^}]*background:\s*var\(--marker\)/);
+    expect(block).toMatch(/\.mark::before\s*\{\s*display:\s*none;\s*\}/);
+  });
+});

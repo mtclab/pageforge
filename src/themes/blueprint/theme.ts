@@ -55,7 +55,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  font-size: 0.95rem;
+  font-size: calc(0.95rem * var(--text-factor));
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }

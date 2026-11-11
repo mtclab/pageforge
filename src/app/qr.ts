@@ -53,13 +53,16 @@ export function openPrintCards(data: SiteData, url: string): void {
 <body>
 <p class="hint">Print this page (Ctrl+P). Cut along the dashed lines.</p>
 <div class="sheet">${Array.from({ length: 10 }, () => card).join('')}</div>
-<script>window.print();</script>
 </body>
 </html>`;
   const w = window.open('', '_blank');
   if (!w) return;
   w.document.write(doc);
   w.document.close();
+  // Printed from here, not by an inline script in the written document: that
+  // about:blank document inherits the app's CSP, which admits no inline script.
+  w.focus();
+  w.print();
 }
 
 /** Trigger a download of the QR as a standalone .svg file. */

@@ -27,18 +27,18 @@ const css = `/* theme: atelier */
   min-height: 100vh;
 }
 .hero .photo { width: 120px; height: 120px; margin-bottom: 1.25rem; }
-.hero h1 { font-size: clamp(1.7rem, 1.4rem + 1vw, 2.2rem); letter-spacing: -0.01em; }
-.tagline { margin-top: 0.35rem; font-size: 0.95rem; }
+.hero h1 { font-size: calc(clamp(1.7rem, 1.4rem + 1vw, 2.2rem) * var(--text-factor)); letter-spacing: -0.01em; }
+.tagline { margin-top: 0.35rem; font-size: calc(0.95rem * var(--text-factor)); }
 .hero .links {
   flex-direction: column;
   gap: 0.55rem;
   margin-top: 1.5rem;
 }
-.hero .links a { font-size: 0.95rem; }
+.hero .links a { font-size: calc(0.95rem * var(--text-factor)); }
 .hero .links .icon { color: var(--accent); }
 main { padding-top: clamp(0.5rem, 2vw, 1.5rem); }
 .section h2 {
-  font-size: 0.95rem;
+  font-size: calc(0.95rem * var(--text-factor));
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -46,7 +46,7 @@ main { padding-top: clamp(0.5rem, 2vw, 1.5rem); }
   padding-bottom: 0.5rem;
   border-bottom: 1px solid color-mix(in srgb, var(--muted) 30%, transparent);
 }
-.project h3 { font-size: 1.05rem; }
+.project h3 { font-size: calc(1.05rem * var(--text-factor)); }
 .chips li { border-color: color-mix(in srgb, var(--muted) 45%, transparent); }
 @media (max-width: 46rem) {
   .page { display: block; padding: 0; max-width: none; }

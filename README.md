@@ -29,6 +29,10 @@ npm run deploy    # local/operator testing only; production deploys from merged 
 
 ## Deploy
 
-Assets-only worker (`wrangler.toml` has no `main`). Production deploys `main` to
+Static assets behind a small worker (`src/worker/`): every request runs the
+worker first so each response carries the security headers
+(`src/worker/security.ts`), unknown paths get `404.html`, and the worker itself
+answers only `/version`, `/api/*` (hosted publish, closed) and `/s/*`.
+Production deploys `main` to
 `pageforge.mtclab.net` via `deploy-production.yml`; smoke uses workers.dev and
 `/version` must report the deployed commit.

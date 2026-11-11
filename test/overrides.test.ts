@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { accentContrastFor, contrast, fitAccent } from '../src/engine/color.js';
+import { BASE_CSS } from '../src/engine/css.js';
 import { renderSite } from '../src/engine/render.js';
 import type { SiteData } from '../src/engine/types.js';
 import { getTheme, THEMES } from '../src/themes/index.js';
@@ -52,6 +53,50 @@ describe('theme css lint: no hardcoded override-owned values', () => {
       expect(parseFloat(theme.pageMax), `${theme.id} pageMax`).toBeGreaterThan(20);
     });
   }
+});
+
+/**
+ * #49: colour belongs to the palette. A literal (#fff, rgb(), white) in theme
+ * CSS is a colour the contrast guard never sees - scrapbook painted sections
+ * literal white, so a dark custom palette put light text on a white card.
+ * #51: sizes belong to the text-size option. A bare rem/px/vw font-size
+ * ignores S/M/L.
+ */
+const COLOUR_LITERAL = /#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch)\(|\b(?:white|black|red|green|blue|yellow|gray|grey|silver|navy|maroon|orange|purple)\b/i;
+
+function cssWithoutComments(css: string): string {
+  return css.replace(/\/\*[\s\S]*?\*\//g, '');
+}
+
+describe('theme css lint: colours come from palette tokens, sizes follow the text-size option', () => {
+  for (const theme of THEMES) {
+    it(theme.id, () => {
+      const css = cssWithoutComments(theme.css);
+      const colourLines = css.split('\n').filter((line) => {
+        // font-family names (e.g. 'Segoe Print') are not colours
+        const decl = line.replace(/font-family:[^;]*;?/g, '').replace(/'[^']*'|"[^"]*"/g, '');
+        return COLOUR_LITERAL.test(decl);
+      });
+      expect(colourLines, `${theme.id}: colour literals`).toEqual([]);
+      const bareSizes = [...css.matchAll(/font-size:\s*([^;]+);/g)]
+        .map((m) => m[1]!.trim())
+        .filter((v) => /\d(?:rem|px|vw|vh|pt)\b/.test(v) && !v.includes('var(--text-factor)'));
+      expect(bareSizes, `${theme.id}: font-size without var(--text-factor)`).toEqual([]);
+    });
+  }
+
+  it('base css: every absolute font-size follows the text-size option', () => {
+    const css = cssWithoutComments(BASE_CSS).replace(/@media print\s*\{[\s\S]*?\}\s*\}/, '');
+    const bare = [...css.matchAll(/font-size:\s*([^;]+);/g)]
+      .map((m) => m[1]!.trim())
+      .filter((v) => /\d(?:rem|px|vw|vh|pt)\b/.test(v) && !v.includes('var(--text-factor)'));
+    expect(bare).toEqual([]);
+  });
+
+  it('base css: no colour literals outside the print stylesheet', () => {
+    const css = cssWithoutComments(BASE_CSS).replace(/@media print\s*\{[\s\S]*?\}\s*\}/, '');
+    expect(css.split('\n').filter((l) => COLOUR_LITERAL.test(l))).toEqual([]);
+  });
 });
 
 describe('style overrides', () => {

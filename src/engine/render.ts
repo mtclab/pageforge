@@ -1,4 +1,4 @@
-import { accentContrastFor, fitAccent, fitAccentFor, luminance } from './color.js';
+import { accentContrastFor, contrast, fitAccent, fitAccentFor, luminance, mixHex } from './color.js';
 import { BASE_CSS, rootVars, type StyleVars } from './css.js';
 import { escAttr, esc } from './escape.js';
 import { EMAIL_ACTIVATION_SCRIPT } from './links.js';
@@ -60,14 +60,69 @@ export function effectivePalette(data: SiteData, theme: ThemePack): Palette {
     };
   }
 
-  if (!data.meta.accent) return palette;
-  const backgrounds = [palette.vars.bg, palette.vars.surface];
-  const fitted = fitAccentFor(data.meta.accent, backgrounds)
-    ?? fitAccentFor(palette.vars.accent, backgrounds)
-    ?? palette.vars.accent;
+  return fitToTextBackgrounds(palette, data, theme);
+}
+
+/** Percent of accent in `.surface-tinted .section` (css.ts). */
+export const TINTED_SECTION_PCT = 7;
+/** Percent of accent in the `.heading-highlight` marker behind h2 (css.ts). */
+export const HIGHLIGHT_PCT = 24;
+
+/**
+ * Every background text can sit on, for a given accent: the page, the
+ * surface, each accent tint the theme declares, and the tinted section
+ * surface when the user picked it. Tints move with the accent, hence a
+ * function of the candidate accent.
+ */
+export function textBackgrounds(data: SiteData, theme: ThemePack, bg: string, surface: string) {
+  return (accent: string): string[] => {
+    const out = [bg, surface];
+    for (const tint of theme.textTints ?? []) {
+      out.push(mixHex(accent, tint.accentPct, tint.over === 'bg' ? bg : surface));
+    }
+    if (data.meta.surface === 'tinted') out.push(mixHex(accent, TINTED_SECTION_PCT, bg));
+    return out;
+  };
+}
+
+const passesAll = (color: string, backgrounds: string[]) =>
+  backgrounds.every((b) => contrast(color, b) >= 4.5);
+
+/**
+ * Keep accent, text and muted at WCAG AA against the background each one
+ * actually sits on (#50) - not only bg and surface. A colour that already
+ * passes is returned unchanged, so built-in palettes render as designed.
+ */
+function fitToTextBackgrounds(palette: Palette, data: SiteData, theme: ThemePack): Palette {
+  const v = palette.vars;
+  const backgroundsFor = textBackgrounds(data, theme, v.bg, v.surface);
+  let accent = v.accent;
+  if (data.meta.accent) {
+    accent = fitAccentFor(data.meta.accent, backgroundsFor)
+      ?? fitAccentFor(v.accent, backgroundsFor)
+      ?? v.accent;
+  } else if (!passesAll(accent, backgroundsFor(accent))) {
+    accent = fitAccentFor(v.accent, backgroundsFor) ?? v.accent;
+  }
+  const backgrounds = backgroundsFor(accent);
+  // The highlight marker sits behind section headings, which it colours var(--text).
+  const highlights = data.meta.headingStyle === 'highlight'
+    ? backgrounds.map((b) => mixHex(accent, HIGHLIGHT_PCT, b))
+    : [];
+  const keepOrFit = (color: string, bgs: string[]) =>
+    passesAll(color, bgs) ? color : (fitAccentFor(color, bgs) ?? color);
+  const text = keepOrFit(v.text, [...backgrounds, ...highlights]);
+  const muted = keepOrFit(v.muted, backgrounds);
+  if (accent === v.accent && text === v.text && muted === v.muted) return palette;
   return {
     ...palette,
-    vars: { ...palette.vars, accent: fitted, 'accent-contrast': accentContrastFor(fitted) },
+    vars: {
+      ...v,
+      text,
+      muted,
+      accent,
+      'accent-contrast': accent === v.accent ? v['accent-contrast'] : accentContrastFor(accent),
+    },
   };
 }
 
@@ -94,22 +149,16 @@ function autoDarkCss(data: SiteData, theme: ThemePack, lightPalette: Palette): s
   const dark = darkestPalette(theme);
   // Only meaningful when the visible palette is light and a distinct dark one exists.
   if (!dark || dark.id === lightPalette.id || luminance(lightPalette.vars.bg) < 0.4) return '';
-  let accent = dark.vars.accent;
-  let accentContrast = dark.vars['accent-contrast'];
-  if (data.meta.accent) {
-    accent = fitAccentFor(data.meta.accent, [dark.vars.bg, dark.vars.surface])
-      ?? fitAccentFor(dark.vars.accent, [dark.vars.bg, dark.vars.surface])
-      ?? dark.vars.accent;
-    accentContrast = accentContrastFor(accent);
-  }
+  // Same guarantee as the light palette: every token at AA on every background it sits on.
+  const v = fitToTextBackgrounds(dark, data, theme).vars;
   return `@media (prefers-color-scheme: dark) {
 :root {
-  --bg: ${dark.vars.bg};
-  --surface: ${dark.vars.surface};
-  --text: ${dark.vars.text};
-  --muted: ${dark.vars.muted};
-  --accent: ${accent};
-  --accent-contrast: ${accentContrast};
+  --bg: ${v.bg};
+  --surface: ${v.surface};
+  --text: ${v.text};
+  --muted: ${v.muted};
+  --accent: ${v.accent};
+  --accent-contrast: ${v['accent-contrast']};
 }
 }
 `;

@@ -2,10 +2,13 @@ import { renderFavicon } from '../engine/favicon.js';
 import { effectivePalette, renderSite, resolveFont } from '../engine/render.js';
 import { collectImages, type SiteData } from '../engine/types.js';
 import { getTheme } from '../themes/index.js';
+import { APP_CSP, HOSTED_CSP, withSecurityHeaders } from './security.js';
 
 /**
- * Hosted publish (beta). Everything else on this worker is static assets;
- * this code answers only /api/* and /s/* (run_worker_first in wrangler.toml).
+ * Hosted publish (beta). Everything else on this worker is static assets.
+ * Every request runs the worker first (run_worker_first in wrangler.toml) so
+ * each response - asset or not - leaves with the security headers; the
+ * worker's own logic answers only /version, /api/* and /s/*.
  *
  * Design notes:
  * - The server re-renders from SiteData - clients never upload HTML, so a
@@ -233,55 +236,63 @@ function serveSite(request: Request, stored: StoredSite, slug: string, rest: str
 }
 
 export default {
+  /** Every response - worker-made or a static asset - leaves with the security headers (#52). */
   async fetch(request: Request, env: Env): Promise<Response> {
-    const url = new URL(request.url);
-    const { pathname } = url;
-
-    // Public build stamp: what commit is live + when it deployed. Populated by
-    // the deploy workflow; falls back to "dev" for local `wrangler dev`.
-    if (pathname === '/version') {
-      return new Response(
-        JSON.stringify({ commit: env.BUILD_COMMIT ?? 'dev', deployed_at: env.BUILD_TIME ?? null }),
-        { headers: { ...JSON_HEADERS, 'cache-control': 'no-store' } },
-      );
-    }
-
-    if (pathname.startsWith('/api/') && env.PUBLISH_ENABLED !== 'true') {
-      return json(503, { error: 'Hosting here is not open yet. Download the zip - the README gets you online in minutes.' });
-    }
-
-    if (pathname === '/api/check' && request.method === 'GET') {
-      const slug = (url.searchParams.get('slug') ?? '').toLowerCase().trim();
-      if (!SLUG_RE.test(slug) || RESERVED.has(slug)) return json(200, { available: false, invalid: true });
-      const exists = await env.SITES.get(`site:${slug}`);
-      return json(200, { available: !exists });
-    }
-    if (pathname === '/api/publish' && request.method === 'POST') {
-      return handlePublish(request, env);
-    }
-    const delMatch = pathname.match(/^\/api\/site\/([a-z0-9-]+)$/);
-    if (delMatch && request.method === 'DELETE') {
-      return handleDelete(request, env, delMatch[1]!);
-    }
-
-    const siteMatch = pathname.match(/^\/s\/([a-z0-9-]+)(\/.*)?$/);
-    if (siteMatch) {
-      const slug = siteMatch[1]!;
-      const rest = siteMatch[2] ?? '';
-      if (rest === '') {
-        return Response.redirect(`${url.origin}/s/${slug}/`, 301);
-      }
-      const raw = await env.SITES.get(`site:${slug}`);
-      if (!raw) {
-        return new Response('This page does not exist (or was removed).', {
-          status: 404,
-          headers: { 'content-type': 'text/plain; charset=utf-8' },
-        });
-      }
-      return serveSite(request, JSON.parse(raw) as StoredSite, slug, rest);
-    }
-
-    // Everything else: static assets (the generator app itself)
-    return env.ASSETS.fetch(request);
+    const response = await route(request, env);
+    const hosted = new URL(request.url).pathname.startsWith('/s/');
+    return withSecurityHeaders(response, hosted ? HOSTED_CSP : APP_CSP);
   },
 };
+
+async function route(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  const { pathname } = url;
+
+  // Public build stamp: what commit is live + when it deployed. Populated by
+  // the deploy workflow; falls back to "dev" for local `wrangler dev`.
+  if (pathname === '/version') {
+    return new Response(
+      JSON.stringify({ commit: env.BUILD_COMMIT ?? 'dev', deployed_at: env.BUILD_TIME ?? null }),
+      { headers: { ...JSON_HEADERS, 'cache-control': 'no-store' } },
+    );
+  }
+
+  if (pathname.startsWith('/api/') && env.PUBLISH_ENABLED !== 'true') {
+    return json(503, { error: 'Hosting here is not open yet. Download the zip - the README gets you online in minutes.' });
+  }
+
+  if (pathname === '/api/check' && request.method === 'GET') {
+    const slug = (url.searchParams.get('slug') ?? '').toLowerCase().trim();
+    if (!SLUG_RE.test(slug) || RESERVED.has(slug)) return json(200, { available: false, invalid: true });
+    const exists = await env.SITES.get(`site:${slug}`);
+    return json(200, { available: !exists });
+  }
+  if (pathname === '/api/publish' && request.method === 'POST') {
+    return handlePublish(request, env);
+  }
+  const delMatch = pathname.match(/^\/api\/site\/([a-z0-9-]+)$/);
+  if (delMatch && request.method === 'DELETE') {
+    return handleDelete(request, env, delMatch[1]!);
+  }
+
+  const siteMatch = pathname.match(/^\/s\/([a-z0-9-]+)(\/.*)?$/);
+  if (siteMatch) {
+    const slug = siteMatch[1]!;
+    const rest = siteMatch[2] ?? '';
+    if (rest === '') {
+      return Response.redirect(`${url.origin}/s/${slug}/`, 301);
+    }
+    const raw = await env.SITES.get(`site:${slug}`);
+    if (!raw) {
+      return new Response('This page does not exist (or was removed).', {
+        status: 404,
+        headers: { 'content-type': 'text/plain; charset=utf-8' },
+      });
+    }
+    return serveSite(request, JSON.parse(raw) as StoredSite, slug, rest);
+  }
+
+  // Everything else: static assets (the generator app itself). Unknown
+  // paths get the designed 404 page via not_found_handling in wrangler.toml.
+  return env.ASSETS.fetch(request);
+}
