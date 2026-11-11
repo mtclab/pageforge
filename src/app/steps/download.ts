@@ -83,7 +83,7 @@ export function renderDownloadStep(pane: HTMLElement, ctx: StepCtx): void {
       'li',
       {},
       'Put it online with any web host - free ones and links to their guides are listed in the README inside the zip and on the ',
-      linkEl('help.html', 'help page'),
+      linkEl('/help', 'help page'),
       '. Fastest: drag the folder onto ',
       linkEl('https://app.netlify.com/drop', 'netlify.com/drop'),
       '.',

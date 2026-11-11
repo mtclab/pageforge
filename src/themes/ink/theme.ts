@@ -20,7 +20,7 @@ const css = `/* theme: ink */
   border: 4px solid var(--accent-contrast);
 }
 .hero h1 {
-  font-size: clamp(3rem, 10vw, 6rem);
+  font-size: calc(clamp(3rem, 10vw, 6rem) * var(--text-factor));
   font-weight: 800;
   line-height: 0.95;
   letter-spacing: -0.03em;
@@ -29,10 +29,9 @@ const css = `/* theme: ink */
 }
 .hero .tagline {
   color: var(--accent-contrast);
-  font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+  font-size: calc(clamp(1.1rem, 2.5vw, 1.4rem) * var(--text-factor));
   font-weight: 600;
   margin-top: 1rem;
-  opacity: 0.92;
 }
 .hero .links { margin-top: 1.75rem; }
 .hero .links a {
@@ -49,7 +48,7 @@ main {
 }
 .section { border-left: 6px solid var(--accent); padding-left: 1.25rem; }
 .section h2 {
-  font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2.1rem);
+  font-size: calc(clamp(1.5rem, 1.2rem + 1.4vw, 2.1rem) * var(--text-factor));
   font-weight: 800;
   letter-spacing: -0.01em;
   text-transform: uppercase;

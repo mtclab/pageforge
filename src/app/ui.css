@@ -52,6 +52,10 @@
   /* A highlighter still puts dark ink on yellow: light type over the plate
      would be unreadable, so marked words keep their daylight colour. */
   .mark { color: #16181a; }
+  /* ...and dark ink needs the whole word on the plate: the daylight half-height
+     swipe left the tops of the letters dark-on-dark (landing h1, 404 h1). */
+  .mark { background: var(--marker); padding: 0 0.12em; border-radius: 2px 8px 3px 6px / 6px 2px 7px 3px; }
+  .mark::before { display: none; }
   /* and the step swipe drops clear of the label instead of crossing it */
   .step-btn.current::after { bottom: -0.1rem; height: 0.4rem; }
 }
@@ -712,6 +716,11 @@ a.primary { text-decoration: none; display: inline-block; }
 .closer { padding: 3.5rem 0 4.5rem; border-top: 1px solid var(--rule); text-align: center; }
 .closer h2 { font-size: clamp(1.8rem, 3.4vw, 2.6rem); letter-spacing: -0.025em; }
 .closer p { color: var(--muted); margin: 0.8rem auto 1.8rem; max-width: 34rem; }
+
+/* 404: the shop's own voice, one way back to work */
+.lost { padding: 4.5rem 0 5rem; max-width: 46rem; }
+.lost h1 { font-size: clamp(2.2rem, 4.6vw, 3.4rem); line-height: 1.05; letter-spacing: -0.03em; }
+.lost p { font-family: var(--serif); font-size: 1.15rem; line-height: 1.6; color: var(--muted); margin-top: 1.2rem; max-width: 34rem; }
 
 .site-footer {
   border-top: 1px solid var(--rule);

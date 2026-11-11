@@ -38,7 +38,7 @@ const css = `/* theme: terminal */
 .links a::after { content: ']'; color: var(--muted); }
 .section h2::before { content: '$ '; color: var(--accent); }
 .section h2 {
-  font-size: 1.05rem;
+  font-size: calc(1.05rem * var(--text-factor));
   letter-spacing: 0.02em;
 }
 .project h3::before { content: '# '; color: var(--muted); }

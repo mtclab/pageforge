@@ -29,7 +29,7 @@ const css = `/* theme: linen */
 }
 .section h2 { color: var(--accent); }
 .projects { gap: 1.1rem; }
-.project h3 { font-size: 1.1rem; }
+.project h3 { font-size: calc(1.1rem * var(--text-factor)); }
 .chips li {
   border-color: color-mix(in srgb, var(--accent) 40%, transparent);
   background: color-mix(in srgb, var(--accent) 8%, var(--surface));

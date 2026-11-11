@@ -121,5 +121,10 @@ export const midnight: ThemePack = {
     },
   ],
   css,
+  // sections: color-mix(accent 5%, surface); chips: color-mix(accent 8%, surface)
+  textTints: [
+    { accentPct: 5, over: 'surface' },
+    { accentPct: 8, over: 'surface' },
+  ],
   defaults: { paletteId: 'ultraviolet', fontId: 'system' },
 };

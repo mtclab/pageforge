@@ -22,13 +22,13 @@ const css = `/* theme: studio */
 .hero h1 { letter-spacing: -0.04em; font-weight: 800; }
 .tagline { margin-top: 0.25rem; }
 .hero .links { margin-top: 0.75rem; gap: 0.4rem 1.25rem; }
-.hero .links a { color: var(--muted); font-size: 0.9rem; }
+.hero .links a { color: var(--muted); font-size: calc(0.9rem * var(--text-factor)); }
 .hero .links a:hover { color: var(--accent); }
 .section h2 {
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  font-size: 0.72rem;
+  font-size: calc(0.72rem * var(--text-factor));
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;

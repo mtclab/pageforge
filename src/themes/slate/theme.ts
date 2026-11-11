@@ -16,7 +16,7 @@ const css = `/* theme: slate */
 .tagline { margin-top: 0.5rem; }
 .hero .links { justify-content: center; margin-top: 1.5rem; }
 .section h2 {
-  font-size: 0.8rem;
+  font-size: calc(0.8rem * var(--text-factor));
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;

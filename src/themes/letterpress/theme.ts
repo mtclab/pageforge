@@ -23,13 +23,13 @@ const css = `/* theme: letterpress */
 .hero h1 {
   letter-spacing: 0.04em;
   color: color-mix(in srgb, var(--text) 88%, var(--muted));
-  text-shadow: 0 1px 0 color-mix(in srgb, var(--bg) 75%, #ffffff);
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--bg) 75%, var(--surface));
 }
 .tagline {
   margin-top: 0.7rem;
   font-family: var(--font-heading);
   font-style: italic;
-  font-size: 1.05rem;
+  font-size: calc(1.05rem * var(--text-factor));
 }
 .hero .links { justify-content: center; margin-top: 1.5rem; }
 .links a {
@@ -47,14 +47,14 @@ const css = `/* theme: letterpress */
   display: block;
   text-align: center;
   color: color-mix(in srgb, var(--muted) 75%, transparent);
-  font-size: 1.15rem;
+  font-size: calc(1.15rem * var(--text-factor));
   margin-bottom: 1.75rem;
 }
 .section h2 { letter-spacing: 0.04em; font-weight: 600; }
 .section-about p:first-of-type { font-size: 1.1em; line-height: 1.7; }
 .projects, .chips, .gallery { justify-content: center; }
 .projects { text-align: center; }
-.project h3 { font-size: 1.05rem; letter-spacing: 0.02em; }
+.project h3 { font-size: calc(1.05rem * var(--text-factor)); letter-spacing: 0.02em; }
 .chips { justify-content: center; }
 footer { text-align: center; }
 `;

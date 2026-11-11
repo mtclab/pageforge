@@ -12,7 +12,11 @@ PUBLISH_ENABLED = "false"
 [assets]
 directory = "dist"
 binding = "ASSETS"
-run_worker_first = ["/api/*", "/s/*"]
+# Every request runs the worker first so static assets get the same security
+# headers as /api/* and /s/* (src/worker/security.ts, #52).
+run_worker_first = true
+# Unknown paths serve dist/404.html with status 404 instead of an empty body.
+not_found_handling = "404-page"
 
 [[kv_namespaces]]
 binding = "SITES"

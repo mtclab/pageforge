@@ -27,11 +27,11 @@ const css = `/* theme: nordic */
   padding-left: 1.4rem;
 }
 .section h2 { font-weight: 600; color: var(--accent); }
-.project h3 { font-size: 1.05rem; font-weight: 600; }
+.project h3 { font-size: calc(1.05rem * var(--text-factor)); font-weight: 600; }
 .chips { display: block; }
 .chips li { display: inline; background: none; border: none; border-radius: 0; padding: 0; }
 .chips li + li::before { content: '\\00b7 '; color: var(--muted); }
-footer { font-size: 0.8125rem; opacity: 0.75; }
+footer { font-size: calc(0.8125rem * var(--text-factor)); }
 `;
 
 export const nordic: ThemePack = {

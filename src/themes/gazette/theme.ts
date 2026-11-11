@@ -34,7 +34,7 @@ const css = `/* theme: gazette */
   font-variant: small-caps;
   text-transform: lowercase;
   letter-spacing: 0.18em;
-  font-size: 0.95rem;
+  font-size: calc(0.95rem * var(--text-factor));
 }
 .hero .links { justify-content: center; margin-top: 1.6rem; }
 .links a {
@@ -63,7 +63,7 @@ const css = `/* theme: gazette */
   background: color-mix(in srgb, var(--muted) 60%, transparent);
 }
 .section-about p:first-of-type { font-size: 1.15em; line-height: 1.65; }
-.project h3 { font-size: 1.05rem; }
+.project h3 { font-size: calc(1.05rem * var(--text-factor)); }
 footer { text-align: center; }
 `;
 

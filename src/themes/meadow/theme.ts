@@ -42,7 +42,7 @@ const css = `/* theme: meadow */
   background: var(--accent);
 }
 .projects { gap: 1.2rem; }
-.project h3 { font-size: 1.12rem; color: var(--accent); }
+.project h3 { font-size: calc(1.12rem * var(--text-factor)); color: var(--accent); }
 .chips li {
   border: none;
   background: color-mix(in srgb, var(--accent) 15%, var(--surface));
